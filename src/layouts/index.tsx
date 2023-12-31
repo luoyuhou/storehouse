@@ -1,6 +1,6 @@
 import React from "react";
 import { Inter } from "next/font/google";
-import "./globals.css";
+// import "./globals.css";
 import Typography from "@mui/material/Typography";
 import Link from "@mui/material/Link";
 import Container from "@mui/material/Container";

@@ -2,7 +2,8 @@ import React from "react";
 import PropTypes from "prop-types";
 import NextLink from "next/link";
 import { Box, Typography, Unstable_Grid2 as Grid } from "@mui/material";
-import { Logo } from "@/components/logo";
+import { Logo } from "src/components/logo";
+import RootLayout from "src/layouts";
 
 // TODO: Change subtitle text
 
@@ -50,7 +51,7 @@ export function Layout(props: { children: React.ReactNode }) {
               <Logo />
             </Box>
           </Box>
-          {children}
+          <RootLayout>{children}</RootLayout>
         </Grid>
         <Grid
           xs={12}
@@ -79,11 +80,11 @@ export function Layout(props: { children: React.ReactNode }) {
             >
               Welcome to{" "}
               <Box component="a" sx={{ color: "#15B79E" }} target="_blank">
-                Devias Kit
+                我的地盘
               </Box>
             </Typography>
             <Typography align="center" sx={{ mb: 3 }} variant="subtitle1">
-              A professional kit that comes with ready-to-use MUI components.
+              A personal web server
             </Typography>
             <img alt="" src="/assets/auth-illustration.svg" />
           </Box>

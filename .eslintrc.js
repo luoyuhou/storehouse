@@ -18,7 +18,7 @@ module.exports = {
     },
     ecmaVersion: 2020,
     tsconfigRootDir: __dirname,
-    project: ["./tsconfig.json"],
+    project: ["./tsconfig.json", "./jsconfig.json"],
     sourceType: "module",
   },
   plugins: ["react", "jest", "prettier"],
@@ -44,10 +44,7 @@ module.exports = {
         depth: 3,
       },
     ],
-    "no-unused-vars": [
-      "warn",
-      { vars: "all", args: "after-used", ignoreRestSiblings: false },
-    ],
+    "no-unused-vars": ["warn", { vars: "all", args: "after-used", ignoreRestSiblings: false }],
     "jsx-a11y/no-static-element-interactions": "off",
     "jsx-a11y/click-events-have-key-events": "off",
     "import/extensions": [
@@ -97,10 +94,7 @@ module.exports = {
           { forbidDefaultForRequired: true, ignoreFunctionalComponents: true },
         ],
         "@typescript-eslint/no-explicit-any": 2,
-        "@typescript-eslint/no-unused-vars": [
-          "warn",
-          { argsIgnorePattern: "^_" },
-        ],
+        "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
         "no-use-before-define": "off",
         "@typescript-eslint/no-use-before-define": ["error"],
         "import/prefer-default-export": 0,

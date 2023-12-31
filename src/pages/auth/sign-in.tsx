@@ -7,9 +7,9 @@ import * as Yup from "yup";
 import { Box, Button, Link, Stack, Tab, Tabs, TextField, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import { toast } from "react-toastify";
-import { useAuth } from "@/hooks/use-auth";
-import { Layout as AuthLayout } from "@/layouts/auth/layout";
-import LoggedIn from "@/hooks/logged-in";
+import { useAuth } from "src/hooks/use-auth";
+import { Layout as AuthLayout } from "src/layouts/auth/layout";
+import LoggedIn from "src/hooks/logged-in";
 
 function Page() {
   const router = useRouter();
@@ -29,13 +29,13 @@ function Page() {
     },
     innerRef: undefined,
     isInitialValid: undefined,
-    onReset<Values>(values: Values, formikHelpers: FormikHelpers<Values>): void {},
-    render<Values>(props: FormikProps<Values>): React.ReactNode {
-      return undefined;
-    },
-    validate<Values>(values: Values): void | object | Promise<FormikErrors<Values>> {
-      return undefined;
-    },
+    // onReset<Values>(values: Values, formikHelpers: FormikHelpers<Values>): void {},
+    // render<Values>(props: FormikProps<Values>): React.ReactNode {
+    //   return undefined;
+    // },
+    // validate<Values>(values: Values): void | object | Promise<FormikErrors<Values>> {
+    //   return undefined;
+    // },
     validationSchema: Yup.object({
       phone: Yup.string().min(11).max(11).required("电话* 必填"),
       password: Yup.string().max(255).required("密码* 必填"),

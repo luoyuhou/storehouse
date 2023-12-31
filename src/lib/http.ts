@@ -1,6 +1,6 @@
 import axios, { AxiosRequestConfig } from "axios";
-import { Env } from "@/constant/env";
-import { LocalStorage } from "@/lib/localStorage";
+import { Env } from "src/constant/env";
+import { LocalStorage } from "src/lib/localStorage";
 
 const formatRequestConfig = (config?: AxiosRequestConfig) => {
   const token = LocalStorage.getCache(Env.JWT_TOKEN_KEY);

@@ -1,6 +1,6 @@
 import React from "react";
-import { Layout as AuthLayout } from "@/layouts/auth/layout";
-import Page from "@/pages/auth/sign-in";
+import { Layout as AuthLayout } from "src/layouts/auth/layout";
+import Page from "src/pages/auth/sign-in";
 
 function ForgetPassword() {
   return <div>Forget password -- page</div>;

@@ -8,8 +8,8 @@ import { toast } from "react-toastify";
 import Checkbox from "@mui/material/Checkbox";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Grid from "@mui/material/Grid";
-import { useAuth } from "@/hooks/use-auth";
-import { Layout as AuthLayout } from "@/layouts/auth/layout";
+import { useAuth } from "src/hooks/use-auth";
+import { Layout as AuthLayout } from "src/layouts/auth/layout";
 
 function Page() {
   const router = useRouter();

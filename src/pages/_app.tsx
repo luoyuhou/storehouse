@@ -6,11 +6,12 @@ import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { CssBaseline } from "@mui/material";
 import { ThemeProvider } from "@mui/material/styles";
 import { ToastContainer } from "react-toastify";
-import { AuthConsumer, AuthProvider } from "@/contexts/auth-context";
-import { useNProgress } from "@/hooks/use-nprogress";
-import { createTheme } from "@/theme";
-import { createEmotionCache } from "@/utils/create-emotion-cache";
+import { AuthConsumer, AuthProvider } from "src/contexts/auth-context";
+import { useNProgress } from "src/hooks/use-nprogress";
+import { createTheme } from "src/theme";
+import { createEmotionCache } from "src/utils/create-emotion-cache";
 import "simplebar-react/dist/simplebar.min.css";
+import "react-toastify/dist/ReactToastify.css";
 
 const clientSideEmotionCache = createEmotionCache();
 
@@ -19,7 +20,7 @@ function SplashScreen() {
 }
 
 function App(props: {
-  Component: { getLayout: (e: React.ReactNode) => void };
+  Component: { getLayout: (e: React.JSX.Element) => JSX.Element };
   emotionCache?: EmotionCache | undefined;
   pageProps: Record<string, never>;
 }) {
@@ -27,9 +28,19 @@ function App(props: {
 
   useNProgress();
 
-  const getLayout = Component.getLayout ?? ((page: never) => page);
+  const getLayout = Component.getLayout ?? ((page: React.JSX.Element) => page);
 
   const theme = createTheme();
+
+  const render = (isLoading: boolean) => {
+    if (isLoading) {
+      return <SplashScreen />;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
+    return getLayout(<Component {...pageProps} />);
+  };
 
   return (
     <CacheProvider value={emotionCache}>
@@ -41,11 +52,7 @@ function App(props: {
         <AuthProvider>
           <ThemeProvider theme={theme}>
             <CssBaseline />
-            <AuthConsumer>
-              {(auth) =>
-                auth.isLoading ? <SplashScreen /> : getLayout(<Component {...pageProps} />)
-              }
-            </AuthConsumer>
+            <AuthConsumer>{(auth) => render(auth.isLoading)}</AuthConsumer>
             <ToastContainer />
           </ThemeProvider>
         </AuthProvider>
