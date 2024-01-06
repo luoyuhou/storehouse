@@ -8,7 +8,7 @@ function Page() {
   return (
     <>
       <Head>
-        <title>404</title>
+        <title>403</title>
       </Head>
       <Box
         component="main"
@@ -35,7 +35,7 @@ function Page() {
             >
               <img
                 alt="Under development"
-                src="/assets/errors/error-404.svg"
+                src="/assets/errors/error-403.svg"
                 style={{
                   display: "inline-block",
                   maxWidth: "100%",
@@ -44,10 +44,10 @@ function Page() {
               />
             </Box>
             <Typography align="center" sx={{ mb: 3 }} variant="h3">
-              404: 您查看的页面不存在
+              403: 访问受限
             </Typography>
             <Typography align="center" color="text.secondary" variant="body1">
-              您要么是走了不正当的路，要么就是不小心来的。不管是哪一种，试一试使用导航
+              请与管理员联系以获得相应权限
             </Typography>
             <Button
               component={NextLink}

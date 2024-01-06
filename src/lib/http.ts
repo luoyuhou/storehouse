@@ -12,7 +12,7 @@ const formatRequestConfig = (config?: AxiosRequestConfig) => {
   return { ...config, headers: { ...config?.headers, ...headers } };
 };
 
-export const get = async (url: string, config?: AxiosRequestConfig): Promise<never> => {
+export const get = async <T>(url: string, config?: AxiosRequestConfig): Promise<T> => {
   return new Promise((resolve, reject) => {
     axios
       .get(url, formatRequestConfig(config))

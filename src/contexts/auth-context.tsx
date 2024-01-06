@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useReducer } from "react";
+import React, { createContext, useContext, useEffect, useReducer, useRef } from "react";
 import PropTypes from "prop-types";
-import { post } from "src/lib/http";
+import { get, post } from "src/lib/http";
 import { UserEntity } from "src/types/users";
 
 type HandlerType = "INITIALIZE" | "SIGN_IN" | "SIGN_OUT";
@@ -17,12 +17,32 @@ type AuthContextType = {
 };
 
 const initialState: AuthContextType = {
-  isAuthenticated: true,
-  isLoading: false,
+  isAuthenticated: false,
+  isLoading: true,
   user: null,
 };
 
 const handlers = {
+  [HANDLERS.INITIALIZE]: (
+    state: AuthContextType,
+    action: { type: HandlerType; payload: never },
+  ) => {
+    const user = action.payload;
+
+    return {
+      ...state,
+      ...// if payload (user) is provided, then is authenticated
+      (user
+        ? {
+            isAuthenticated: true,
+            isLoading: false,
+            user,
+          }
+        : {
+            isLoading: false,
+          }),
+    };
+  },
   [HANDLERS.SIGN_IN]: (state: AuthContextType, action: { type: HandlerType; payload: never }) => {
     const user = action.payload;
 
@@ -39,6 +59,16 @@ const handlers = {
       user: null,
     };
   },
+};
+
+const formatUser = (user: UserEntity) => {
+  return {
+    id: user.user_id,
+    avatar: user.avatar ?? "/assets/avatars/avatar-anika-visser.png",
+    name: `${user.last_name}${user.first_name}`,
+    phone: user.phone,
+    email: user.email,
+  };
 };
 
 const reducer = (state: AuthContextType, action: { type: HandlerType; payload: never }) =>
@@ -58,11 +88,50 @@ export const AuthContext = createContext({
   user: null,
   isLoading: false,
   isAuthenticated: true,
+  authPaths: [],
 });
 
 export function AuthProvider(props: { children: React.ReactNode }) {
   const { children } = props;
   const [state, dispatch] = useReducer(reducer, initialState);
+
+  const initialized = useRef(false);
+
+  const initialize = async () => {
+    // Prevent from calling twice in development mode with React.StrictMode enabled
+    if (initialized.current) {
+      return;
+    }
+
+    initialized.current = true;
+
+    let user;
+
+    try {
+      const result = await get<{ data: UserEntity }>("/api/auth/sign-in");
+      user = formatUser(result.data);
+    } catch (err) {
+      console.error(err);
+    }
+
+    if (user) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-expect-error
+      dispatch({ type: HANDLERS.INITIALIZE, payload: user });
+    } else {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-expect-error
+      dispatch({ type: HANDLERS.INITIALIZE });
+    }
+  };
+
+  useEffect(
+    () => {
+      initialize();
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
 
   const signIn = async (phone: string, password: string) => {
     const res = await post<{
@@ -72,15 +141,8 @@ export function AuthProvider(props: { children: React.ReactNode }) {
       config: {},
       payload: { phone, password },
     });
-    window.sessionStorage.setItem("authenticated", "true");
 
-    const user = {
-      id: res.data.user_id,
-      avatar: res.data.avatar ?? "/assets/avatars/avatar-anika-visser.png",
-      name: `${res.data.last_name}${res.data.first_name}`,
-      phone: res.data.phone,
-      email: res.data.email,
-    };
+    const user = formatUser(res.data);
 
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-expect-error

@@ -6,7 +6,7 @@ import { useAuthContext } from "src/contexts/auth-context";
 export function AuthGuard(props: { children: never }) {
   const { children } = props;
   const router = useRouter();
-  const { isAuthenticated } = useAuthContext();
+  const { isAuthenticated, authPaths } = useAuthContext();
   const ignore = useRef(false);
   const [checked, setChecked] = useState(false);
 
@@ -27,7 +27,6 @@ export function AuthGuard(props: { children: never }) {
     ignore.current = true;
 
     if (!isAuthenticated) {
-      console.log("Not authenticated, redirecting");
       router
         .replace({
           pathname: "/auth/sign-in",
@@ -36,6 +35,23 @@ export function AuthGuard(props: { children: never }) {
         .catch(console.error);
     } else {
       setChecked(true);
+    }
+
+    // path check
+    const needCheckPaths = ["/store"];
+    const { pathname } = router;
+    console.log("pathname", pathname);
+    const needCheck = needCheckPaths.some((p) => p === pathname || pathname.indexOf(`${p}/`) === 0);
+    console.log("neeed", needCheck);
+    if (!needCheck) {
+      return;
+    }
+
+    const pathVerified = (authPaths ?? []).some(
+      (p) => p === pathname || pathname.indexOf(`${p}/`) === 0,
+    );
+    if (!pathVerified) {
+      router.replace(`/403?prePath=${pathname}`);
     }
   }, [router.isReady]);
 
