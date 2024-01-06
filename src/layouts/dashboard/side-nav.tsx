@@ -100,17 +100,16 @@ export function SideNav(props: { open: boolean; onClose: () => void }) {
             }}
           >
             {items.map((item) => {
-              const active = item.path ? pathname === item.path : false;
-
               return (
                 <SideNavItem
-                  active={active}
+                  pathname={pathname}
                   disabled={item.disabled}
                   external={item.external}
                   icon={item.icon}
                   key={item.title}
                   path={item.path}
                   title={item.title}
+                  group={item.group}
                 />
               );
             })}

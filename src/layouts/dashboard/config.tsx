@@ -10,7 +10,6 @@ import XCircleIcon from "@heroicons/react/24/solid/XCircleIcon";
 import { SvgIcon } from "@mui/material";
 
 export type DashboardItemType = {
-  active?: boolean;
   title: string;
   path: string;
   icon: JSX.Element;
@@ -18,7 +17,7 @@ export type DashboardItemType = {
   external?: JSX.Element;
 };
 
-export const items: DashboardItemType[] = [
+export const items: (DashboardItemType & { group?: DashboardItemType[] })[] = [
   {
     title: "Overview",
     path: "/",
@@ -37,14 +36,79 @@ export const items: DashboardItemType[] = [
       </SvgIcon>
     ),
   },
+  // {
+  //   title: "Companies",
+  //   path: "/companies",
+  //   icon: (
+  //     <SvgIcon fontSize="small">
+  //       <ShoppingBagIcon />
+  //     </SvgIcon>
+  //   ),
+  // },
   {
-    title: "Companies",
-    path: "/companies",
+    title: "商店",
+    path: "/",
     icon: (
       <SvgIcon fontSize="small">
         <ShoppingBagIcon />
       </SvgIcon>
     ),
+    group: [
+      {
+        title: "我的店铺",
+        path: "/store",
+        icon: (
+          <SvgIcon fontSize="small">
+            <UserIcon />
+          </SvgIcon>
+        ),
+      },
+      {
+        title: "商品分类",
+        path: "/store/category",
+        icon: (
+          <SvgIcon fontSize="small">
+            <CogIcon />
+          </SvgIcon>
+        ),
+      },
+      {
+        title: "商品列表",
+        path: "/store/goods-list",
+        icon: (
+          <SvgIcon fontSize="small">
+            <CogIcon />
+          </SvgIcon>
+        ),
+      },
+      {
+        title: "商品详情",
+        path: "/store/goods-detail",
+        icon: (
+          <SvgIcon fontSize="small">
+            <CogIcon />
+          </SvgIcon>
+        ),
+      },
+      {
+        title: "创建商品",
+        path: "/store/create-goods",
+        icon: (
+          <SvgIcon fontSize="small">
+            <CogIcon />
+          </SvgIcon>
+        ),
+      },
+      {
+        title: "订单",
+        path: "/store/order",
+        icon: (
+          <SvgIcon fontSize="small">
+            <CogIcon />
+          </SvgIcon>
+        ),
+      },
+    ],
   },
   {
     title: "Account",

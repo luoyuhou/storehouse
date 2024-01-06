@@ -17,8 +17,8 @@ type AuthContextType = {
 };
 
 const initialState: AuthContextType = {
-  isAuthenticated: false,
-  isLoading: true,
+  isAuthenticated: true,
+  isLoading: false,
   user: null,
 };
 
