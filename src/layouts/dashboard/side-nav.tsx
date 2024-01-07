@@ -17,7 +17,8 @@ import {
 import { Logo } from "src/components/logo";
 import { Scrollbar } from "src/components/scrollbar";
 import { Theme } from "@mui/material/styles/createTheme";
-import { items } from "./config";
+import { privateItems } from "src/layouts/dashboard/private-config";
+import { items } from "./public-config";
 import { SideNavItem } from "./side-nav-item";
 
 export function SideNav(props: { open: boolean; onClose: () => void }) {
@@ -115,7 +116,22 @@ export function SideNav(props: { open: boolean; onClose: () => void }) {
             })}
           </Stack>
         </Box>
-        <Divider sx={{ borderColor: "neutral.700" }} />
+        <Button
+          component="a"
+          endIcon={
+            <SvgIcon fontSize="small">
+              <ArrowTopRightOnSquareIcon />
+            </SvgIcon>
+          }
+          fullWidth
+          href="/comment-feature"
+          sx={{ mt: 2 }}
+          target="_blank"
+          variant="contained"
+        >
+          期待功能 | 宝贵建议
+        </Button>
+        <Divider sx={{ borderColor: "neutral.700", marginTop: "10px" }} />
         <Box
           sx={{
             px: 2,
@@ -123,39 +139,37 @@ export function SideNav(props: { open: boolean; onClose: () => void }) {
           }}
         >
           <Typography color="neutral.100" variant="subtitle2">
-            Need more features?
+            更多功能
           </Typography>
-          <Typography color="neutral.500" variant="body2">
-            Check out our Pro solution template.
+          <Typography color="neutral.500" variant="body2" fontSize={12}>
+            如需更多功能, 请订阅您需要的服务.
           </Typography>
-          <Box
-            sx={{
-              display: "flex",
-              mt: 2,
-              mx: "auto",
-              width: "160px",
-              "& img": {
-                width: "100%",
-              },
-            }}
-          >
-            <img alt="Go to pro" src="/assets/devias-kit-pro.png" />
+          <Box component="nav">
+            <Stack
+              component="ul"
+              spacing={0.5}
+              sx={{
+                listStyle: "none",
+                p: 0,
+                m: 0,
+              }}
+            >
+              {privateItems.map((item) => {
+                return (
+                  <SideNavItem
+                    pathname={pathname}
+                    disabled={item.disabled}
+                    external={item.external}
+                    icon={item.icon}
+                    key={item.title}
+                    path={item.path}
+                    title={item.title}
+                    group={item.group}
+                  />
+                );
+              })}
+            </Stack>
           </Box>
-          <Button
-            component="a"
-            endIcon={
-              <SvgIcon fontSize="small">
-                <ArrowTopRightOnSquareIcon />
-              </SvgIcon>
-            }
-            fullWidth
-            href="https://material-kit-pro-react.devias.io/"
-            sx={{ mt: 2 }}
-            target="_blank"
-            variant="contained"
-          >
-            Pro Live Preview
-          </Button>
         </Box>
       </Box>
     </Scrollbar>

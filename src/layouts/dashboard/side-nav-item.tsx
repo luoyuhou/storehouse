@@ -10,7 +10,7 @@ import {
   SvgIcon,
   Typography,
 } from "@mui/material";
-import { DashboardItemType } from "src/layouts/dashboard/config";
+import { DashboardItemType } from "src/layouts/dashboard/public-config";
 import ChevronDownIcon from "@heroicons/react/24/solid/ChevronDownIcon";
 
 function NavItem({ props }: { props: DashboardItemType & { pathname: string } }) {
@@ -100,6 +100,7 @@ export function SideNavItem(
   const active = props.path ? props.path === pathname : false;
 
   if (group && group.length) {
+    const childrenActive = pathname.indexOf(`${props.path}/`) === 0;
     return (
       <Accordion style={{ backgroundColor: "rgba(0,0,0,0)" }}>
         <AccordionSummary
@@ -120,7 +121,7 @@ export function SideNavItem(
                 justifyContent: "flex-start",
                 textAlign: "left",
                 width: "100%",
-                ...(active && {
+                ...((active || childrenActive) && {
                   backgroundColor: "rgba(255, 255, 255, 0.04)",
                 }),
                 "&:hover": {
@@ -137,7 +138,7 @@ export function SideNavItem(
                     display: "inline-flex",
                     justifyContent: "center",
                     mr: 2,
-                    ...(active && {
+                    ...((active || childrenActive) && {
                       color: "primary.main",
                     }),
                   }}
@@ -155,7 +156,7 @@ export function SideNavItem(
                   fontWeight: 600,
                   lineHeight: "24px",
                   whiteSpace: "nowrap",
-                  ...(active && {
+                  ...((active || childrenActive) && {
                     color: "common.white",
                   }),
                   ...(disabled && {
