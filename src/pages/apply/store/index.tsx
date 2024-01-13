@@ -7,6 +7,7 @@ import {
   Container,
   FormControl,
   InputLabel,
+  Link,
   Select,
   Stack,
   TextField,
@@ -286,9 +287,14 @@ function ApplyStore() {
                   />
                 </Stack>
                 {formik.errors.submit && (
-                  <Typography color="error" sx={{ mt: 3 }} variant="body2">
-                    {formik.errors.submit}
-                  </Typography>
+                  <Container>
+                    <Typography color="error" sx={{ mt: 3 }} variant="body2">
+                      {formik.errors.submit}
+                    </Typography>
+                    <Link href="/apply/store/list" target="_blank">
+                      查看申请列表
+                    </Link>
+                  </Container>
                 )}
                 <Button
                   disabled={submitting}

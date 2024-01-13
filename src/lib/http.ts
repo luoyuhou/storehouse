@@ -2,6 +2,8 @@ import axios, { AxiosRequestConfig } from "axios";
 import { Env } from "src/constant/env";
 import { LocalStorage } from "src/lib/localStorage";
 
+type Payload = NonNullable<unknown>;
+
 const formatRequestConfig = (config?: AxiosRequestConfig) => {
   const token = LocalStorage.getCache(Env.JWT_TOKEN_KEY);
   const headers = {
@@ -54,7 +56,7 @@ export const del = async (url: string, config?: AxiosRequestConfig): Promise<nev
 
 export const post = async <T>(arg: {
   url: string;
-  payload: Record<string, never | FormDataEntryValue>;
+  payload: Payload | FormDataEntryValue;
   config?: AxiosRequestConfig;
 }): Promise<T> => {
   const { url, payload, config } = arg;

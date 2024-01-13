@@ -26,6 +26,7 @@ const Transition = React.forwardRef(function Transition(
 });
 
 export function CardNav({
+  dashboardUrl,
   url,
   title,
   disabled,
@@ -34,6 +35,7 @@ export function CardNav({
   dialogTitle,
   ...props
 }: {
+  dashboardUrl?: string;
   url: string;
   title: string;
   imgUrl: string;
@@ -52,6 +54,12 @@ export function CardNav({
           height="240"
           image={imgUrl}
           title={title}
+          onClick={() => {
+            if (!dashboardUrl) {
+              return;
+            }
+            window.open(dashboardUrl, "_blank");
+          }}
         />
         <CardContent>
           <Typography gutterBottom variant="h5" component="h2">

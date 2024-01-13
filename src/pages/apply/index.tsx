@@ -26,6 +26,7 @@ function Apply() {
               <Grid container spacing={3}>
                 <Grid xs={12} md={6} lg={4}>
                   <CardNav
+                    dashboardUrl="/apply/store/list"
                     url="/apply/store"
                     imgUrl="/assets/store-logo.png"
                     title="商铺"
