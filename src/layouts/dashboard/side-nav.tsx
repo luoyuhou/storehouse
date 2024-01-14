@@ -133,9 +133,11 @@ export function SideNav(props: { open: boolean; onClose: () => void }) {
         </Button>
         <Divider sx={{ borderColor: "neutral.700", marginTop: "10px" }} />
         <Box
+          className="simple-scrollbar"
           sx={{
             px: 2,
             py: 3,
+            overflow: "auto",
           }}
         >
           <Typography color="neutral.100" variant="subtitle2">

@@ -14,8 +14,8 @@ import { DashboardItemType } from "src/layouts/dashboard/public-config";
 import ChevronDownIcon from "@heroicons/react/24/solid/ChevronDownIcon";
 
 function NavItem({ props }: { props: DashboardItemType & { pathname: string } }) {
-  const { disabled, external, icon, path, title } = props;
-  const active = props.path ? props.path === props.pathname : false;
+  const { disabled, external, icon, path, title, pathname } = props;
+  const active = path ? path === pathname || pathname.indexOf(`${path}/`) === 0 : false;
 
   // eslint-disable-next-line no-nested-ternary
   const linkProps = path

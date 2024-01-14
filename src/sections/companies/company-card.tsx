@@ -1,12 +1,21 @@
 import React from "react";
 import PropTypes from "prop-types";
-import ArrowDownOnSquareIcon from "@heroicons/react/24/solid/ArrowDownOnSquareIcon";
-import ClockIcon from "@heroicons/react/24/solid/ClockIcon";
-import { Avatar, Box, Card, CardContent, Divider, Stack, SvgIcon, Typography } from "@mui/material";
+import {
+  Avatar,
+  Box,
+  Card,
+  CardContent,
+  Divider,
+  Link,
+  Stack,
+  SvgIcon,
+  Typography,
+} from "@mui/material";
+import { StoreType } from "src/types/store.type";
+import { ShieldCheckIcon, ViewfinderCircleIcon } from "@heroicons/react/20/solid";
+import { CompanyStatus } from "src/sections/companies/company-status";
 
-export function CompanyCard(props: {
-  company: { logo: string; title: string; description: string; downloads: string };
-}) {
+export function CompanyCard(props: { company: StoreType }) {
   const { company } = props;
 
   return (
@@ -27,11 +36,14 @@ export function CompanyCard(props: {
         >
           <Avatar src={company.logo} variant="square" />
         </Box>
-        <Typography align="center" gutterBottom variant="h5">
-          {company.title}
+        <Typography align="center" gutterBottom variant="h5" color="blue">
+          {company.store_name}
         </Typography>
-        <Typography align="center" variant="body1">
-          {company.description}
+        <Typography align="center" fontSize="14px" gutterBottom>
+          {company.province} | {company.city} | {company.area} | {company.town}
+        </Typography>
+        <Typography align="center" variant="body1" fontSize="12px" color="gray">
+          {company.address}
         </Typography>
       </CardContent>
       <Box sx={{ flexGrow: 1 }} />
@@ -44,20 +56,18 @@ export function CompanyCard(props: {
         sx={{ p: 2 }}
       >
         <Stack alignItems="center" direction="row" spacing={1}>
-          <SvgIcon color="action" fontSize="small">
-            <ClockIcon />
+          <SvgIcon color="secondary" fontSize="small">
+            <ShieldCheckIcon />
           </SvgIcon>
-          <Typography color="text.secondary" display="inline" variant="body2">
-            Updated 2hr ago
-          </Typography>
+          <CompanyStatus status={company.status} />
         </Stack>
         <Stack alignItems="center" direction="row" spacing={1}>
-          <SvgIcon color="action" fontSize="small">
-            <ArrowDownOnSquareIcon />
+          <SvgIcon color="primary" fontSize="small">
+            <ViewfinderCircleIcon />
           </SvgIcon>
-          <Typography color="text.secondary" display="inline" variant="body2">
-            {company.downloads} Downloads
-          </Typography>
+          <Link href={`/manage/companies/${company.store_id}`} target="_blank">
+            查看
+          </Link>
         </Stack>
       </Stack>
     </Card>

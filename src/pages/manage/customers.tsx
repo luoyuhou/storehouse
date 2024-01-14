@@ -6,11 +6,11 @@ import ArrowUpOnSquareIcon from "@heroicons/react/24/solid/ArrowUpOnSquareIcon";
 import PlusIcon from "@heroicons/react/24/solid/PlusIcon";
 import { Box, Button, Container, Stack, SvgIcon, Typography } from "@mui/material";
 import { UserEntity } from "src/types/users";
-import { Layout as DashboardLayout } from "../layouts/dashboard/layout";
-import { CustomersTable } from "../sections/customer/customers-table";
-import { CustomersSearch } from "../sections/customer/customers-search";
-import { applyPagination, CustomerInfoType } from "../utils/apply-pagination";
-import { useSelection } from "../hooks/use-selection";
+import { Layout as DashboardLayout } from "../../layouts/dashboard/layout";
+import { CustomersTable } from "../../sections/customer/customers-table";
+import { CustomersSearch } from "../../sections/customer/customers-search";
+import { applyPagination, CustomerInfoType } from "../../utils/apply-pagination";
+import { useSelection } from "../../hooks/use-selection";
 
 const now = new Date();
 

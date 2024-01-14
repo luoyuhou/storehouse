@@ -5,8 +5,15 @@ export type StoreType = {
   city: string;
   area: string;
   town: string;
+  address: string;
+  logo?: string;
 
   status: number;
+
+  id_code: string;
+  id_name: string;
+
+  phone: string;
 };
 
 export type StoryHistoryType = {
@@ -14,11 +21,9 @@ export type StoryHistoryType = {
   store_id: string;
   action_type: number;
   action_content: string;
-  applicant_user_id: string;
-  applicant_date: string;
-  replient_user_id: string;
-  replient_date: string;
-  replient_content: string;
+  action_user_id: string;
+  action_date: string;
+  payload?: string;
   create_date: string;
   update_date: string;
 };

@@ -21,16 +21,12 @@ import {
 
 import KeyboardArrowDownIcon from "@material-ui/icons/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@material-ui/icons/KeyboardArrowUp";
-import { useTheme } from "@mui/material/styles";
-import { KeyboardArrowLeft, KeyboardArrowRight } from "@material-ui/icons";
-import LastPageIcon from "@material-ui/icons/LastPage";
-import FirstPageIcon from "@material-ui/icons/FirstPage";
-import { Theme } from "@mui/material/styles/createTheme";
 import { get, post } from "src/lib/http";
 import { toast } from "react-toastify";
 import CircularPercentageLoading from "src/components/loading/circular-percentage.loading";
 import { StoreType, StoryHistoryType } from "src/types/store.type";
 import dayjs from "dayjs";
+import { TablePaginationActions } from "src/components/table";
 // ReturnType<typeof createData>
 
 function Row(props: { row: StoreType }) {
@@ -43,9 +39,9 @@ function Row(props: { row: StoreType }) {
       return;
     }
 
-    get<StoryHistoryType[]>(`/api/store/history/${row.store_id}`)
+    get<StoryHistoryType[]>(`/api/store/history/${row.store_id}?type=apply`)
       .then((res) => setHistory(res))
-      .catch((err) => toast.error(err.message));
+      .catch((err) => toast.error(JSON.stringify(err.message)));
   }, [open]);
 
   return (
@@ -76,23 +72,21 @@ function Row(props: { row: StoreType }) {
                   <TableRow>
                     <TableCell>申请时间</TableCell>
                     <TableCell>操作类型</TableCell>
-                    <TableCell align="right">操作内容</TableCell>
-                    <TableCell align="right">回复时间</TableCell>
-                    <TableCell align="right">回复内容</TableCell>
+                    <TableCell>操作内容</TableCell>
+                    <TableCell align="right">备注</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {history.map((historyRow) => (
                     <TableRow key={historyRow.id}>
                       <TableCell component="th" scope="row">
-                        {historyRow.applicant_date
-                          ? dayjs(historyRow.applicant_date).format("YYYY-MM-DD HH:mm:ss")
+                        {historyRow.action_date
+                          ? dayjs(historyRow.action_date).format("YYYY-MM-DD HH:mm:ss")
                           : ""}
                       </TableCell>
                       <TableCell>{historyRow.action_type}</TableCell>
-                      <TableCell align="right">{historyRow.action_content}</TableCell>
-                      <TableCell align="right">{historyRow.replient_date}</TableCell>
-                      <TableCell align="right">{historyRow.replient_content}</TableCell>
+                      <TableCell>{historyRow.action_content}</TableCell>
+                      <TableCell align="right">{historyRow.payload ?? "N/A"}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -102,65 +96,6 @@ function Row(props: { row: StoreType }) {
         </TableCell>
       </TableRow>
     </>
-  );
-}
-
-interface TablePaginationActionsProps {
-  count: number;
-  page: number;
-  rowsPerPage: number;
-  onPageChange: (event: React.MouseEvent<HTMLButtonElement>, newPage: number) => void;
-}
-
-function TablePaginationActions(props: TablePaginationActionsProps) {
-  const theme = useTheme();
-  const { count, page, rowsPerPage, onPageChange } = props;
-
-  const handleFirstPageButtonClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    onPageChange(event, 0);
-  };
-
-  const handleBackButtonClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    onPageChange(event, page - 1);
-  };
-
-  const handleNextButtonClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    onPageChange(event, page + 1);
-  };
-
-  const handleLastPageButtonClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    onPageChange(event, Math.max(0, Math.floor(count / rowsPerPage)));
-  };
-
-  return (
-    <Container
-      sx={{ flexShrink: 0, marginLeft: theme.spacing(2.5), minWidth: "208px", maxWidth: "208px" }}
-    >
-      <IconButton
-        onClick={handleFirstPageButtonClick}
-        disabled={page === 0}
-        aria-label="first page"
-      >
-        {theme.direction === "rtl" ? <LastPageIcon /> : <FirstPageIcon />}
-      </IconButton>
-      <IconButton onClick={handleBackButtonClick} disabled={page === 0} aria-label="previous page">
-        {theme.direction === "rtl" ? <KeyboardArrowRight /> : <KeyboardArrowLeft />}
-      </IconButton>
-      <IconButton
-        onClick={handleNextButtonClick}
-        disabled={page >= Math.ceil(count / rowsPerPage) - 1}
-        aria-label="next page"
-      >
-        {theme.direction === "rtl" ? <KeyboardArrowLeft /> : <KeyboardArrowRight />}
-      </IconButton>
-      <IconButton
-        onClick={handleLastPageButtonClick}
-        disabled={page >= Math.ceil(count / rowsPerPage) - 1}
-        aria-label="last page"
-      >
-        {theme.direction === "rtl" ? <FirstPageIcon /> : <LastPageIcon />}
-      </IconButton>
-    </Container>
   );
 }
 

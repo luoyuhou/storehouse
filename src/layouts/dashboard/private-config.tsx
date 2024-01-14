@@ -11,6 +11,8 @@ import {
   DocumentPlusIcon,
   ShoppingCartIcon,
   UsersIcon,
+  ServerStackIcon,
+  BuildingStorefrontIcon,
 } from "@heroicons/react/24/solid";
 import { DashboardItemType } from "src/layouts/dashboard/public-config";
 
@@ -81,12 +83,32 @@ export const privateItems: (DashboardItemType & { group?: DashboardItemType[] })
     ],
   },
   {
-    title: "Customers",
-    path: "/customers",
+    title: "管理",
+    path: "/manage",
     icon: (
       <SvgIcon fontSize="small">
-        <UsersIcon />
+        <ServerStackIcon />
       </SvgIcon>
     ),
+    group: [
+      {
+        title: "Customers",
+        path: "/manage/customers",
+        icon: (
+          <SvgIcon fontSize="small">
+            <UsersIcon />
+          </SvgIcon>
+        ),
+      },
+      {
+        title: "商户",
+        path: "/manage/companies",
+        icon: (
+          <SvgIcon fontSize="small">
+            <BuildingStorefrontIcon />
+          </SvgIcon>
+        ),
+      },
+    ],
   },
 ];
