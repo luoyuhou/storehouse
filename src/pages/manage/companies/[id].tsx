@@ -19,7 +19,7 @@ import { get } from "src/lib/http";
 import { toast } from "react-toastify";
 import CircularPercentageLoading from "src/components/loading/circular-percentage.loading";
 import { CompanyHistoryTable } from "src/sections/companies/company-history-table";
-import { CompanyStepper } from "src/sections/companies/company-stepper";
+import { CompanyApprover, CompanyRejecter } from "src/sections/companies/company-stepper";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -125,19 +125,31 @@ function CompanyDetail() {
                   />
                   <Tab
                     sx={{ margin: "0 0.5rem", padding: "0 0.5rem" }}
-                    label="历史记录"
+                    label="商铺管理"
                     {...a11yProps(1)}
+                  />
+                  <Tab
+                    sx={{ margin: "0 0.5rem", padding: "0 0.5rem" }}
+                    label="历史记录"
+                    {...a11yProps(2)}
                   />
                 </Tabs>
               </AppBar>
               <TabPanel value={value} index={0}>
                 <Box>
                   <Grid>
-                    <Grid>{id && <CompanyStepper id={id as string} />}</Grid>
+                    <Grid>{id && <CompanyApprover id={id as string} />}</Grid>
                   </Grid>
                 </Box>
               </TabPanel>
               <TabPanel value={value} index={1}>
+                <Box>
+                  <Grid>
+                    <Grid>{id && <CompanyRejecter id={id as string} />}</Grid>
+                  </Grid>
+                </Box>
+              </TabPanel>
+              <TabPanel value={value} index={2}>
                 <Box sx={{ marginTop: "5px" }}>
                   <Grid container spacing={3}>
                     <Grid xs={12} md={12} lg={12}>
