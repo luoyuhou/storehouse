@@ -40,7 +40,8 @@ export function CompanyCard(props: { company: StoreType }) {
           {company.store_name}
         </Typography>
         <Typography align="center" fontSize="14px" gutterBottom>
-          {company.province} | {company.city} | {company.area} | {company.town}
+          {company.province_name ?? company.province} | {company.city_name ?? company.city} |{" "}
+          {company.area_name ?? company.area} | {company.town_name ?? company.town}
         </Typography>
         <Typography align="center" variant="body1" fontSize="12px" color="gray">
           {company.address}

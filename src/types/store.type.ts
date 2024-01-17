@@ -2,9 +2,13 @@ export type StoreType = {
   store_id: string;
   store_name: string;
   province: string;
+  province_name?: string;
   city: string;
+  city_name?: string;
   area: string;
+  area_name?: string;
   town: string;
+  town_name?: string;
   address: string;
   logo?: string;
 

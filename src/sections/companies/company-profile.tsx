@@ -29,6 +29,7 @@ export function CompanyProfile({ company }: { company: StoreType }) {
               height: 80,
               mb: 2,
               width: 80,
+              fontSize: "24px",
             }}
           >
             {company.store_name.slice(0, 2)}
@@ -51,7 +52,7 @@ export function CompanyProfile({ company }: { company: StoreType }) {
       <Divider />
       <CardActions>
         <Button fullWidth variant="text">
-          更换商铺 Logo
+          商铺过户
         </Button>
       </CardActions>
     </Card>

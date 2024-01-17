@@ -38,7 +38,8 @@ export function AuthGuard(props: { children: never }) {
     }
 
     // path check
-    const needCheckPaths = ["/store"];
+    // const needCheckPaths = ["/store"];
+    const needCheckPaths: string[] = [];
     const { pathname } = router;
     console.log("pathname", pathname);
     const needCheck = needCheckPaths.some((p) => p === pathname || pathname.indexOf(`${p}/`) === 0);

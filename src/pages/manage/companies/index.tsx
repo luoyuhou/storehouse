@@ -41,7 +41,7 @@ function Page() {
   return (
     <>
       <Head>
-        <title>Companies | Devias Kit</title>
+        <title>Companies</title>
       </Head>
       <Box
         component="main"

@@ -80,7 +80,7 @@ function CompanyDetail() {
         component="main"
         sx={{
           flexGrow: 1,
-          py: 8,
+          py: 0,
         }}
       >
         <Container maxWidth="lg">

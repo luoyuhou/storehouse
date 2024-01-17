@@ -28,7 +28,7 @@ export const privateItems: (DashboardItemType & { group?: DashboardItemType[] })
     group: [
       {
         title: "我的店铺",
-        path: "/store",
+        path: "/store/home",
         icon: (
           <SvgIcon fontSize="small">
             <HomeIcon />

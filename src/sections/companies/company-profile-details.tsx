@@ -24,11 +24,18 @@ export function CompanyProfileDetails({ company }: { company: StoreType }) {
                 name="province"
                 disabled
                 required
-                value={company.province}
+                value={company.province_name}
               />
             </Grid>
             <Grid xs={12} md={6}>
-              <TextField fullWidth label="市" name="city" required disabled value={company.city} />
+              <TextField
+                fullWidth
+                label="市"
+                name="city"
+                required
+                disabled
+                value={company.city_name}
+              />
             </Grid>
             <Grid xs={12} md={6}>
               <TextField
@@ -37,7 +44,7 @@ export function CompanyProfileDetails({ company }: { company: StoreType }) {
                 name="area"
                 type="text"
                 disabled
-                value={company.area}
+                value={company.area_name}
               />
             </Grid>
             <Grid xs={12} md={6}>
@@ -47,7 +54,7 @@ export function CompanyProfileDetails({ company }: { company: StoreType }) {
                 name="town"
                 required
                 disabled
-                value={company.town}
+                value={company.town_name}
               />
             </Grid>
             <Grid xs={12} md={12}>
