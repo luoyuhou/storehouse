@@ -77,3 +77,27 @@ export const post = async <T>(arg: {
       });
   });
 };
+
+export const patch = async <T>(arg: {
+  url: string;
+  payload: Payload | FormDataEntryValue;
+  config?: AxiosRequestConfig;
+}): Promise<T> => {
+  const { url, payload, config } = arg;
+  return new Promise((resolve, reject) => {
+    axios
+      .patch(url, payload, formatRequestConfig(config))
+      .then((response) => {
+        if (response.status > 300) {
+          return reject(response.data);
+        }
+        return resolve(response.data);
+      })
+      .catch((e) => {
+        if (e.response.status === 401) {
+          window.location.href = "/auth/sign-in";
+        }
+        reject(e.response?.data || e);
+      });
+  });
+};

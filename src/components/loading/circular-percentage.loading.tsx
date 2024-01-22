@@ -71,6 +71,10 @@ export default function CircularPercentageLoading({
 }) {
   const [progress, setProgress] = React.useState<number>(0);
 
+  React.useEffect(() => {
+    console.log("progress", progress);
+  }, [progress]);
+
   const [timer, setTimer] = useState<NodeJS.Timeout | null>(null);
 
   React.useEffect(() => {

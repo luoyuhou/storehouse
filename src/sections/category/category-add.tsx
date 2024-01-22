@@ -1,10 +1,19 @@
-import { Button, Stack, TextField } from "@mui/material";
+import { Button, Stack, TextField, Typography } from "@mui/material";
 import React from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { toast } from "react-toastify";
+import { post } from "src/lib/http";
 
-export function CategoryAdd({ pid }: { pid: string }) {
+export function CategoryAdd({
+  storeId,
+  pid,
+  setTrigger,
+}: {
+  storeId: string;
+  pid?: string;
+  setTrigger: React.Dispatch<React.SetStateAction<number>>;
+}) {
   const [isAdd, setIsAdd] = React.useState(false);
   const [submitting, setSubmitting] = React.useState(false);
   const formik = useFormik({
@@ -13,18 +22,32 @@ export function CategoryAdd({ pid }: { pid: string }) {
     initialErrors: undefined,
     initialTouched: undefined,
     initialValues: {
-      pid,
       name: "",
       submit: null,
     },
     innerRef: undefined,
     isInitialValid: undefined,
     validationSchema: Yup.object({
-      phone: Yup.string().min(11).max(11).required("电话* 必填"),
-      password: Yup.string().max(255).required("密码* 必填"),
+      name: Yup.string().min(2).max(16).required("名称* 必填"),
     }),
     onSubmit: async (values, helpers) => {
       setSubmitting(true);
+      post({
+        url: "/api/store/category",
+        payload: { store_id: storeId, pid: pid ?? undefined, name: values.name },
+      })
+        .then(() => {
+          toast.success(`创建 ${values.name} 成功`);
+          setTrigger((c) => c + 1);
+          helpers.setValues({ name: "", submit: null });
+          setIsAdd(false);
+        })
+        .catch((err) => {
+          helpers.setStatus({ success: false });
+          helpers.setErrors({ submit: (err as { message: string }).message });
+          helpers.setSubmitting(false);
+        })
+        .finally(() => setSubmitting(false));
     },
   });
 
@@ -32,7 +55,7 @@ export function CategoryAdd({ pid }: { pid: string }) {
     return (
       <Stack>
         <Button fullWidth onClick={() => setIsAdd(true)}>
-          Create
+          创建
         </Button>
       </Stack>
     );
@@ -59,9 +82,25 @@ export function CategoryAdd({ pid }: { pid: string }) {
           type="text"
           value={formik.values.name}
           required
+          disabled={submitting}
           autoFocus
         />
       </Stack>
+      {formik.errors.submit && (
+        <Typography color="error" sx={{ mt: 3 }} variant="body2">
+          {formik.errors.submit}
+        </Typography>
+      )}
+      <Button
+        fullWidth
+        size="large"
+        sx={{ mt: 3 }}
+        type="submit"
+        variant="contained"
+        disabled={!formik.values.name || submitting}
+      >
+        创建
+      </Button>
     </form>
   );
 }
