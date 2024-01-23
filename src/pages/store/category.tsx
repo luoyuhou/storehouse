@@ -1,7 +1,7 @@
 import { Layout as DashboardLayout } from "src/layouts/dashboard/layout";
 import React, { useEffect } from "react";
 import Head from "next/head";
-import { Box, Container, Grid, Stack, Typography } from "@mui/material";
+import { Box, Container, Unstable_Grid2 as Grid, Stack, Typography } from "@mui/material";
 // import chevron-double-down
 import { CompanyBasicInfoNav } from "src/sections/companies/company-basic-info-nav";
 import { StoreType } from "src/types/store.type";
