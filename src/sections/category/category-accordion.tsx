@@ -10,13 +10,13 @@ import {
   SvgIcon,
 } from "@mui/material";
 import { ChevronDoubleDownIcon, ChevronDoubleUpIcon } from "@heroicons/react/20/solid";
-import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import { CategoryAdd } from "src/sections/category/category-add";
 import { CategoryItem } from "src/sections/category/category-management";
 import { get, patch } from "src/lib/http";
 import { CategoryType } from "src/types/category.type";
 import { toast } from "react-toastify";
 import LinearBufferLoading from "src/components/loading/linear-buffer.loading";
+import { ExpandMore } from "@mui/icons-material";
 
 type SwitchRankType = {
   label: string;
@@ -112,7 +112,7 @@ export function CategoryAccordion({
       <Accordion key={value} style={{ borderTop: "1px solid #eee", marginBottom: "3px" }}>
         <AccordionSummary
           onClick={() => setIsOpen((v) => !v)}
-          expandIcon={<ExpandMoreIcon />}
+          expandIcon={<ExpandMore />}
           aria-label="Expand"
           aria-controls={`additional-${value}-content`}
           id={`additional-${value}-header`}

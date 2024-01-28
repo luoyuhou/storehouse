@@ -21,18 +21,9 @@ import { toast } from "react-toastify";
 import { StoreType } from "src/types/store.type";
 import { CategoryType } from "src/types/category.type";
 import utils from "src/lib/utils";
+import { GOODS_UNIT_NAMES } from "src/constant/goods.const";
 
 type Option = { label: string; value: string };
-
-const UNIT_NAMES: Option[] = [
-  { label: "个", value: "个" },
-  { label: "只", value: "只" },
-  { label: "对", value: "对" },
-  { label: "双", value: "双" },
-  { label: "包", value: "包" },
-  { label: "条", value: "条" },
-  { label: "箱", value: "箱" },
-];
 
 function CreateGoods() {
   const [storeLoading, setStoreLoading] = React.useState<boolean>(false);
@@ -71,20 +62,19 @@ function CreateGoods() {
       store_id: Yup.string().min(16).max(64).required("店铺名* 必填"),
       category_id: Yup.string().min(16).max(64).required("分类* 必填"),
       name: Yup.string().max(16).required("商品名* 必填"),
-      description: Yup.string().min(18).max(18).required("商品描述* 必填"),
+      description: Yup.string().min(4).max(18).required("商品描述* 必填"),
       unit_name: Yup.string().min(1).max(8).required("单位* 必填"),
       price: Yup.string().max(16).required("价格* 必填"),
       count: Yup.string().min(2).max(8).required("数量* 必填"),
-      version_number: Yup.string().max(16),
-      bar_code: Yup.string().max(16),
-      supplier: Yup.string().max(255).required("供应商 必填"),
+      version_number: Yup.string().max(8).max(32),
+      bar_code: Yup.string().max(8).max(32),
+      supplier: Yup.string().max(255),
     }),
-    onSubmit: async (values, helpers) => {
+    onSubmit: async ({ submit, ...values }, helpers) => {
       setSubmitting(true);
       try {
-        const data = {};
-        await post({ url: "/api/store", payload: data, config: {} });
-        toast.success("创建用户成功");
+        await post({ url: "/api/store/goods", payload: values, config: {} });
+        toast.success(`创建 ${values.name} 商品成功`);
         // router.push("/auth/sign-in");
       } catch (err) {
         helpers.setStatus({ success: false });
@@ -130,7 +120,7 @@ function CreateGoods() {
             <div>
               <Typography variant="h4">创建商品</Typography>
             </div>
-            <form>
+            <form noValidate onSubmit={formik.handleSubmit}>
               <Box sx={{ flexGrow: 1 }} mt={2}>
                 <Grid container spacing={3}>
                   <Grid xs={12} md={12} lg={12}>
@@ -144,6 +134,7 @@ function CreateGoods() {
                       <Select
                         native
                         required
+                        displayEmpty
                         value={formik.values.store_id}
                         onBlur={formik.handleBlur}
                         onChange={formik.handleChange}
@@ -166,6 +157,7 @@ function CreateGoods() {
                       <Select
                         native
                         required
+                        displayEmpty
                         value={formik.values.category_id}
                         onBlur={formik.handleBlur}
                         onChange={formik.handleChange}
@@ -234,7 +226,7 @@ function CreateGoods() {
                         error={!!(formik.touched.unit_name && formik.errors.unit_name)}
                       >
                         <option aria-label="None" value="" />
-                        {UNIT_NAMES.map(({ label, value }) => (
+                        {GOODS_UNIT_NAMES.map(({ label, value }) => (
                           <option key={`province-${label}`} value={value}>
                             {label}
                           </option>

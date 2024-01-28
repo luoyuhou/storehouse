@@ -16,7 +16,7 @@ import {
   CardActions,
   Card,
 } from "@mui/material";
-import { KeyboardArrowLeft, KeyboardArrowRight } from "@material-ui/icons";
+import { KeyboardArrowLeft, KeyboardArrowRight } from "@mui/icons-material";
 import theme from "tailwindcss/defaultTheme";
 import { get } from "src/lib/http";
 import { toast } from "react-toastify";

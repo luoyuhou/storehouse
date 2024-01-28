@@ -19,14 +19,13 @@ import {
   TablePagination,
 } from "@mui/material";
 
-import KeyboardArrowDownIcon from "@material-ui/icons/KeyboardArrowDown";
-import KeyboardArrowUpIcon from "@material-ui/icons/KeyboardArrowUp";
 import { get, post } from "src/lib/http";
 import { toast } from "react-toastify";
 import CircularPercentageLoading from "src/components/loading/circular-percentage.loading";
 import { StoreType, StoryHistoryType } from "src/types/store.type";
 import dayjs from "dayjs";
 import { TablePaginationActions } from "src/components/table";
+import { KeyboardArrowDown, KeyboardArrowUp } from "@mui/icons-material";
 // ReturnType<typeof createData>
 
 function Row(props: { row: StoreType }) {
@@ -49,7 +48,7 @@ function Row(props: { row: StoreType }) {
       <TableRow>
         <TableCell sx={{ maxWidth: "30px" }}>
           <IconButton aria-label="expand row" size="small" onClick={() => setOpen(!open)}>
-            {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+            {open ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
           </IconButton>
         </TableCell>
         <TableCell component="th" scope="row">

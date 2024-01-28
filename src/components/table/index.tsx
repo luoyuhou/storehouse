@@ -1,9 +1,12 @@
 import React from "react";
 import { useTheme } from "@mui/material/styles";
 import { Container, IconButton } from "@mui/material";
-import LastPageIcon from "@material-ui/icons/LastPage";
-import FirstPageIcon from "@material-ui/icons/FirstPage";
-import { KeyboardArrowLeft, KeyboardArrowRight } from "@material-ui/icons";
+import {
+  KeyboardArrowLeft,
+  KeyboardArrowRight,
+  KeyboardDoubleArrowLeft,
+  KeyboardDoubleArrowRight,
+} from "@mui/icons-material";
 
 interface TablePaginationActionsProps {
   count: number;
@@ -41,7 +44,7 @@ export function TablePaginationActions(props: TablePaginationActionsProps) {
         disabled={page === 0}
         aria-label="first page"
       >
-        {theme.direction === "rtl" ? <LastPageIcon /> : <FirstPageIcon />}
+        {theme.direction === "rtl" ? <KeyboardDoubleArrowRight /> : <KeyboardDoubleArrowLeft />}
       </IconButton>
       <IconButton onClick={handleBackButtonClick} disabled={page === 0} aria-label="previous page">
         {theme.direction === "rtl" ? <KeyboardArrowRight /> : <KeyboardArrowLeft />}
@@ -58,7 +61,7 @@ export function TablePaginationActions(props: TablePaginationActionsProps) {
         disabled={page >= Math.ceil(count / rowsPerPage) - 1}
         aria-label="last page"
       >
-        {theme.direction === "rtl" ? <FirstPageIcon /> : <LastPageIcon />}
+        {theme.direction === "rtl" ? <KeyboardDoubleArrowLeft /> : <KeyboardDoubleArrowRight />}
       </IconButton>
     </Container>
   );
