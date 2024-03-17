@@ -1,51 +1,11 @@
 import React, { useEffect } from "react";
 import { Box, Button, Typography } from "@mui/material";
-import {
-  DataGrid,
-  GridActionsCellItem,
-  GridColDef,
-  GridEventListener,
-  GridRowEditStopReasons,
-  GridRowId,
-  GridRowModel,
-  GridRowModes,
-  GridRowModesModel,
-  GridRowsProp,
-  GridToolbarContainer,
-} from "@mui/x-data-grid";
-import { Add, Cancel, Delete, Edit, Save } from "@mui/icons-material";
+import { GridColDef, GridRowId, GridRowModes, GridRowModesModel } from "@mui/x-data-grid";
 import { get, post } from "src/lib/http";
 import { GoodsVersionType, InitialGoodsVersion } from "src/types/goods.type";
 import { toast } from "react-toastify";
 import { GOODS_UNIT_NAMES, GOODS_VERSION_STATUS_MAP } from "src/constant/goods.const";
-
-interface EditToolbarProps {
-  goodsId: string;
-  setRows: (newRows: (oldRows: GridRowsProp) => GridRowsProp) => void;
-  setRowModesModel: (newModel: (oldModel: GridRowModesModel) => GridRowModesModel) => void;
-}
-
-function EditToolbar(props: EditToolbarProps) {
-  const { goodsId, setRows, setRowModesModel } = props;
-
-  const handleClick = () => {
-    const id = new Date().getTime();
-    const initial = InitialGoodsVersion();
-    setRows((oldRows) => [...oldRows, { ...initial, id, goods_id: goodsId, isNew: true }]);
-    setRowModesModel((oldModel) => ({
-      ...oldModel,
-      [id]: { mode: GridRowModes.Edit, fieldToFocus: "unit_name" },
-    }));
-  };
-
-  return (
-    <GridToolbarContainer>
-      <Button color="primary" startIcon={<Add />} onClick={handleClick}>
-        Add record
-      </Button>
-    </GridToolbarContainer>
-  );
-}
+import { EditableTable } from "src/components/table/editable.table";
 
 export function GoodsVersionsEditing({ id: goodsId }: { id: string }) {
   const [loading, setLoading] = React.useState(false);
@@ -64,17 +24,6 @@ export function GoodsVersionsEditing({ id: goodsId }: { id: string }) {
       .catch((err) => toast.error(err.message))
       .finally(() => setLoading(false));
   }, [goodsId]);
-
-  const handleRowEditStop: GridEventListener<"rowEditStop"> = (params, event) => {
-    if (params.reason === GridRowEditStopReasons.rowFocusOut) {
-      // eslint-disable-next-line no-param-reassign
-      event.defaultMuiPrevented = true;
-    }
-  };
-
-  const handleEditClick = (id: GridRowId) => () => {
-    setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.Edit } });
-  };
 
   const handleSaveClick = (id: GridRowId) => () => {
     const find = rows.find((v) => v.id === id);
@@ -101,32 +50,6 @@ export function GoodsVersionsEditing({ id: goodsId }: { id: string }) {
       .finally(() => setSubmitting(false));
   };
 
-  const handleDeleteClick = (id: GridRowId) => () => {
-    setRows(rows.filter((row: { id: GridRowId }) => row.id !== id));
-  };
-
-  const handleCancelClick = (id: GridRowId) => () => {
-    setRowModesModel({
-      ...rowModesModel,
-      [id]: { mode: GridRowModes.View, ignoreModifications: true },
-    });
-
-    const editedRow = rows.find((row: { id: GridRowId }) => row.id === id);
-    if (editedRow!.isNew) {
-      setRows(rows.filter((row: { id: GridRowId }) => row.id !== id));
-    }
-  };
-
-  const processRowUpdate = (newRow: GridRowModel<GoodsVersionType & { isNew?: boolean }>) => {
-    const updatedRow = { ...newRow, isNew: false };
-    setRows(rows.map((row) => (row.id === newRow.id ? updatedRow : row)));
-    return updatedRow;
-  };
-
-  const handleRowModesModelChange = (newRowModesModel: GridRowModesModel) => {
-    setRowModesModel(newRowModesModel);
-  };
-
   const columns: GridColDef[] = [
     {
       field: "unit_name",
@@ -136,6 +59,7 @@ export function GoodsVersionsEditing({ id: goodsId }: { id: string }) {
       type: "singleSelect",
       valueOptions: GOODS_UNIT_NAMES,
       cellClassName: "basis-1/8",
+      flex: 1,
     },
     {
       field: "price",
@@ -146,6 +70,7 @@ export function GoodsVersionsEditing({ id: goodsId }: { id: string }) {
       headerAlign: "left",
       editable: true,
       cellClassName: "basis-1/8",
+      flex: 1,
       renderCell: ({ row: { price } }) => {
         return <span>{((price ?? 0) / 100).toFixed(2)}</span>;
       },
@@ -157,6 +82,7 @@ export function GoodsVersionsEditing({ id: goodsId }: { id: string }) {
       // width: 180,
       editable: true,
       cellClassName: "basis-1/8",
+      flex: 1,
     },
     {
       field: "status",
@@ -166,6 +92,7 @@ export function GoodsVersionsEditing({ id: goodsId }: { id: string }) {
       type: "singleSelect",
       valueOptions: GOODS_VERSION_STATUS_MAP,
       cellClassName: "basis-1/8",
+      flex: 1,
     },
     {
       field: "version_number",
@@ -173,6 +100,7 @@ export function GoodsVersionsEditing({ id: goodsId }: { id: string }) {
       // width: 220,
       editable: true,
       cellClassName: "basis-1/8",
+      flex: 1,
     },
     {
       field: "bar_code",
@@ -180,6 +108,7 @@ export function GoodsVersionsEditing({ id: goodsId }: { id: string }) {
       // width: 220,
       editable: true,
       cellClassName: "basis-1/8",
+      flex: 1,
     },
     {
       field: "supplier",
@@ -187,60 +116,7 @@ export function GoodsVersionsEditing({ id: goodsId }: { id: string }) {
       // width: 220,
       editable: true,
       cellClassName: "basis-1/8",
-    },
-    {
-      field: "actions",
-      type: "actions",
-      headerName: "Actions",
-      width: 100,
-      cellClassName: "actions",
-      getActions: ({ id }) => {
-        const isInEditMode = rowModesModel[id]?.mode === GridRowModes.Edit;
-
-        if (isInEditMode) {
-          return [
-            <GridActionsCellItem
-              key={`save-cell-${id}`}
-              icon={<Save />}
-              label="Save"
-              sx={{
-                color: "primary.main",
-              }}
-              disabled={submitting}
-              onClick={handleSaveClick(id)}
-            />,
-            <GridActionsCellItem
-              key={`cancel-cell-${id}`}
-              icon={<Cancel />}
-              label="Cancel"
-              className="textPrimary"
-              disabled={submitting}
-              onClick={handleCancelClick(id)}
-              color="inherit"
-            />,
-          ];
-        }
-
-        return [
-          <GridActionsCellItem
-            key={`edit-cell-${id}`}
-            icon={<Edit />}
-            label="Edit"
-            className="textPrimary"
-            disabled={submitting}
-            onClick={handleEditClick(id)}
-            color="inherit"
-          />,
-          <GridActionsCellItem
-            key={`delete-cell-${id}`}
-            icon={<Delete />}
-            label="Delete"
-            disabled={submitting}
-            onClick={handleDeleteClick(id)}
-            color="inherit"
-          />,
-        ];
-      },
+      flex: 1,
     },
   ];
 
@@ -249,34 +125,13 @@ export function GoodsVersionsEditing({ id: goodsId }: { id: string }) {
       <Typography variant="h6" gutterBottom>
         商品归属
       </Typography>
-      <Box
-        sx={{
-          height: 500,
-          width: "100%",
-          "& .actions": {
-            color: "text.secondary",
-          },
-          "& .textPrimary": {
-            color: "text.primary",
-          },
-        }}
-      >
-        <DataGrid
-          rows={rows}
-          columns={columns}
-          editMode="row"
-          rowModesModel={rowModesModel}
-          onRowModesModelChange={handleRowModesModelChange}
-          onRowEditStop={handleRowEditStop}
-          processRowUpdate={processRowUpdate}
-          slots={{
-            toolbar: EditToolbar,
-          }}
-          slotProps={{
-            toolbar: { setRows, setRowModesModel },
-          }}
-        />
-      </Box>
+      <EditableTable
+        initialEmptyDate={InitialGoodsVersion()}
+        columns={columns}
+        loading={loading}
+        submitting={submitting}
+        query={() => {}}
+      />
     </Box>
   );
 }

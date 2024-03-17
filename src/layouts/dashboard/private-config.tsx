@@ -13,6 +13,7 @@ import {
   UsersIcon,
   ServerStackIcon,
   BuildingStorefrontIcon,
+  LockClosedIcon,
 } from "@heroicons/react/24/solid";
 import { DashboardItemType } from "src/layouts/dashboard/public-config";
 
@@ -106,6 +107,15 @@ export const privateItems: (DashboardItemType & { group?: DashboardItemType[] })
         icon: (
           <SvgIcon fontSize="small">
             <BuildingStorefrontIcon />
+          </SvgIcon>
+        ),
+      },
+      {
+        title: "权限系统",
+        path: "/manage/role-management",
+        icon: (
+          <SvgIcon fontSize="small">
+            <LockClosedIcon />
           </SvgIcon>
         ),
       },
