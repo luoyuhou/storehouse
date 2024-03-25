@@ -126,11 +126,13 @@ export function GoodsVersionsEditing({ id: goodsId }: { id: string }) {
         商品归属
       </Typography>
       <EditableTable
-        initialEmptyDate={InitialGoodsVersion()}
+        pagination={{ pages: 0, rows: 0, data: [] }}
+        initialEmptyData={InitialGoodsVersion()}
         columns={columns}
         loading={loading}
         submitting={submitting}
-        query={() => {}}
+        onChange={() => {}}
+        onDelete={() => {}}
       />
     </Box>
   );

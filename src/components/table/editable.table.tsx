@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   DataGrid,
   GridActionsCellItem,
@@ -11,23 +12,23 @@ import {
   GridRowsProp,
   GridToolbarContainer,
 } from "@mui/x-data-grid";
-import { GoodsVersionType } from "src/types/goods.type";
 import { Box, Button } from "@mui/material";
 import { Add, Cancel, Delete, Edit, Save } from "@mui/icons-material";
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { PaginationResponseType } from "src/types/common";
 
 interface EditToolbarProps {
-  initialEmptyDate: Record<string, never>;
+  initialEmptyData: Record<string, never>;
   setRows: (newRows: (oldRows: GridRowsProp) => GridRowsProp) => void;
   setRowModesModel: (newModel: (oldModel: GridRowModesModel) => GridRowModesModel) => void;
 }
 
 function EditToolbar(props: EditToolbarProps) {
-  const { setRows, setRowModesModel, initialEmptyDate } = props;
+  const { setRows, setRowModesModel, initialEmptyData } = props;
 
   const handleClick = () => {
     const id = new Date().getTime();
-    setRows((oldRows) => [...oldRows, { ...initialEmptyDate, id, isNew: true }]);
+    setRows((oldRows) => [...oldRows, { ...initialEmptyData, id, isNew: true }]);
     setRowModesModel((oldModel) => ({
       ...oldModel,
       [id]: { mode: GridRowModes.Edit, fieldToFocus: "unit_name" },
@@ -44,17 +45,54 @@ function EditToolbar(props: EditToolbarProps) {
 }
 
 type EditableTableProps = {
-  initialEmptyDate: Record<string, string | number | boolean | Date | null>;
+  initialEmptyData: Record<string, string | number | boolean | Date | null>;
+  pagination: PaginationResponseType;
   columns: GridColDef[];
   loading: boolean;
   submitting: boolean;
-  query: () => void;
+  onChange: (payload: Record<string, never>) => void;
+  onDelete: (id: GridRowId) => void;
 };
 
+type RowType = Record<string, never> & { id: number; isNew?: boolean };
 export function EditableTable(props: EditableTableProps) {
-  const { initialEmptyDate, columns, loading, submitting, query } = props;
-  const [rows, setRows] = React.useState<(GoodsVersionType & { isNew?: boolean })[]>([]);
+  const { pagination, initialEmptyData, columns, loading, submitting, onChange, onDelete } = props;
+  const [rows, setRows] = React.useState<RowType[]>([]);
   const [rowModesModel, setRowModesModel] = React.useState<GridRowModesModel>({});
+  const [index, setIndex] = useState<number>(0);
+
+  useEffect(() => {
+    if (!pagination?.data) {
+      return;
+    }
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
+    setRows(pagination.data);
+  }, [pagination.data]);
+
+  useEffect(() => {
+    const keys = Object.keys(rowModesModel);
+    if (!keys.length) {
+      return;
+    }
+
+    const key = keys[0];
+    if (rowModesModel[key].mode === "view") {
+      setIndex(+key);
+    }
+  }, [rowModesModel]);
+
+  useEffect(() => {
+    if (!index) {
+      return;
+    }
+
+    const item = rows.find((i) => i.id === +index);
+    if (!item) {
+      return;
+    }
+    onChange(item);
+  }, [rows]);
 
   const handleRowEditStop: GridEventListener<"rowEditStop"> = (params, event) => {
     if (params.reason === GridRowEditStopReasons.rowFocusOut) {
@@ -68,19 +106,12 @@ export function EditableTable(props: EditableTableProps) {
   };
 
   const handleSaveClick = (id: GridRowId) => () => {
-    console.log("id", id);
-    const find = rows.find((v) => v.id === id);
-    if (!find) {
-      // return;
-    }
-    console.log("rows", rows);
-    // todo: query
-    query();
     setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.View } });
   };
 
   const handleDeleteClick = (id: GridRowId) => () => {
     setRows(rows.filter((row: { id: GridRowId }) => row.id !== id));
+    onDelete(id);
   };
 
   const handleCancelClick = (id: GridRowId) => () => {
@@ -95,8 +126,10 @@ export function EditableTable(props: EditableTableProps) {
     }
   };
 
-  const processRowUpdate = (newRow: GridRowModel<GoodsVersionType & { isNew?: boolean }>) => {
+  const processRowUpdate = (newRow: GridRowModel<Record<string, any> & { isNew?: boolean }>) => {
     const updatedRow = { ...newRow, isNew: false };
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
     setRows(rows.map((row) => (row.id === newRow.id ? updatedRow : row)));
     return updatedRow;
   };
@@ -176,12 +209,13 @@ export function EditableTable(props: EditableTableProps) {
         }}
       >
         <DataGrid
-          rows={rows}
+          rows={rows as any}
           loading={loading}
           columns={columns.concat(actionColumn)}
           editMode="row"
           rowModesModel={rowModesModel}
           pagination
+          rowCount={pagination?.pages}
           onRowModesModelChange={handleRowModesModelChange}
           onRowEditStop={handleRowEditStop}
           processRowUpdate={processRowUpdate}
@@ -189,7 +223,7 @@ export function EditableTable(props: EditableTableProps) {
             toolbar: EditToolbar,
           }}
           slotProps={{
-            toolbar: { setRows, setRowModesModel, initialEmptyDate },
+            toolbar: { setRows, setRowModesModel, initialEmptyData },
           }}
         />
       </Box>

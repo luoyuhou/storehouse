@@ -21,8 +21,8 @@ function Page() {
           py: 8,
         }}
       >
-        <Container maxWidth="xl">
-          <Stack spacing={3}>
+        <Container style={{ maxWidth: "1400px" }}>
+          <Stack>
             <CustomerTabs
               tabs={[
                 { key: 0, label: "用户角色", children: <UserRoleForRoleManagement /> },

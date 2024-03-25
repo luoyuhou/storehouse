@@ -1,5 +1,5 @@
 import { Box } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { GridColDef } from "@mui/x-data-grid";
 import { EditableTable } from "src/components/table/editable.table";
 import {
@@ -9,6 +9,9 @@ import {
   AUTH_TYPE_OPTIONS,
 } from "src/constant/role-management.const";
 import { AuthType } from "src/types/role-management.type";
+import { patch, post } from "src/lib/http";
+import { toast } from "react-toastify";
+import { PaginationResponseType } from "src/types/common";
 
 const initialEmptyAuth: AuthType = {
   id: 0,
@@ -18,11 +21,66 @@ const initialEmptyAuth: AuthType = {
   path: "",
   method: "",
   status: 1,
+  create_date: new Date(),
+  update_date: new Date(),
 };
 
 export function AuthForRoleManagement() {
   const [loading, setLoading] = useState<boolean>(false);
   const [submitting, setSubmitting] = useState<boolean>(false);
+  const [pagination, setPagination] = useState<PaginationResponseType>({
+    pages: 0,
+    rows: 0,
+    data: [],
+  });
+
+  const onSubmit = (payload: AuthType) => {
+    setSubmitting(true);
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const { auth_id } = payload;
+    const pickPayload = {
+      method: payload.method,
+      path: payload.path,
+      pid: payload.pid,
+      side: +payload.side,
+      status: +payload.status,
+    };
+    if (auth_id) {
+      // update
+      patch({ url: `/api/auth/role-management/auth/${auth_id}`, payload: pickPayload })
+        .then(() => {})
+        .catch(() => {})
+        .finally(() => setSubmitting(false));
+      return;
+    }
+
+    // create
+    post({ url: "/api/auth/role-management/auth", payload: pickPayload })
+      .then(() => {})
+      .catch(() => {})
+      .finally(() => setSubmitting(false));
+  };
+
+  useEffect(() => {
+    setLoading(true);
+    post<{ data: PaginationResponseType }>({
+      url: "/api/auth/role-management/auth/pagination",
+      payload: { pageNum: 0, pageSize: 10, sorted: [], filtered: [] },
+    })
+      .then(({ data: { pages, data, rows } }) => {
+        setPagination({
+          pages,
+          rows,
+          data: data.map((v) => ({
+            ...v,
+            create_date: new Date(v.create_date),
+            update_date: new Date(v.update_date),
+          })),
+        });
+      })
+      .catch((err) => toast.error(err.message))
+      .finally(() => setLoading(false));
+  }, []);
 
   const columns: GridColDef[] = [
     {
@@ -96,13 +154,15 @@ export function AuthForRoleManagement() {
   ];
 
   return (
-    <Box sx={{ flexGrow: 1 }} mt={2}>
+    <Box sx={{ flexGrow: 1 }}>
       <EditableTable
-        initialEmptyDate={initialEmptyAuth}
+        initialEmptyData={initialEmptyAuth}
+        pagination={pagination}
         columns={columns}
         loading={loading}
         submitting={submitting}
-        query={() => {}}
+        onChange={(payload) => onSubmit(payload as unknown as AuthType)}
+        onDelete={() => {}}
       />
     </Box>
   );

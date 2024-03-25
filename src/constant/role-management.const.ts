@@ -1,8 +1,8 @@
 export const AUTH_PID_OPTIONS = [{ label: "None", value: "0" }];
 
 export const AUTH_TYPE_OPTIONS = [
-  { label: "UI", value: "UI" },
-  { label: "API", value: "API" },
+  { label: "API", value: 1 },
+  { label: "UI", value: 2 },
 ];
 
 export const AUTH_METHOD_OPTIONS = [
