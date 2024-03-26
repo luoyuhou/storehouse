@@ -25,13 +25,17 @@ function Page() {
           <Stack>
             <CustomerTabs
               tabs={[
-                { key: 0, label: "用户角色", children: <UserRoleForRoleManagement /> },
+                {
+                  key: 0,
+                  label: "用户角色",
+                  isDefault: true,
+                  children: <UserRoleForRoleManagement />,
+                },
                 { key: 1, label: "Roles", children: <RoleForRoleManagement /> },
                 { key: 2, label: "Auth Resource ", children: <AuthRoleForRoleManagement /> },
                 {
                   key: 3,
                   label: "Resources",
-                  isDefault: true,
                   children: <AuthForRoleManagement />,
                 },
               ]}

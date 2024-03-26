@@ -6,6 +6,7 @@ import { PaginationResponseType } from "src/types/common";
 import { UserRoleType } from "src/types/role-management.type";
 import { patch, post } from "src/lib/http";
 import { toast } from "react-toastify";
+import { USER_ROLE_STATUS_OPTIONS } from "src/constant/role-management.const";
 
 export function UserRoleForRoleManagement() {
   const [loading, setLoading] = useState<boolean>(false);
@@ -16,6 +17,33 @@ export function UserRoleForRoleManagement() {
     data: [],
   });
 
+  const [roles, setRoles] = useState<{ label: string; value: string }[]>([]);
+  const [users, setUsers] = useState<{ label: string; value: string }[]>([]);
+
+  useEffect(() => {
+    post<{ data: PaginationResponseType }>({
+      url: "/api/auth/role-management/role/pagination",
+      payload: {
+        pageNum: 0,
+        pageSize: 10,
+        sorted: [],
+        filtered: [{ id: "update_date", desc: true }],
+      },
+    }).then(({ data: { data } }) => {
+      setRoles(data.map((v) => ({ label: v.role_name, value: v.role_id })));
+    });
+  }, []);
+
+  useEffect(() => {
+    post<{ data: PaginationResponseType }>({
+      url: "/api/users/pagination",
+      payload: { pageNum: 0, pageSize: 10, sorted: [], filtered: [] },
+    }).then(({ data: { data } }) => {
+      const values = data.map((v) => ({ label: v.phone, value: v.user_id }));
+      setUsers(values);
+    });
+  }, []);
+
   const onSubmit = (payload: UserRoleType) => {
     setSubmitting(true);
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -25,7 +53,7 @@ export function UserRoleForRoleManagement() {
       user_id: payload.user_id,
       status: payload.status,
     };
-    if (id) {
+    if (id.toString().length < 10) {
       // update
       patch({ url: `/api/auth/role-management/user-role/${id}`, payload: pickPayload })
         .then(() => {})
@@ -61,24 +89,26 @@ export function UserRoleForRoleManagement() {
       .catch((err) => toast.error(err.message))
       .finally(() => setLoading(false));
   }, []);
+
   const columns: GridColDef[] = [
-    {
-      field: "role_id",
-      headerName: "Role ID",
-      // width: 180,
-      editable: true,
-      type: "singleSelect",
-      valueOptions: [],
-      cellClassName: "basis-1/6",
-      flex: 1,
-    },
     {
       field: "user_id",
       headerName: "User",
       // type: "number",
       // width: 80,
       editable: true,
-      type: "string",
+      type: "singleSelect",
+      valueOptions: users,
+      cellClassName: "basis-1/6",
+      flex: 1,
+    },
+    {
+      field: "role_id",
+      headerName: "Role ID",
+      // width: 180,
+      editable: true,
+      type: "singleSelect",
+      valueOptions: roles,
       cellClassName: "basis-1/6",
       flex: 1,
     },
@@ -88,7 +118,7 @@ export function UserRoleForRoleManagement() {
       // type: "date",
       editable: true,
       type: "singleSelect",
-      valueOptions: [],
+      valueOptions: USER_ROLE_STATUS_OPTIONS,
       cellClassName: "basis-1/6",
       flex: 1,
     },
