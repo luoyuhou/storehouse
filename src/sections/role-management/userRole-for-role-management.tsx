@@ -44,7 +44,7 @@ export function UserRoleForRoleManagement() {
     });
   }, []);
 
-  const onSubmit = (payload: UserRoleType) => {
+  const onSubmit = async (payload: UserRoleType) => {
     setSubmitting(true);
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const { id } = payload;
@@ -55,17 +55,24 @@ export function UserRoleForRoleManagement() {
     };
     if (id.toString().length < 10) {
       // update
-      patch({ url: `/api/auth/role-management/user-role/${id}`, payload: pickPayload })
-        .then(() => {})
-        .catch(() => {})
+      return patch({ url: `/api/auth/role-management/user-role/${id}`, payload: pickPayload })
+        .then(() => {
+          return true;
+        })
+        .catch(() => {
+          return false;
+        })
         .finally(() => setSubmitting(false));
-      return;
     }
 
     // create
-    post({ url: "/api/auth/role-management/user-role", payload: pickPayload })
-      .then(() => {})
-      .catch(() => {})
+    return post({ url: "/api/auth/role-management/user-role", payload: pickPayload })
+      .then(() => {
+        return true;
+      })
+      .catch(() => {
+        return false;
+      })
       .finally(() => setSubmitting(false));
   };
 

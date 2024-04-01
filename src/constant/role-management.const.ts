@@ -22,3 +22,8 @@ export const USER_ROLE_STATUS_OPTIONS = [
   { label: "ACTIVE", value: 1 },
   { label: "INACTIVE", value: 0 },
 ];
+
+export const ROLE_AUTH_STATUS_OPTIONS = [
+  { label: "ACTIVE", value: 1 },
+  { label: "INACTIVE", value: 0 },
+];

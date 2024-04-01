@@ -34,7 +34,7 @@ export function AuthForRoleManagement() {
     data: [],
   });
 
-  const onSubmit = (payload: AuthType) => {
+  const onSubmit = async (payload: AuthType) => {
     setSubmitting(true);
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const { auth_id } = payload;
@@ -47,17 +47,26 @@ export function AuthForRoleManagement() {
     };
     if (auth_id) {
       // update
-      patch({ url: `/api/auth/role-management/auth/${auth_id}`, payload: pickPayload })
-        .then(() => {})
-        .catch(() => {})
+      return patch({ url: `/api/auth/role-management/auth/${auth_id}`, payload: pickPayload })
+        .then(() => {
+          return true;
+        })
+        .catch((err) => {
+          toast.error(`[Update Resource]: ${err.message}`);
+          return false;
+        })
         .finally(() => setSubmitting(false));
-      return;
     }
 
     // create
-    post({ url: "/api/auth/role-management/auth", payload: pickPayload })
-      .then(() => {})
-      .catch(() => {})
+    return post({ url: "/api/auth/role-management/auth", payload: pickPayload })
+      .then(() => {
+        return true;
+      })
+      .catch((err) => {
+        toast.error(`[Create Resource]: ${err.message}`);
+        return false;
+      })
       .finally(() => setSubmitting(false));
   };
 

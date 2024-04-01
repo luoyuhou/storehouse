@@ -14,7 +14,7 @@ import {
 } from "@mui/x-data-grid";
 import { Box, Button } from "@mui/material";
 import { Add, Cancel, Delete, Edit, Save } from "@mui/icons-material";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { PaginationResponseType } from "src/types/common";
 
 interface EditToolbarProps {
@@ -50,49 +50,21 @@ type EditableTableProps = {
   columns: GridColDef[];
   loading: boolean;
   submitting: boolean;
-  onChange: (payload: Record<string, never>) => void;
+  onChange: (payload: Record<string, any>) => Promise<boolean>;
   onDelete: (id: GridRowId) => void;
 };
 
-type RowType = Record<string, never> & { id: number; isNew?: boolean };
+type RowType = Record<string, any> & { id: number; isNew?: boolean };
 export function EditableTable(props: EditableTableProps) {
   const { pagination, initialEmptyData, columns, loading, submitting, onChange, onDelete } = props;
   const [rows, setRows] = React.useState<RowType[]>([]);
   const [rowModesModel, setRowModesModel] = React.useState<GridRowModesModel>({});
-  const [index, setIndex] = useState<number>(0);
+
+  const rowEditMapRef = useRef<{ [id: GridRowId]: boolean }>({});
 
   useEffect(() => {
-    if (!pagination?.data) {
-      return;
-    }
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-expect-error
-    setRows(pagination.data);
+    setRows((pagination?.data as RowType[]) || []);
   }, [pagination.data]);
-
-  useEffect(() => {
-    const keys = Object.keys(rowModesModel);
-    if (!keys.length) {
-      return;
-    }
-
-    const key = keys[0];
-    if (rowModesModel[key].mode === "view") {
-      setIndex(+key);
-    }
-  }, [rowModesModel]);
-
-  useEffect(() => {
-    if (!index) {
-      return;
-    }
-
-    const item = rows.find((i) => i.id === +index);
-    if (!item) {
-      return;
-    }
-    onChange(item);
-  }, [rows]);
 
   const handleRowEditStop: GridEventListener<"rowEditStop"> = (params, event) => {
     if (params.reason === GridRowEditStopReasons.rowFocusOut) {
@@ -126,7 +98,16 @@ export function EditableTable(props: EditableTableProps) {
     }
   };
 
-  const processRowUpdate = (newRow: GridRowModel<Record<string, any> & { isNew?: boolean }>) => {
+  const processRowUpdate = async (
+    newRow: GridRowModel<Record<string, any> & { isNew?: boolean }>,
+  ) => {
+    const result = await onChange(newRow as Record<string, any>);
+    if (!result) {
+      rowEditMapRef.current[newRow.id] = true;
+      setRowModesModel({ ...rowModesModel, [newRow.id]: { mode: GridRowModes.Edit } });
+      return newRow;
+    }
+    delete rowEditMapRef.current[newRow.id];
     const updatedRow = { ...newRow, isNew: false };
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-expect-error
@@ -135,6 +116,9 @@ export function EditableTable(props: EditableTableProps) {
   };
 
   const handleRowModesModelChange = (newRowModesModel: GridRowModesModel) => {
+    if (Object.keys(rowEditMapRef.current).length) {
+      return;
+    }
     setRowModesModel(newRowModesModel);
   };
 
@@ -218,7 +202,7 @@ export function EditableTable(props: EditableTableProps) {
           rowCount={pagination?.pages}
           onRowModesModelChange={handleRowModesModelChange}
           onRowEditStop={handleRowEditStop}
-          processRowUpdate={processRowUpdate}
+          processRowUpdate={(newRow) => processRowUpdate(newRow)}
           slots={{
             toolbar: EditToolbar,
           }}

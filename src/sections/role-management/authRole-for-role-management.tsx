@@ -2,9 +2,13 @@ import { Box } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { GridColDef } from "@mui/x-data-grid";
 import { EditableTable } from "src/components/table/editable.table";
-import { AUTH_PID_OPTIONS, AUTH_TYPE_OPTIONS } from "src/constant/role-management.const";
+import {
+  AUTH_PID_OPTIONS,
+  AUTH_TYPE_OPTIONS,
+  ROLE_AUTH_STATUS_OPTIONS,
+} from "src/constant/role-management.const";
 import { PaginationResponseType } from "src/types/common";
-import { AuthRoleType } from "src/types/role-management.type";
+import { AuthRoleType, AuthType, RoleType } from "src/types/role-management.type";
 import { patch, post } from "src/lib/http";
 import { toast } from "react-toastify";
 
@@ -17,28 +21,39 @@ export function AuthRoleForRoleManagement() {
     data: [],
   });
 
-  const onSubmit = (payload: AuthRoleType) => {
+  const [roles, setRoles] = useState<{ label: string; value: string }[]>([]);
+  const [resources, setResources] = useState<{ label: string; value: string }[]>([]);
+
+  const onSubmit = async (payload: AuthRoleType) => {
     setSubmitting(true);
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    const { auth_id } = payload;
+    const { id, auth_id } = payload;
     const pickPayload = {
       role_id: payload.role_id,
       auth_id: payload.auth_id,
       status: payload.status,
     };
-    if (auth_id) {
+    if (id.toString().length <= 10) {
       // update
-      patch({ url: `/api/auth/role-management/auth-role/${auth_id}`, payload: pickPayload })
-        .then(() => {})
-        .catch(() => {})
+      return patch({ url: `/api/auth/role-management/auth-role/${auth_id}`, payload: pickPayload })
+        .then(() => {
+          return true;
+        })
+        .catch((err) => {
+          toast.error(err.message);
+          return false;
+        })
         .finally(() => setSubmitting(false));
-      return;
     }
 
     // create
-    post({ url: "/api/auth/role-management/auth-role", payload: pickPayload })
-      .then(() => {})
-      .catch(() => {})
+    return post({ url: "/api/auth/role-management/auth-role", payload: pickPayload })
+      .then(() => {
+        return true;
+      })
+      .catch(() => {
+        return false;
+      })
       .finally(() => setSubmitting(false));
   };
 
@@ -63,17 +78,37 @@ export function AuthRoleForRoleManagement() {
       .finally(() => setLoading(false));
   }, []);
 
+  useEffect(() => {
+    post<{ data: { pages: number; rows: number; data: RoleType[] }; message: string }>({
+      url: "/api/auth/role-management/role/pagination",
+      payload: {
+        pageNum: 0,
+        pageSize: 10,
+        filtered: [],
+        sorted: [],
+      },
+    })
+      .then(({ data: { data } }) => {
+        setRoles(data.map(({ role_id, role_name }) => ({ label: role_name, value: role_id })));
+      })
+      .catch((err) => toast.error(err.message));
+
+    post<{ data: { pages: number; rows: number; data: AuthType[] }; message: string }>({
+      url: "/api/auth/role-management/auth/pagination",
+      payload: { pageNum: 0, pageSize: 10, filtered: [], sorted: [] },
+    })
+      .then(({ data: { data } }) => {
+        setResources(
+          data.map(({ auth_id, side, path, method }) => ({
+            label: `[${AUTH_TYPE_OPTIONS.find((i) => i.value === side)?.label}]-[${path}:${method}]`,
+            value: auth_id,
+          })),
+        );
+      })
+      .catch((err) => toast.error(err.message));
+  }, []);
+
   const columns: GridColDef[] = [
-    {
-      field: "auth_id",
-      headerName: "Resource",
-      // width: 180,
-      editable: true,
-      type: "singleSelect",
-      valueOptions: AUTH_PID_OPTIONS,
-      cellClassName: "basis-1/6",
-      flex: 1,
-    },
     {
       field: "role_id",
       headerName: "Role",
@@ -81,7 +116,17 @@ export function AuthRoleForRoleManagement() {
       // width: 80,
       editable: true,
       type: "singleSelect",
-      valueOptions: AUTH_TYPE_OPTIONS,
+      valueOptions: roles,
+      cellClassName: "basis-1/6",
+      flex: 1,
+    },
+    {
+      field: "auth_id",
+      headerName: "Resource",
+      // width: 180,
+      editable: true,
+      type: "singleSelect",
+      valueOptions: resources,
       cellClassName: "basis-1/6",
       flex: 1,
     },
@@ -91,6 +136,8 @@ export function AuthRoleForRoleManagement() {
       // type: "date",
       width: 180,
       editable: true,
+      type: "singleSelect",
+      valueOptions: ROLE_AUTH_STATUS_OPTIONS,
       cellClassName: "basis-1/6",
       flex: 1,
     },
