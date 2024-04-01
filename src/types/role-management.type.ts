@@ -10,6 +10,11 @@ export type AuthType = {
   update_date?: Date;
 };
 
+export type ResourcesFromAuthType = Pick<
+  AuthType,
+  "auth_id" | "side" | "path" | "method" | "status"
+>;
+
 export type RoleType = {
   id: number;
   role_id: string;

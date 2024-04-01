@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useReducer, useRef } from 
 import PropTypes from "prop-types";
 import { get, post } from "src/lib/http";
 import { UserEntity } from "src/types/users";
+import { ResourcesFromAuthType } from "src/types/role-management.type";
 
 type HandlerType = "INITIALIZE" | "SIGN_IN" | "SIGN_OUT";
 const HANDLERS = {
@@ -14,20 +15,22 @@ type AuthContextType = {
   isAuthenticated: boolean;
   isLoading: boolean;
   user: UserEntity | null;
+  authPaths: ResourcesFromAuthType[];
 };
 
 const initialState: AuthContextType = {
   isAuthenticated: false,
   isLoading: true,
   user: null,
+  authPaths: [],
 };
 
 const handlers = {
   [HANDLERS.INITIALIZE]: (
     state: AuthContextType,
-    action: { type: HandlerType; payload: never },
+    action: { type: HandlerType; payload: never; authPaths: ResourcesFromAuthType[] },
   ) => {
-    const user = action.payload;
+    const { payload: user, authPaths } = action;
 
     return {
       ...state,
@@ -37,19 +40,24 @@ const handlers = {
             isAuthenticated: true,
             isLoading: false,
             user,
+            authPaths,
           }
         : {
             isLoading: false,
           }),
     };
   },
-  [HANDLERS.SIGN_IN]: (state: AuthContextType, action: { type: HandlerType; payload: never }) => {
-    const user = action.payload;
+  [HANDLERS.SIGN_IN]: (
+    state: AuthContextType,
+    action: { type: HandlerType; payload: never; authPaths: ResourcesFromAuthType[] },
+  ) => {
+    const { payload: user, authPaths } = action;
 
     return {
       ...state,
       isAuthenticated: true,
       user,
+      authPaths,
     };
   },
   [HANDLERS.SIGN_OUT]: (state: AuthContextType, action: { type: HandlerType; payload: never }) => {
@@ -71,8 +79,10 @@ const formatUser = (user: UserEntity) => {
   };
 };
 
-const reducer = (state: AuthContextType, action: { type: HandlerType; payload: never }) =>
-  handlers[action.type] ? handlers[action.type](state, action) : state;
+const reducer = (
+  state: AuthContextType,
+  action: { type: HandlerType; payload: never; authPaths: ResourcesFromAuthType[] },
+) => (handlers[action.type] ? handlers[action.type](state, action) : state);
 
 // The role of this context is to propagate authentication state through the App tree.
 
@@ -106,10 +116,14 @@ export function AuthProvider(props: { children: React.ReactNode }) {
     initialized.current = true;
 
     let user;
+    let resources;
 
     try {
-      const result = await get<{ data: UserEntity }>("/api/auth/sign-in");
+      const result = await get<{ data: UserEntity; resources: ResourcesFromAuthType[] }>(
+        "/api/auth/sign-in",
+      );
       user = formatUser(result.data);
+      resources = result.resources;
     } catch (err) {
       console.error(err);
     }
@@ -117,7 +131,7 @@ export function AuthProvider(props: { children: React.ReactNode }) {
     if (user) {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-expect-error
-      dispatch({ type: HANDLERS.INITIALIZE, payload: user });
+      dispatch({ type: HANDLERS.INITIALIZE, payload: user, authPaths: resources ?? [] });
     } else {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-expect-error
@@ -136,6 +150,7 @@ export function AuthProvider(props: { children: React.ReactNode }) {
   const signIn = async (phone: string, password: string) => {
     const res = await post<{
       data: UserEntity;
+      resources: ResourcesFromAuthType[];
     }>({
       url: "/api/auth/local/sign-in",
       config: {},
@@ -146,7 +161,7 @@ export function AuthProvider(props: { children: React.ReactNode }) {
 
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-expect-error
-    dispatch({ type: HANDLERS.SIGN_IN, payload: user });
+    dispatch({ type: HANDLERS.SIGN_IN, payload: user, authPaths: res?.resources ?? [] });
   };
 
   const signUp = async (args: {

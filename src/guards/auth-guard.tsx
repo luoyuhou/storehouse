@@ -2,11 +2,12 @@ import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import PropTypes from "prop-types";
 import { useAuthContext } from "src/contexts/auth-context";
+import { ResourcesFromAuthType } from "src/types/role-management.type";
 
 export function AuthGuard(props: { children: never }) {
   const { children } = props;
   const router = useRouter();
-  const { isAuthenticated, authPaths } = useAuthContext();
+  const { isAuthenticated, authPaths, user } = useAuthContext();
   const ignore = useRef(false);
   const [checked, setChecked] = useState(false);
 
@@ -37,9 +38,14 @@ export function AuthGuard(props: { children: never }) {
       setChecked(true);
     }
 
+    const isAdmin = authPaths.find(({ auth_id }) => auth_id === "*");
+    if (isAdmin) {
+      return;
+    }
+
     // path check
     // const needCheckPaths = ["/store"];
-    const needCheckPaths: string[] = [];
+    const needCheckPaths: string[] = ["/store", "/manage"];
     const { pathname } = router;
     console.log("pathname", pathname);
     const needCheck = needCheckPaths.some((p) => p === pathname || pathname.indexOf(`${p}/`) === 0);
@@ -48,9 +54,24 @@ export function AuthGuard(props: { children: never }) {
       return;
     }
 
-    const pathVerified = (authPaths ?? []).some(
-      (p) => p === pathname || pathname.indexOf(`${p}/`) === 0,
-    );
+    const pathVerified = ((authPaths ?? []) as ResourcesFromAuthType[]).some(({ path, side }) => {
+      if (side !== 1) {
+        return false;
+      }
+
+      if (path === pathname) {
+        return true;
+      }
+
+      if (!path.includes("*")) {
+        return false;
+      }
+
+      const arrByPath = path.split("*");
+      const arrByPathname = pathname.split("/");
+
+      return arrByPath[0] === `/${arrByPathname?.[1]}`;
+    });
     if (!pathVerified) {
       router.replace(`/403?prePath=${pathname}`);
     }
