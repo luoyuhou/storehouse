@@ -27,18 +27,18 @@ export type GoodsVersionType = {
   update_date: string;
 };
 
-export const InitialGoodsVersion = () => {
+export const InitialGoodsVersion = (obj: Partial<GoodsVersionType>) => {
   const version: GoodsVersionType = {
     id: 0,
     version_id: "",
-    goods_id: "",
+    goods_id: obj.goods_id ?? "",
     version_number: null,
     bar_code: null,
     count: 0,
     price: 0,
     unit_name: "",
     supplier: null,
-    status: 0,
+    status: 1,
     create_date: "",
     update_date: "",
   };

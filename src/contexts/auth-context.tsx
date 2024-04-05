@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useReducer, useRef } from "react";
 import PropTypes from "prop-types";
-import { get, post } from "src/lib/http";
+import { deleteRequest, get, post } from "src/lib/http";
 import { UserEntity } from "src/types/users";
 import { ResourcesFromAuthType } from "src/types/role-management.type";
 
@@ -177,7 +177,12 @@ export function AuthProvider(props: { children: React.ReactNode }) {
     });
   };
 
-  const signOut = () => {
+  const signOut = async () => {
+    await deleteRequest({
+      url: "/api/auth/logout",
+      config: {},
+    });
+
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-expect-error
     dispatch({ type: HANDLERS.SIGN_OUT });

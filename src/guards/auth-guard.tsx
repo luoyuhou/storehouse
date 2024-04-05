@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import PropTypes from "prop-types";
 import { useAuthContext } from "src/contexts/auth-context";
 import { ResourcesFromAuthType } from "src/types/role-management.type";
+import { EAuthTypeValues } from "src/constant/role-management.const";
 
 export function AuthGuard(props: { children: never }) {
   const { children } = props;
@@ -37,25 +38,47 @@ export function AuthGuard(props: { children: never }) {
     } else {
       setChecked(true);
     }
+  }, [router.isReady]);
 
+  useEffect(() => {
     const isAdmin = authPaths.find(({ auth_id }) => auth_id === "*");
     if (isAdmin) {
       return;
     }
 
-    // path check
-    // const needCheckPaths = ["/store"];
-    const needCheckPaths: string[] = ["/store", "/manage"];
+    const notCheckPaths = [
+      "/",
+      "/403*",
+      "/404*",
+      "/auth*",
+      "/account*",
+      "/settings*",
+      "/tools*",
+      "/apply*",
+      "/comment-feature*",
+    ];
     const { pathname } = router;
-    console.log("pathname", pathname);
-    const needCheck = needCheckPaths.some((p) => p === pathname || pathname.indexOf(`${p}/`) === 0);
-    console.log("neeed", needCheck);
-    if (!needCheck) {
+    const isNotNeedCheck = notCheckPaths.some((p) => {
+      if (p === pathname) {
+        return true;
+      }
+
+      if (!p.includes("*")) {
+        return false;
+      }
+
+      const arrByPath = p.split("*");
+      const arrByPathname = pathname.split("/");
+
+      return arrByPath[0] === `/${arrByPathname?.[1]}`;
+    });
+    console.log("isNotNeedCheck", isNotNeedCheck);
+    if (isNotNeedCheck) {
       return;
     }
 
     const pathVerified = ((authPaths ?? []) as ResourcesFromAuthType[]).some(({ path, side }) => {
-      if (side !== 1) {
+      if (![EAuthTypeValues.ALL, EAuthTypeValues.UI].includes(side)) {
         return false;
       }
 
@@ -75,7 +98,7 @@ export function AuthGuard(props: { children: never }) {
     if (!pathVerified) {
       router.replace(`/403?prePath=${pathname}`);
     }
-  }, [router.isReady]);
+  }, [router.pathname]);
 
   if (!checked) {
     return null;

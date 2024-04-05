@@ -1,8 +1,13 @@
 export const AUTH_PID_OPTIONS = [{ label: "None", value: "0" }];
 
+export enum EAuthTypeValues {
+  "ALL" = 0,
+  "API" = 1,
+  "UI" = 2,
+}
 export const AUTH_TYPE_OPTIONS = [
-  { label: "API", value: 1 },
-  { label: "UI", value: 2 },
+  { label: "API", value: EAuthTypeValues.API },
+  { label: "UI", value: EAuthTypeValues.UI },
 ];
 
 export const AUTH_METHOD_OPTIONS = [

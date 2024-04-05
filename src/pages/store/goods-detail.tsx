@@ -7,6 +7,8 @@ import { GoodsDetailEditing } from "src/sections/goods/goods-detail.editing";
 import { GoodsVersionsEditing } from "src/sections/goods/goods-versions.editing";
 
 function GoodsDetail() {
+  const [isGoods, setIsGoods] = React.useState(false);
+
   const router = useRouter();
   const { id } = router.query;
   return (
@@ -26,8 +28,8 @@ function GoodsDetail() {
             <div>
               <Typography variant="h4">商品详情</Typography>
             </div>
-            <GoodsDetailEditing id={id as string} />
-            <GoodsVersionsEditing id={id as string} />
+            <GoodsDetailEditing id={id as string} setIsGoods={setIsGoods} />
+            {isGoods && <GoodsVersionsEditing id={id as string} />}
           </Stack>
         </Container>
       </Box>

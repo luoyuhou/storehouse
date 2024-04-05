@@ -31,3 +31,21 @@ export type StoryHistoryType = {
   create_date: string;
   update_date: string;
 };
+
+export type UserOrderType = {
+  id: number;
+  order_id: string;
+  user_id: string;
+  store_id: string;
+  status: number;
+  stage: number;
+  recipient: string;
+  money: number;
+  phone: string;
+  province: string;
+  city: string;
+  area: string;
+  town: string;
+  address: string;
+  delivery_date: string;
+};

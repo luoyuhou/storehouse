@@ -101,3 +101,26 @@ export const patch = async <T>(arg: {
       });
   });
 };
+
+export const deleteRequest = async <T>(arg: {
+  url: string;
+  config?: AxiosRequestConfig;
+}): Promise<T> => {
+  const { url, config } = arg;
+  return new Promise((resolve, reject) => {
+    axios
+      .delete(url, formatRequestConfig(config))
+      .then((response) => {
+        if (response.status > 300) {
+          return reject(response.data);
+        }
+        return resolve(response.data);
+      })
+      .catch((e) => {
+        if (e.response.status === 401) {
+          window.location.href = "/auth/sign-in";
+        }
+        reject(e.response?.data || e);
+      });
+  });
+};

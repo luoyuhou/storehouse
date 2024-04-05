@@ -36,7 +36,7 @@ function Row(props: { row: GoodsType & { versions?: number } }) {
     }
     setLoading(true);
     get<{ data: GoodsVersionType[] }>(`/api/store/goods/version/${row.goods_id}`)
-      .then(({ data }) => setVersionInfos(data))
+      .then(({ data }) => setVersionInfos(data.map((d) => ({ ...d, price: d.price / 100 }))))
       .catch((err) => toast.error(err.message))
       .finally(() => setLoading(false));
   }, [open]);
@@ -74,7 +74,7 @@ function Row(props: { row: GoodsType & { versions?: number } }) {
           <Collapse in={open} timeout="auto" unmountOnExit>
             <Box margin={1}>
               <Typography variant="h6" gutterBottom component="div">
-                商铺版本
+                商品版本
               </Typography>
               <Table size="medium" aria-label="purchases">
                 <TableHead>
@@ -96,7 +96,7 @@ function Row(props: { row: GoodsType & { versions?: number } }) {
                         <TableCell component="th" scope="row">
                           {v.unit_name}
                         </TableCell>
-                        <TableCell>{(v.price / 100).toFixed(2)}</TableCell>
+                        <TableCell>{v.price.toFixed(2)}</TableCell>
                         <TableCell align="right">{v.count}</TableCell>
                         <TableCell align="right">{v.status}</TableCell>
                         <TableCell align="right">

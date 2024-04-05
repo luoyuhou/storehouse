@@ -73,7 +73,11 @@ function CreateGoods() {
     onSubmit: async ({ submit, ...values }, helpers) => {
       setSubmitting(true);
       try {
-        await post({ url: "/api/store/goods", payload: values, config: {} });
+        await post({
+          url: "/api/store/goods",
+          payload: { ...values, price: (values.price as unknown as number) * 100 },
+          config: {},
+        });
         toast.success(`创建 ${values.name} 商品成功`);
         // router.push("/auth/sign-in");
       } catch (err) {

@@ -35,7 +35,14 @@ export function GoodsVersionsEditing({ id: goodsId }: { id: string }) {
 
   const handleSaveClick = async (payload: GoodsVersionType) => {
     setSubmitting(true);
-    return post({ url: `/api/store/goods/version/${goodsId}`, payload })
+    const formattedPayload = {
+      ...payload,
+      count: Number(payload.count),
+      price: payload.price * 100,
+      bar_code: payload.bar_code ?? undefined,
+      supplier: payload.supplier ?? undefined,
+    };
+    return post({ url: `/api/store/goods/version/${goodsId}`, payload: formattedPayload })
       .then(() => {
         toast.success(`更新版本信息成功`);
         return true;
@@ -120,11 +127,11 @@ export function GoodsVersionsEditing({ id: goodsId }: { id: string }) {
   return (
     <Box sx={{ flexGrow: 1 }} mt={2}>
       <Typography variant="h6" gutterBottom>
-        商品归属
+        商品版本
       </Typography>
       <EditableTable
         pagination={pagination}
-        initialEmptyData={InitialGoodsVersion()}
+        initialEmptyData={InitialGoodsVersion({ goods_id: goodsId })}
         columns={columns}
         loading={loading}
         submitting={submitting}

@@ -14,7 +14,7 @@ import {
 } from "@mui/x-data-grid";
 import { Box, Button } from "@mui/material";
 import { Add, Cancel, Delete, Edit, Save } from "@mui/icons-material";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import { PaginationResponseType } from "src/types/common";
 
 interface EditToolbarProps {
@@ -50,13 +50,23 @@ type EditableTableProps = {
   columns: GridColDef[];
   loading: boolean;
   submitting: boolean;
+  deletable?: boolean;
   onChange: (payload: Record<string, any>) => Promise<boolean>;
   onDelete: (id: GridRowId) => void;
 };
 
 type RowType = Record<string, any> & { id: number; isNew?: boolean };
 export function EditableTable(props: EditableTableProps) {
-  const { pagination, initialEmptyData, columns, loading, submitting, onChange, onDelete } = props;
+  const {
+    pagination,
+    initialEmptyData,
+    columns,
+    loading,
+    submitting,
+    deletable,
+    onChange,
+    onDelete,
+  } = props;
   const [rows, setRows] = React.useState<RowType[]>([]);
   const [rowModesModel, setRowModesModel] = React.useState<GridRowModesModel>({});
 
@@ -156,7 +166,7 @@ export function EditableTable(props: EditableTableProps) {
         ];
       }
 
-      return [
+      const actions = [
         <GridActionsCellItem
           key={`edit-cell-${id}`}
           icon={<Edit />}
@@ -166,15 +176,22 @@ export function EditableTable(props: EditableTableProps) {
           onClick={handleEditClick(id)}
           color="inherit"
         />,
-        <GridActionsCellItem
-          key={`delete-cell-${id}`}
-          icon={<Delete />}
-          label="Delete"
-          disabled={submitting}
-          onClick={handleDeleteClick(id)}
-          color="inherit"
-        />,
       ];
+
+      if (deletable) {
+        actions.push(
+          <GridActionsCellItem
+            key={`delete-cell-${id}`}
+            icon={<Delete />}
+            label="Delete"
+            disabled={submitting}
+            onClick={handleDeleteClick(id)}
+            color="inherit"
+          />,
+        );
+      }
+
+      return actions;
     },
   };
 

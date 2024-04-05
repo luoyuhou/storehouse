@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { GoodsType } from "src/types/goods.type";
-import { get, post } from "src/lib/http";
+import { get, patch, post } from "src/lib/http";
 import { toast } from "react-toastify";
 import {
   Box,
@@ -18,13 +18,21 @@ import * as Yup from "yup";
 import { Cancel, Edit, Save } from "@mui/icons-material";
 import { CategoryType } from "src/types/category.type";
 import utils from "src/lib/utils";
+import { boolean } from "yup";
+import { tree } from "next/dist/build/templates/app-page";
 
 const GOODS_STATUS_MAP = [
   { label: "活跃", value: 1 },
   { label: "停用", value: 0 },
 ];
 
-export function GoodsDetailEditing({ id }: { id: string }) {
+export function GoodsDetailEditing({
+  id,
+  setIsGoods,
+}: {
+  id: string;
+  setIsGoods: React.Dispatch<React.SetStateAction<boolean>>;
+}) {
   const [stores, setStores] = React.useState<{ label: string; value: string }[]>([]);
   const [categories, setCategories] = React.useState<{ label: string; value: string }[]>([]);
   const [loading, setLoading] = React.useState<boolean>(false);
@@ -45,23 +53,24 @@ export function GoodsDetailEditing({ id }: { id: string }) {
       category_id: Yup.string().min(16).max(64).required("分类* 必填"),
       name: Yup.string().max(16).required("商品名* 必填"),
       status: Yup.string().max(16).required("状态* 必填"),
-      description: Yup.string().min(4).max(18).required("商品描述* 必填"),
+      description: Yup.string().min(4).max(256).required("商品描述* 必填"),
       supplier: Yup.string().max(255),
     }),
     onSubmit: async ({ submit, ...values }, helpers) => {
       setSubmitting(true);
-      try {
-        console.log("values", values);
-        // await post({ url: "/api/store/goods", payload: values, config: {} });
-        toast.success(`更新 ${values.name} 商品成功`);
-        setEditing(false);
-        // router.push("/auth/sign-in");
-      } catch (err) {
-        helpers.setStatus({ success: false });
-        helpers.setErrors({ submit: (err as { message: string }).message });
-        helpers.setSubmitting(false);
-      }
-      setSubmitting(false);
+
+      patch({ url: `/api/store/goods/${id}`, payload: values })
+        .then(() => {
+          toast.success(`更新 ${values.name} 商品成功`);
+          setEditing(false);
+        })
+        .catch((err) => {
+          helpers.setStatus({ success: false });
+          helpers.setErrors({ submit: (err as { message: string }).message });
+          helpers.setSubmitting(false);
+        })
+        .finally(() => setSubmitting(false));
+      // await post({ url: "/api/store/goods", payload: values, config: {} });
     },
   });
 
@@ -81,8 +90,12 @@ export function GoodsDetailEditing({ id }: { id: string }) {
         formik.setFieldValue("name", data.name);
         formik.setFieldValue("status", data.status);
         formik.setFieldValue("description", data.description);
+        setIsGoods(true);
       })
-      .catch((err) => toast.error(err.message))
+      .catch((err) => {
+        toast.error(err.message);
+        setIsGoods(false);
+      })
       .finally(() => setLoading(false));
   }, [id]);
 
