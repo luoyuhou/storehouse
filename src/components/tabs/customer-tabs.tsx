@@ -18,7 +18,7 @@ function TabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;
 
   return (
-    <div
+    <Box
       role="tabpanel"
       hidden={value !== index}
       id={`scrollable-auto-tabpanel-${index}`}
@@ -30,7 +30,7 @@ function TabPanel(props: TabPanelProps) {
           <Typography>{children}</Typography>
         </Box>
       )}
-    </div>
+    </Box>
   );
 }
 
@@ -54,7 +54,7 @@ function getDefaultIndex(tabs: TabItem[]): number {
   return tabs[0].key;
 }
 
-export function CustomerTabs({ tabs }: CustomerTabsProps) {
+export default function CustomerTabs({ tabs }: CustomerTabsProps) {
   const [index, setIndex] = React.useState(getDefaultIndex(tabs));
 
   return (

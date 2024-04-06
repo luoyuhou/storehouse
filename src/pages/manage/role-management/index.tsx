@@ -2,7 +2,7 @@ import React from "react";
 import Head from "next/head";
 import { Box, Container, Stack } from "@mui/material";
 import { Layout as DashboardLayout } from "src/layouts/dashboard/layout";
-import { CustomerTabs } from "src/components/tabs/customer-tabs";
+import CustomerTabs from "src/components/tabs/customer-tabs";
 import { AuthForRoleManagement } from "src/sections/role-management/auth-for-role-management";
 import { AuthRoleForRoleManagement } from "src/sections/role-management/authRole-for-role-management";
 import { RoleForRoleManagement } from "src/sections/role-management/role-for-role-management";

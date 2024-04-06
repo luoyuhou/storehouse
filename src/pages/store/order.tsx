@@ -2,7 +2,7 @@ import { Layout as DashboardLayout } from "src/layouts/dashboard/layout";
 import React from "react";
 import Head from "next/head";
 import { Box, Container, Stack, Typography } from "@mui/material";
-import { CustomerTabs } from "src/components/tabs/customer-tabs";
+import CustomerTabs from "src/components/tabs/customer-tabs";
 import StoreOrderPendingTable from "src/sections/store/order/order-pending.table";
 import StoreOrderProgressTable from "src/sections/store/order/progress-pending.table";
 import StoreOrderFinishedTable from "src/sections/store/order/order-finished.table";

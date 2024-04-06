@@ -1,3 +1,5 @@
+import { FileInputType } from "src/constant/tools.const";
+
 class Utils {
   static getRandom(min: number, max: number) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -35,6 +37,34 @@ class Utils {
 
     return result;
   }
+
+  static onInputTransToJson = (input: string, inputType: FileInputType) => {
+    const rows: string[] = input.split("\n");
+
+    let separator: string | RegExp = "";
+    switch (inputType) {
+      case FileInputType.csv:
+        separator = ",";
+        break;
+      case FileInputType.table:
+        separator = "  ";
+        break;
+      default:
+        break;
+    }
+    if (!separator) {
+      return [];
+    }
+
+    const keys = rows[0].split(separator);
+
+    return rows.slice(1).map((row) => {
+      const entry = row.trim().split(separator);
+      return keys.reduce((t, r, i) => {
+        return { ...t, [r]: entry[i] };
+      }, {});
+    });
+  };
 }
 
 export default Utils;

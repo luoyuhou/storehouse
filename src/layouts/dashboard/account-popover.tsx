@@ -4,6 +4,7 @@ import PropTypes from "prop-types";
 import { Box, Divider, MenuItem, MenuList, Popover, Typography } from "@mui/material";
 import { PopoverProps } from "@mui/material/Popover/Popover";
 import { useAuth } from "src/hooks/use-auth";
+import { UserSessionType } from "src/types/users";
 
 export function AccountPopover(props: PopoverProps & { onClose?: () => void }) {
   const { anchorEl, onClose, open } = props;
@@ -15,6 +16,8 @@ export function AccountPopover(props: PopoverProps & { onClose?: () => void }) {
     auth.signOut();
     router.push("/auth/sign-in");
   }, [onClose, auth, router]);
+
+  const { user } = auth;
 
   return (
     <Popover
@@ -33,10 +36,15 @@ export function AccountPopover(props: PopoverProps & { onClose?: () => void }) {
           px: 2,
         }}
       >
-        <Typography variant="overline">Account</Typography>
-        <Typography color="text.secondary" variant="body2">
-          Anika Visser
+        <Typography variant="overline">
+          <a href="/account">Account</a>
         </Typography>
+        <Divider />
+        <Typography sx={{ py: 1 }} color="secondary" variant="body2">
+          {(user as unknown as UserSessionType)?.name}
+        </Typography>
+        <Divider />
+        <Typography sx={{ py: 1 }}>{(user as unknown as UserSessionType)?.phone}</Typography>
       </Box>
       <Divider />
       <MenuList

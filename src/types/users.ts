@@ -6,3 +6,11 @@ export type UserEntity = {
   phone: string;
   email: string | null;
 };
+
+export type UserSessionType = {
+  id: string;
+  avatar: string;
+  name: string;
+  phone: string;
+  email: string | null;
+};
