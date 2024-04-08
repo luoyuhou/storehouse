@@ -73,7 +73,8 @@ const formatUser = (user: UserEntity) => {
   return {
     id: user.user_id,
     avatar: user.avatar ?? "/assets/avatars/avatar-anika-visser.png",
-    name: `${user.last_name} ${user.first_name}`,
+    first_name: user.first_name,
+    last_name: user.last_name,
     phone: user.phone,
     email: user.email,
   };

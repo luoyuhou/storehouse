@@ -10,6 +10,8 @@ import {
   TextField,
   Unstable_Grid2 as Grid,
 } from "@mui/material";
+import { useAuth } from "src/hooks/use-auth";
+import { UserSessionType } from "src/types/users";
 
 const states = [
   {
@@ -31,11 +33,12 @@ const states = [
 ];
 
 export function AccountProfileDetails() {
+  const { user } = useAuth();
   const [values, setValues] = useState({
-    firstName: "Anika",
-    lastName: "Visser",
-    email: "demo@devias.io",
-    phone: "",
+    firstName: (user as unknown as UserSessionType).first_name,
+    lastName: (user as unknown as UserSessionType).last_name,
+    email: (user as unknown as UserSessionType).email,
+    phone: (user as unknown as UserSessionType).phone,
     state: "los-angeles",
     country: "USA",
   });

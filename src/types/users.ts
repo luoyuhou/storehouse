@@ -11,6 +11,8 @@ export type UserSessionType = {
   id: string;
   avatar: string;
   name: string;
+  last_name: string;
+  first_name: string;
   phone: string;
   email: string | null;
 };

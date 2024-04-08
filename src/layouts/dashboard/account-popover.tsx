@@ -41,7 +41,7 @@ export function AccountPopover(props: PopoverProps & { onClose?: () => void }) {
         </Typography>
         <Divider />
         <Typography sx={{ py: 1 }} color="secondary" variant="body2">
-          {(user as unknown as UserSessionType)?.name}
+          {`${(user as unknown as UserSessionType)?.first_name} ${(user as unknown as UserSessionType)?.last_name}`}
         </Typography>
         <Divider />
         <Typography sx={{ py: 1 }}>{(user as unknown as UserSessionType)?.phone}</Typography>
