@@ -6,6 +6,7 @@ import {
   Box,
   Card,
   Checkbox,
+  CircularProgress,
   Stack,
   Table,
   TableBody,
@@ -17,20 +18,22 @@ import {
 } from "@mui/material";
 import { Scrollbar } from "src/components/scrollbar";
 import { getInitials } from "src/utils/get-initials";
-import { CustomerInfoType } from "src/utils/apply-pagination";
+import { UserEntity } from "src/types/users";
+import CustomersStatusComponent from "src/sections/customer/customers-status.component";
 
 export function CustomersTable(props: {
   count?: number;
-  items?: CustomerInfoType[];
+  items?: UserEntity[];
   onDeselectAll: () => void;
-  onDeselectOne: (id: string) => void;
+  onDeselectOne: (id: number) => void;
   onPageChange: (event: React.MouseEvent<HTMLButtonElement> | null, page: number) => void;
   onRowsPerPageChange: (event: { target: { value: React.SetStateAction<number> } }) => void;
   onSelectAll: () => void;
-  onSelectOne: (id: string) => void;
+  onSelectOne: (id: number) => void;
   page: number;
   rowsPerPage: number;
-  selected: string[];
+  selected: number[];
+  loading: boolean;
 }) {
   const {
     count = 0,
@@ -44,13 +47,14 @@ export function CustomersTable(props: {
     page = 0,
     rowsPerPage = 0,
     selected = [],
+    loading,
   } = props;
 
   const selectedSome = selected.length > 0 && selected.length < items.length;
   const selectedAll = items.length > 0 && selected.length === items.length;
 
   return (
-    <Card>
+    <Card className="relative">
       <Scrollbar>
         <Box sx={{ minWidth: 800 }}>
           <Table>
@@ -70,16 +74,19 @@ export function CustomersTable(props: {
                   />
                 </TableCell>
                 <TableCell>Name</TableCell>
+                <TableCell>User Id</TableCell>
                 <TableCell>Email</TableCell>
-                <TableCell>Location</TableCell>
                 <TableCell>Phone</TableCell>
-                <TableCell>Signed Up</TableCell>
+                <TableCell>Status</TableCell>
+                <TableCell>Create Date</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {items.map((customer) => {
                 const isSelected = selected.includes(customer.id);
-                const createdAt = format(customer.createdAt, "dd/MM/yyyy");
+                const createdAt = customer.create_date
+                  ? format(new Date(customer.create_date), "dd/MM/yyyy")
+                  : "N/A";
 
                 return (
                   <TableRow hover key={customer.id} selected={isSelected}>
@@ -97,15 +104,18 @@ export function CustomersTable(props: {
                     </TableCell>
                     <TableCell>
                       <Stack alignItems="center" direction="row" spacing={2}>
-                        <Avatar src={customer.avatar || ""}>{getInitials(customer.name)}</Avatar>
-                        <Typography variant="subtitle2">{customer.name}</Typography>
+                        <Avatar src={customer.avatar || ""}>
+                          {getInitials(customer.first_name)}
+                        </Avatar>
+                        <Typography variant="subtitle2">{`${customer.last_name} ${customer.first_name}`}</Typography>
                       </Stack>
                     </TableCell>
-                    <TableCell>{customer.email}</TableCell>
-                    <TableCell>
-                      {customer.address.city}, {customer.address.state}, {customer.address.country}
-                    </TableCell>
+                    <TableCell>{customer.user_id}</TableCell>
+                    <TableCell>{customer.email ?? "N/A"}</TableCell>
                     <TableCell>{customer.phone}</TableCell>
+                    <TableCell>
+                      <CustomersStatusComponent status={customer.status} />
+                    </TableCell>
                     <TableCell>{createdAt}</TableCell>
                   </TableRow>
                 );
@@ -123,6 +133,13 @@ export function CustomersTable(props: {
         rowsPerPage={rowsPerPage}
         rowsPerPageOptions={[5, 10, 25]}
       />
+      {loading ? (
+        <Box className="absolute top-0 left-0 bg-gray-200 opacity-80 w-full h-full">
+          <Box className="flex justify-center items-center h-full">
+            <CircularProgress />
+          </Box>
+        </Box>
+      ) : null}
     </Card>
   );
 }

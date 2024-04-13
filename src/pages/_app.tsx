@@ -1,3 +1,5 @@
+import "src/styles/globals.css";
+import "src/styles/common.css";
 import React from "react";
 import Head from "next/head";
 import { CacheProvider, EmotionCache } from "@emotion/react";
