@@ -1,7 +1,7 @@
 import React from "react";
 import { Typography, Box, Grid, Button } from "@mui/material";
+import { post } from "src/lib/http";
 
-require("colors");
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const Diff = require("diff");
 
@@ -9,6 +9,14 @@ type DiffDataType = {
   added: boolean;
   removed: boolean;
   value: string;
+};
+
+const getColor = (added: boolean, removed: boolean) => {
+  if (added) {
+    return "bg-green-400";
+  }
+
+  return removed ? "bg-red-400" : "bg-grey-400";
 };
 
 const compare = ({ target, result }: { target: string; result: string }) => {
@@ -20,15 +28,13 @@ function RenderDiff({ output }: { output: DiffDataType[] }) {
     return null;
   }
 
-  console.log("output", output);
-
   const rows: { value: string; color: string }[][] = [];
   let index = 0;
   let isMinus = false;
 
   output.forEach(({ added, removed, value }: DiffDataType) => {
     // eslint-disable-next-line no-nested-ternary
-    const color = added ? "green" : removed ? "red" : "grey";
+    const color = getColor(added, removed);
     // debugger;
     const idx = value.indexOf("\n");
     if (!rows[index]) {
@@ -79,13 +85,16 @@ function RenderDiff({ output }: { output: DiffDataType[] }) {
         const key1 = `div-${idx}`;
         return (
           <div key={key1} className="flex">
-            <span style={{ backgroundColor: "gray", padding: "0 2px", color: "white" }}>
+            <span
+              className="text-right"
+              style={{ backgroundColor: "gray", padding: "0 3px", color: "white", width: "50px" }}
+            >
               {idx + 1}
             </span>
             {row.map(({ value, color }, i) => {
               const key2 = `span-${idx}-${i}`;
               return (
-                <span key={key2} style={{ color }}>
+                <span key={key2} className={color}>
                   {value}
                 </span>
               );
@@ -148,7 +157,10 @@ export default function FileComparePanel() {
               variant="outlined"
               color="primary"
               size="small"
-              onClick={() => setDiffData(compare({ target: file1, result: file2 }))}
+              onClick={() => {
+                post({ url: "/api/general/tools/file-compare", payload: {} }).catch();
+                setDiffData(compare({ target: file1, result: file2 }));
+              }}
               sx={{ marginLeft: "2rem" }}
             >
               Run

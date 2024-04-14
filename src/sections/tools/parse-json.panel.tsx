@@ -4,6 +4,7 @@ import Grid from "@mui/material/Grid";
 import { ChevronDoubleLeftIcon } from "@heroicons/react/20/solid";
 import { toast } from "react-toastify";
 import { ParseJsonComponent } from "src/sections/tools/parse-json.component";
+import { post } from "src/lib/http";
 
 export default function ParseJsonPanel() {
   const [deserialization, setDeserialization] = React.useState("");
@@ -13,6 +14,7 @@ export default function ParseJsonPanel() {
     if (!deserialization.trim()) {
       return;
     }
+    post({ url: "/api/general/tools/serialization", payload: {} }).catch();
     try {
       const obj = JSON.parse(deserialization);
       setCode(JSON.stringify(obj));

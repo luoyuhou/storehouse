@@ -5,6 +5,7 @@ import { ParseJsonComponent } from "src/sections/tools/parse-json.component";
 import { DataGrid, GridToolbar, GridColDef } from "@mui/x-data-grid";
 import { toast } from "react-toastify";
 import { GOODS_UNIT_NAMES } from "src/constant/goods.const";
+import { post } from "src/lib/http";
 
 const getKeys = (keys: string[], data: Record<string, never>) => {
   const copyKeys = [...keys];
@@ -43,6 +44,8 @@ export default function JsonToCsvPanel() {
       toast.warn("内容不能为空");
       return;
     }
+
+    post({ url: "/api/general/tools/generate-table", payload: {} }).catch();
 
     try {
       if (Array.isArray(value)) {

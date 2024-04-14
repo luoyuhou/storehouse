@@ -4,6 +4,7 @@ import Grid from "@mui/material/Grid";
 import { ChevronDoubleRightIcon } from "@heroicons/react/20/solid";
 import dynamic from "next/dynamic";
 import { toast } from "react-toastify";
+import { post } from "src/lib/http";
 
 // eslint-disable-next-line import/no-extraneous-dependencies
 const DynamicReactJson = dynamic(import("react-json-view"), { ssr: false });
@@ -19,6 +20,7 @@ export function ParseJsonComponent({
     if (!serialise.trim()) {
       return;
     }
+    post({ url: "/api/general/tools/deserialization", payload: {} }).catch();
     try {
       const obj = JSON.parse(serialise);
       setJson(obj);

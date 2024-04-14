@@ -5,6 +5,7 @@ import { ChevronDoubleRightIcon } from "@heroicons/react/20/solid";
 import dynamic from "next/dynamic";
 import Utils from "src/lib/utils";
 import { FileInputType } from "src/constant/tools.const";
+import { post } from "src/lib/http";
 
 // eslint-disable-next-line import/no-extraneous-dependencies
 const DynamicReactJson = dynamic(import("react-json-view"), { ssr: false });
@@ -37,7 +38,10 @@ export default function InputCsvDataToJsonComponent() {
               <Typography align="center" mt={1} mb={1}>
                 <Button
                   sx={{ border: "1px solid skyblue" }}
-                  onClick={() => setJson(Utils.onInputTransToJson(value, FileInputType.csv))}
+                  onClick={() => {
+                    post({ url: "/api/general/tools/csv-to-json", payload: {} }).catch();
+                    setJson(Utils.onInputTransToJson(value, FileInputType.csv));
+                  }}
                 >
                   <SvgIcon fontSize="small">
                     <ChevronDoubleRightIcon />
