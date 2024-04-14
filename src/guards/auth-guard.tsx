@@ -2,8 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import PropTypes from "prop-types";
 import { useAuthContext } from "src/contexts/auth-context";
-import { ResourcesFromAuthType } from "src/types/role-management.type";
-import { EAuthTypeValues } from "src/constant/role-management.const";
+import { authPermission } from "src/utils/auth";
 
 export function AuthGuard(props: { children: never }) {
   const { children } = props;
@@ -77,24 +76,7 @@ export function AuthGuard(props: { children: never }) {
       return;
     }
 
-    const pathVerified = ((authPaths ?? []) as ResourcesFromAuthType[]).some(({ path, side }) => {
-      if (![EAuthTypeValues.ALL, EAuthTypeValues.UI].includes(side)) {
-        return false;
-      }
-
-      if (path === pathname) {
-        return true;
-      }
-
-      if (!path.includes("*")) {
-        return false;
-      }
-
-      const arrByPath = path.split("*");
-      const arrByPathname = pathname.split("/");
-
-      return arrByPath[0] === `/${arrByPathname?.[1]}`;
-    });
+    const pathVerified = authPermission(authPaths, pathname);
     if (!pathVerified) {
       router.replace(`/403?prePath=${pathname}`);
     }

@@ -18,13 +18,16 @@ import { Logo } from "src/components/logo";
 import { Scrollbar } from "src/components/scrollbar";
 import { Theme } from "@mui/material/styles/createTheme";
 import { privateItems } from "src/layouts/dashboard/private-config";
-import { items } from "./public-config";
+import { useAuthContext } from "src/contexts/auth-context";
+import { authPermission } from "src/utils/auth";
 import { SideNavItem } from "./side-nav-item";
+import { items } from "./public-config";
 
 export function SideNav(props: { open: boolean; onClose: () => void }) {
   const { open, onClose } = props;
   const pathname = usePathname();
   const lgUp = useMediaQuery<Theme>((theme) => theme.breakpoints.up("lg"));
+  const { authPaths } = useAuthContext();
 
   const content = (
     <Scrollbar
@@ -157,6 +160,12 @@ export function SideNav(props: { open: boolean; onClose: () => void }) {
               }}
             >
               {privateItems.map((item) => {
+                const pathVerified = authPermission(authPaths, item.path);
+
+                if (!pathVerified) {
+                  return null;
+                }
+
                 return (
                   <SideNavItem
                     pathname={pathname}
