@@ -20,3 +20,13 @@ export type UserSessionType = {
   phone: string;
   email: string | null;
 };
+
+export type UserLoginHistory = {
+  id: number;
+  user_id: string;
+  ip: string;
+  useragent: string;
+  source: number;
+  create_date: string;
+  update_date: string;
+};

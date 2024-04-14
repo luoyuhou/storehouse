@@ -1,8 +1,7 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import ComputerDesktopIcon from "@heroicons/react/24/solid/ComputerDesktopIcon";
 import DeviceTabletIcon from "@heroicons/react/24/solid/DeviceTabletIcon";
-import PhoneIcon from "@heroicons/react/24/solid/PhoneIcon";
 import {
   Box,
   Card,
@@ -14,6 +13,8 @@ import {
   useTheme,
 } from "@mui/material";
 import { Chart } from "src/components/chart";
+import { get } from "src/lib/http";
+import { CommandLineIcon } from "@heroicons/react/24/outline";
 
 const useChartOptions = (labels: string[]) => {
   const theme = useTheme();
@@ -59,7 +60,7 @@ const useChartOptions = (labels: string[]) => {
   };
 };
 
-type OverviewTrafficLabelType = "Desktop" | "Tablet" | "Phone";
+type OverviewTrafficLabelType = "Desktop" | "Other" | "Wechat";
 
 const iconMap = {
   Desktop: (
@@ -67,25 +68,36 @@ const iconMap = {
       <ComputerDesktopIcon />
     </SvgIcon>
   ),
-  Tablet: (
+  Other: (
+    <SvgIcon>
+      <CommandLineIcon />
+    </SvgIcon>
+  ),
+  Wechat: (
     <SvgIcon>
       <DeviceTabletIcon />
     </SvgIcon>
   ),
-  Phone: (
-    <SvgIcon>
-      <PhoneIcon />
-    </SvgIcon>
-  ),
 };
 
-export function OverviewTraffic(props: {
-  chartSeries: number[];
-  labels: OverviewTrafficLabelType[];
-  sx: { height: string };
-}) {
-  const { chartSeries, labels, sx } = props;
+export function OverviewTraffic(props: { sx: { height: string } }) {
+  const [chartSeries, setChartSeries] = useState([0, 0]);
+  const labels: OverviewTrafficLabelType[] = ["Desktop", "Wechat", "Other"];
+  const { sx } = props;
   const chartOptions = useChartOptions(labels);
+
+  useEffect(() => {
+    console.log("chartSeries", chartSeries);
+  }, [chartSeries]);
+
+  useEffect(() => {
+    get<{ data: { source: number; _count: number }[] }>("/api/users/users-fetch/realtime").then(
+      ({ data }) => {
+        const list = data.sort((a, b) => a.source - b.source).map(({ _count }) => _count);
+        setChartSeries([...list, 0]);
+      },
+    );
+  }, []);
 
   return (
     <Card sx={sx}>
@@ -116,7 +128,7 @@ export function OverviewTraffic(props: {
                   {label}
                 </Typography>
                 <Typography color="text.secondary" variant="subtitle2">
-                  {item}%
+                  {((item * 100) / chartSeries.reduce((s, t) => s + t, 0)).toFixed(2)}%
                 </Typography>
               </Box>
             );
@@ -128,7 +140,5 @@ export function OverviewTraffic(props: {
 }
 
 OverviewTraffic.propTypes = {
-  chartSeries: PropTypes.array.isRequired,
-  labels: PropTypes.array.isRequired,
   sx: PropTypes.object,
 };

@@ -1,5 +1,15 @@
 export const AUTH_PID_OPTIONS = [{ label: "None", value: "0" }];
 
+export enum ELoginSourceTypes {
+  password = 1,
+  wechat = 2,
+}
+
+export const LOGIN_SOURCE_TYPE_OPTIONS = [
+  { label: "密码", value: ELoginSourceTypes.password },
+  { label: "微信", value: ELoginSourceTypes.wechat },
+];
+
 export enum EAuthTypeValues {
   "ALL" = 0,
   "API" = 1,
