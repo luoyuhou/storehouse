@@ -17,6 +17,7 @@ import { useAuthContext } from "src/contexts/auth-context";
 import { post } from "src/lib/http";
 import { UserSessionType } from "src/types/users";
 import { format, subDays } from "date-fns";
+import CustomerTabs from "src/components/tabs/customer-tabs";
 
 const useChartOptions = (categories: string[]) => {
   const theme = useTheme();
@@ -161,18 +162,41 @@ export function OverviewSales(props: { sx: { height: string } }) {
         title="最近 10 天使用统计"
       />
       <CardContent>
-        <Chart
-          height={350}
-          options={chartOptions}
-          series={[
-            { name: "请求次数", data: data.map(({ times }) => times) },
+        <CustomerTabs
+          tabs={[
             {
-              name: "使用时长",
-              data: data.map(({ use_time }) => use_time),
+              key: 0,
+              label: "请求次数",
+              isDefault: true,
+              children: (
+                <Chart
+                  height={350}
+                  options={chartOptions}
+                  series={[{ name: "请求次数", data: data.map(({ times }) => times) }]}
+                  type="bar"
+                  width="100%"
+                />
+              ),
+            },
+            {
+              key: 1,
+              label: "使用时长",
+              children: (
+                <Chart
+                  height={350}
+                  options={chartOptions}
+                  series={[
+                    {
+                      name: "使用时长",
+                      data: data.map(({ use_time }) => use_time),
+                    },
+                  ]}
+                  type="bar"
+                  width="100%"
+                />
+              ),
             },
           ]}
-          type="bar"
-          width="100%"
         />
       </CardContent>
       <Divider />
