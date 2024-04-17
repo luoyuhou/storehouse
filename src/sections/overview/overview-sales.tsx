@@ -134,7 +134,11 @@ export function OverviewSales(props: { sx: { height: string } }) {
               return format(new Date(item.record_date), "yyyy-MM-dd") === d;
             });
 
-            return { date: d.slice(5), times: find?.times ?? 0, use_time: find?.use_time ?? 0 };
+            return {
+              date: d.slice(5),
+              times: find?.times ?? 0,
+              use_time: Math.round((find?.use_time ?? 0) / 60),
+            };
           }),
         );
       })
@@ -180,7 +184,7 @@ export function OverviewSales(props: { sx: { height: string } }) {
             },
             {
               key: 1,
-              label: "使用时长",
+              label: "使用时长 / 分",
               children: (
                 <Chart
                   height={350}

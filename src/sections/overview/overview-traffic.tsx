@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import ComputerDesktopIcon from "@heroicons/react/24/solid/ComputerDesktopIcon";
-import DeviceTabletIcon from "@heroicons/react/24/solid/DeviceTabletIcon";
 import {
   Box,
   Card,
@@ -14,7 +13,7 @@ import {
 } from "@mui/material";
 import { Chart } from "src/components/chart";
 import { get } from "src/lib/http";
-import { CommandLineIcon } from "@heroicons/react/24/outline";
+import { ChatBubbleLeftRightIcon, DeviceTabletIcon } from "@heroicons/react/24/outline";
 
 const useChartOptions = (labels: string[]) => {
   const theme = useTheme();
@@ -60,7 +59,7 @@ const useChartOptions = (labels: string[]) => {
   };
 };
 
-type OverviewTrafficLabelType = "Desktop" | "Other" | "Wechat";
+type OverviewTrafficLabelType = "Desktop" | "Mobile" | "Wechat";
 
 const iconMap = {
   Desktop: (
@@ -68,33 +67,42 @@ const iconMap = {
       <ComputerDesktopIcon />
     </SvgIcon>
   ),
-  Other: (
+  Mobile: (
     <SvgIcon>
-      <CommandLineIcon />
+      <DeviceTabletIcon />
     </SvgIcon>
   ),
   Wechat: (
     <SvgIcon>
-      <DeviceTabletIcon />
+      <ChatBubbleLeftRightIcon />
     </SvgIcon>
   ),
 };
 
 export function OverviewTraffic(props: { sx: { height: string } }) {
-  const [chartSeries, setChartSeries] = useState([0, 0]);
-  const labels: OverviewTrafficLabelType[] = ["Desktop", "Wechat", "Other"];
+  const theme = useTheme();
+  const [chartSeries, setChartSeries] = useState([0, 0, 0]);
+  const labels: { color: string; label: OverviewTrafficLabelType }[] = [
+    { color: theme.palette.primary.main, label: "Mobile" },
+    { color: theme.palette.success.main, label: "Desktop" },
+    { color: theme.palette.warning.main, label: "Wechat" },
+  ];
   const { sx } = props;
-  const chartOptions = useChartOptions(labels);
-
-  useEffect(() => {
-    console.log("chartSeries", chartSeries);
-  }, [chartSeries]);
+  const chartOptions = useChartOptions(labels.map(({ label }) => label));
 
   useEffect(() => {
     get<{ data: { source: number; _count: number }[] }>("/api/users/users-fetch/realtime").then(
       ({ data }) => {
-        const list = data.sort((a, b) => a.source - b.source).map(({ _count }) => _count);
-        setChartSeries([...list, 0]);
+        const emptyData = [
+          { source: 0, _count: 0 },
+          { source: 1, _count: 0 },
+          { source: 2, _count: 0 },
+        ];
+        const newData = emptyData.map(({ source }) => {
+          const find = data.find((item) => item.source === source);
+          return find ?? { _count: 0, source };
+        });
+        setChartSeries(newData.map(({ _count }) => _count));
       },
     );
   }, []);
@@ -102,7 +110,7 @@ export function OverviewTraffic(props: { sx: { height: string } }) {
   return (
     <Card sx={sx}>
       <CardHeader title="Traffic Source" />
-      <CardContent>
+      <CardContent className="mt-[82px]">
         <Chart height={300} options={chartOptions} series={chartSeries} type="donut" width="100%" />
         <Stack
           alignItems="center"
@@ -112,7 +120,7 @@ export function OverviewTraffic(props: { sx: { height: string } }) {
           sx={{ mt: 2 }}
         >
           {chartSeries.map((item, index) => {
-            const label = labels[index];
+            const { label, color } = labels[index];
 
             return (
               <Box
@@ -121,14 +129,15 @@ export function OverviewTraffic(props: { sx: { height: string } }) {
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
+                  color,
                 }}
               >
                 {iconMap[label]}
-                <Typography sx={{ my: 1 }} variant="h6">
+                <Typography sx={{ my: 1, color }} variant="h6">
                   {label}
                 </Typography>
                 <Typography color="text.secondary" variant="subtitle2">
-                  {((item * 100) / chartSeries.reduce((s, t) => s + t, 0)).toFixed(2)}%
+                  {((item * 100) / (chartSeries.reduce((s, t) => s + t, 0) || 100)).toFixed(2)}%
                 </Typography>
               </Box>
             );
