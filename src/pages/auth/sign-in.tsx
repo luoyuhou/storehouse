@@ -1,6 +1,7 @@
 import React, { useCallback, useState } from "react";
 import Head from "next/head";
 import NextLink from "next/link";
+import { useRouter as useNextRouter } from "next/router";
 import { useRouter } from "next/navigation";
 import { FormikErrors, FormikHelpers, FormikProps, useFormik } from "formik";
 import * as Yup from "yup";
@@ -13,6 +14,7 @@ import LoggedIn from "src/hooks/logged-in";
 
 function Page() {
   const router = useRouter();
+  const nextRouter = useNextRouter();
   LoggedIn(router);
   const auth = useAuth();
   const [method, setMethod] = useState("phone");
@@ -46,7 +48,10 @@ function Page() {
         .signIn(values.phone, values.password)
         .then(() => {
           toast.success("登陆成功");
-          router.push("/");
+          const asPath = decodeURIComponent(nextRouter.asPath);
+          const arr = asPath.split("continueUrl=");
+          const url = arr?.[1] || "/";
+          router.push(url);
         })
         .catch((err) => {
           helpers.setStatus({ success: false });

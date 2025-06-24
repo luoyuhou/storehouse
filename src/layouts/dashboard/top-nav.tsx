@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo, useState } from "react";
 import PropTypes from "prop-types";
 import BellIcon from "@heroicons/react/24/solid/BellIcon";
 import UsersIcon from "@heroicons/react/24/solid/UsersIcon";
@@ -17,6 +17,11 @@ import {
 import { alpha } from "@mui/material/styles";
 import { usePopover } from "src/hooks/use-popover";
 import { Theme } from "@mui/material/styles/createTheme";
+import ChatDashboard from "src/sections/chat/chat.dashboard";
+import { ChatContentItem } from "src/sections/chat/chat.list";
+import { useAuth } from "src/hooks/use-auth";
+import { UserSessionType } from "src/types/users";
+import io from "socket.io-client";
 import { AccountPopover } from "./account-popover";
 
 const SIDE_NAV_WIDTH = 280;
@@ -24,8 +29,33 @@ const TOP_NAV_HEIGHT = 64;
 
 export function TopNav(props: { onNavOpen: () => void }) {
   const { onNavOpen } = props;
+  const [chatModal, setChatModal] = useState<boolean>(false);
   const lgUp = useMediaQuery<Theme>((theme) => theme.breakpoints.up("lg"));
   const accountPopover = usePopover();
+
+  const auth = useAuth();
+  const { user } = auth as unknown as { user: UserSessionType };
+
+  const [chatList, setChatList] = useState<ChatContentItem[]>([]);
+
+  const socket = useMemo(() => {
+    const connect = io("http://localhost:3001/chat");
+    connect.on("connect", () => {
+      console.log("已连接到 WebSocket 服务");
+    });
+
+    return connect;
+  }, []);
+
+  socket.on("receiveMessage", (data: ChatContentItem) => {
+    if (chatList.some((i) => i.key === data.key)) {
+      return;
+    }
+
+    const isMe = data.senderId === user.id;
+
+    setChatList([{ ...data, isMe }, ...chatList]);
+  });
 
   return (
     <>
@@ -72,8 +102,8 @@ export function TopNav(props: { onNavOpen: () => void }) {
             </Tooltip>
           </Stack>
           <Stack alignItems="center" direction="row" spacing={2}>
-            <Tooltip title="Contacts">
-              <IconButton>
+            <Tooltip title="联系">
+              <IconButton onClick={() => setChatModal(true)}>
                 <SvgIcon fontSize="small">
                   <UsersIcon />
                 </SvgIcon>
@@ -105,6 +135,13 @@ export function TopNav(props: { onNavOpen: () => void }) {
         anchorEl={accountPopover.anchorRef.current}
         open={accountPopover.open}
         onClose={accountPopover.handleClose}
+      />
+      <ChatDashboard
+        open={chatModal}
+        toggle={setChatModal}
+        user={user}
+        socket={socket}
+        chatList={chatList}
       />
     </>
   );
