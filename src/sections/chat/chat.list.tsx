@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Grid, Typography } from "@mui/material";
+import { Box, Grid, ListItemButton, Typography } from "@mui/material";
 
 export type ChatContentItem = {
   key: string;
@@ -10,7 +10,13 @@ export type ChatContentItem = {
   isMe: boolean;
 };
 
-export default function ChatList({ list }: { list: ChatContentItem[] }) {
+export default function ChatList({
+  list,
+  setSingleUser,
+}: {
+  list: ChatContentItem[];
+  setSingleUser: React.Dispatch<React.SetStateAction<string>>;
+}) {
   return (
     <Box height="300px" className="border rounded-md p-4" style={{ overflow: "scroll" }}>
       {list.map((item) => {
@@ -27,11 +33,15 @@ export default function ChatList({ list }: { list: ChatContentItem[] }) {
             )}
             {!item.isMe && (
               <Box className="border-b">
-                <Grid>
-                  <Typography>{item.sender}</Typography>
-                  <Typography className="text-gray-500">{item.datetime}</Typography>
-                </Grid>
-                <Typography>{item.message}</Typography>
+                <ListItemButton onClick={() => setSingleUser(item.senderId)}>
+                  <Box>
+                    <Grid>
+                      <Typography>{item.sender}</Typography>
+                      <Typography className="text-gray-500">{item.datetime}</Typography>
+                    </Grid>
+                    <Typography>{item.message}</Typography>
+                  </Box>
+                </ListItemButton>
               </Box>
             )}
           </Box>

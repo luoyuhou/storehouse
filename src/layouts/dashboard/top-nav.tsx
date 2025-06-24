@@ -39,7 +39,7 @@ export function TopNav(props: { onNavOpen: () => void }) {
   const [chatList, setChatList] = useState<ChatContentItem[]>([]);
 
   const socket = useMemo(() => {
-    const connect = io("http://localhost:3001/chat");
+    const connect = io("http://localhost:3001/chat", { auth: { userId: user.id } });
     connect.on("connect", () => {
       console.log("已连接到 WebSocket 服务");
     });
@@ -52,9 +52,7 @@ export function TopNav(props: { onNavOpen: () => void }) {
       return;
     }
 
-    const isMe = data.senderId === user.id;
-
-    setChatList([{ ...data, isMe }, ...chatList]);
+    setChatList([data, ...chatList]);
   });
 
   return (

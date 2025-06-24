@@ -9,7 +9,7 @@ import Toolbar from "@mui/material/Toolbar";
 import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
 import CloseIcon from "@mui/icons-material/Close";
-import { Box, Unstable_Grid2 as Grid } from "@mui/material";
+import { Box, MenuItem, Select, Unstable_Grid2 as Grid } from "@mui/material";
 import { useState } from "react";
 import ChatInput from "src/sections/chat/chat.input";
 import { UserSessionType } from "src/types/users";
@@ -31,13 +31,17 @@ export default function ChatDashboard({
   toggle,
 }: Readonly<ChatDashboardProps>) {
   const [type, setType] = useState<"single" | "group">("single");
+  const [recipientId, setRecipientId] = useState<string>("");
 
   return (
     <Dialog fullWidth maxWidth="xl" open={open}>
-      <AppBar sx={{ position: "relative" }}>
-        <Toolbar>
-          <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
+      <AppBar sx={{ position: "sticky", top: "0px" }}>
+        <Toolbar className="flex justify-between content-between">
+          <Typography sx={{ ml: 2 }} variant="h6" component="div">
             联系
+          </Typography>
+          <Typography sx={{ ml: 2 }} variant="h6" component="div">
+            {recipientId}
           </Typography>
           <IconButton edge="start" color="inherit" onClick={() => toggle(false)} aria-label="close">
             <CloseIcon />
@@ -66,16 +70,26 @@ export default function ChatDashboard({
         {type === "single" && (
           <Box>
             <Grid>
-              <ChatList list={chatList} />
-              <ChatInput socket={socket} user={user} />
+              <ChatList list={chatList} setSingleUser={setRecipientId} />
+              <ChatInput
+                socket={socket}
+                user={user}
+                recipientId={recipientId}
+                setRecipientId={setRecipientId}
+              />
             </Grid>
           </Box>
         )}
         {type === "group" && (
           <Box>
             <Grid>
-              <ChatList list={chatList} />
-              <ChatInput socket={socket} user={user} />
+              <ChatList list={chatList} setSingleUser={setRecipientId} />
+              <ChatInput
+                socket={socket}
+                user={user}
+                recipientId={recipientId}
+                setRecipientId={setRecipientId}
+              />
             </Grid>
           </Box>
         )}
