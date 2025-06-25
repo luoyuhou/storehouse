@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import PropTypes from "prop-types";
 import BellIcon from "@heroicons/react/24/solid/BellIcon";
 import UsersIcon from "@heroicons/react/24/solid/UsersIcon";
@@ -21,7 +21,7 @@ import ChatDashboard from "src/sections/chat/chat.dashboard";
 import { ChatContentItem } from "src/sections/chat/chat.list";
 import { useAuth } from "src/hooks/use-auth";
 import { UserSessionType } from "src/types/users";
-import io from "socket.io-client";
+import { useSocket } from "src/contexts/socket";
 import { AccountPopover } from "./account-popover";
 
 const SIDE_NAV_WIDTH = 280;
@@ -38,29 +38,15 @@ export function TopNav(props: { onNavOpen: () => void }) {
 
   const [chatList, setChatList] = useState<ChatContentItem[]>([]);
 
-  const socket = useMemo(() => {
-    const connect = io("http://127.0.0.1:3000/socket.io/chat", {
-      auth: { userId: user.id },
-      path: "/socket.io/chat",
-    });
-    connect.on("connect", () => {
-      console.log("已连接到 WebSocket 服务");
-    });
+  const { socket } = useSocket();
 
-    return connect;
-  }, []);
-
-  socket.on("receiveMessage", (data: ChatContentItem) => {
+  socket?.on("receiveMessage", (data: ChatContentItem) => {
     if (chatList.some((i) => i.key === data.key)) {
       return;
     }
 
     setChatList([{ ...data, isRead: chatModal }, ...chatList]);
   });
-
-  useEffect(() => {
-    socket?.disconnect();
-  }, []);
 
   return (
     <>

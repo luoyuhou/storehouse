@@ -5,15 +5,19 @@ import { Box, Divider, MenuItem, MenuList, Popover, Typography } from "@mui/mate
 import { PopoverProps } from "@mui/material/Popover/Popover";
 import { useAuth } from "src/hooks/use-auth";
 import { UserSessionType } from "src/types/users";
+import { useSocket } from "src/contexts/socket";
 
 export function AccountPopover(props: PopoverProps & { onClose?: () => void }) {
   const { anchorEl, onClose, open } = props;
   const router = useRouter();
   const auth = useAuth();
 
+  const { socket } = useSocket();
+
   const handleSignOut = useCallback(() => {
     onClose?.();
     auth.signOut();
+    socket?.disconnect();
     router.push("/auth/sign-in");
   }, [onClose, auth, router]);
 
