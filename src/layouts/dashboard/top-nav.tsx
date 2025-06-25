@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import PropTypes from "prop-types";
 import BellIcon from "@heroicons/react/24/solid/BellIcon";
 import UsersIcon from "@heroicons/react/24/solid/UsersIcon";
@@ -39,7 +39,10 @@ export function TopNav(props: { onNavOpen: () => void }) {
   const [chatList, setChatList] = useState<ChatContentItem[]>([]);
 
   const socket = useMemo(() => {
-    const connect = io("http://localhost:3001/chat", { auth: { userId: user.id } });
+    const connect = io("http://127.0.0.1:3000/socket.io/chat", {
+      auth: { userId: user.id },
+      path: "/socket.io/chat",
+    });
     connect.on("connect", () => {
       console.log("已连接到 WebSocket 服务");
     });
@@ -52,8 +55,12 @@ export function TopNav(props: { onNavOpen: () => void }) {
       return;
     }
 
-    setChatList([data, ...chatList]);
+    setChatList([{ ...data, isRead: chatModal }, ...chatList]);
   });
+
+  useEffect(() => {
+    socket?.disconnect();
+  }, []);
 
   return (
     <>
@@ -101,10 +108,21 @@ export function TopNav(props: { onNavOpen: () => void }) {
           </Stack>
           <Stack alignItems="center" direction="row" spacing={2}>
             <Tooltip title="联系">
-              <IconButton onClick={() => setChatModal(true)}>
-                <SvgIcon fontSize="small">
-                  <UsersIcon />
-                </SvgIcon>
+              <IconButton
+                onClick={() => {
+                  const allReadList = chatList.map((item) => ({ ...item, isRead: true }));
+                  setChatList(allReadList);
+                  setChatModal(true);
+                }}
+              >
+                <Badge
+                  badgeContent={chatList.filter((item) => !item.isRead).length}
+                  color="success"
+                >
+                  <SvgIcon fontSize="small">
+                    <UsersIcon />
+                  </SvgIcon>
+                </Badge>
               </IconButton>
             </Tooltip>
             <Tooltip title="Notifications">
