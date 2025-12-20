@@ -20,6 +20,7 @@ import {
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { get, post } from "src/lib/http";
+import axios from "axios";
 import { toast } from "react-toastify";
 import { StoreType } from "src/types/store.type";
 import { CategoryType } from "src/types/category.type";
@@ -27,6 +28,8 @@ import utils from "src/lib/utils";
 import { GOODS_UNIT_NAMES } from "src/constant/goods.const";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import DeleteIcon from "@mui/icons-material/Delete";
+import { LocalStorage } from "src/lib/localStorage";
+import { Env } from "src/constant/env";
 
 type Option = { label: string; value: string };
 
@@ -57,6 +60,7 @@ function CreateGoods() {
       store_id: "",
       category_id: "",
       name: "",
+      image_url: "",
       description: "",
       unit_name: "",
       price: "",
@@ -74,6 +78,7 @@ function CreateGoods() {
       unit_name: Yup.string().min(1).max(8).required("单位* 必填"),
       price: Yup.string().max(16).required("价格* 必填"),
       count: Yup.string().min(2).max(8).required("数量* 必填"),
+      image_url: Yup.string().max(256).optional(),
       version_number: Yup.string().max(8).max(32),
       bar_code: Yup.string().max(8).max(32),
       supplier: Yup.string().max(255),
@@ -115,31 +120,62 @@ function CreateGoods() {
       .finally(() => setCategoryLoading(false));
   }, [formik.values.store_id]);
 
+  const renderImage = (file?: File) => {
+    if (!file) {
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("图片大小不能超过5MB");
+      return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("请选择图片文件");
+      return;
+    }
+
+    setImageFile(file);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+
+    // 上传图片到服务器
+    const formData = new FormData();
+    formData.append("file", file);
+
+    post({
+      url: "/api/file/upload",
+      payload: formData,
+      config: { isFile: true },
+    })
+      .then((response) => {
+        const { url } = response as { url: string };
+        // 将上传成功的 URL 设置到表单的 image_url 字段
+        formik.setFieldValue("image_url", url);
+        toast.success("图片上传成功");
+      })
+      .catch((err) => {
+        toast.error(`图片上传失败: ${err.response?.data?.message || err.message}`);
+        // 上传失败时清除预览
+        // eslint-disable-next-line @typescript-eslint/no-use-before-define
+        handleRemoveImage();
+      });
+  };
+
   // 处理图片选择
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error("图片大小不能超过5MB");
-        return;
-      }
-      if (!file.type.startsWith("image/")) {
-        toast.error("请选择图片文件");
-        return;
-      }
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
+    renderImage(file);
   };
 
   // 删除图片
   const handleRemoveImage = () => {
     setImageFile(null);
     setImagePreview(null);
+    formik.setFieldValue("image_url", "");
   };
 
   // 处理拖拽事件
@@ -157,22 +193,7 @@ function CreateGoods() {
     e.preventDefault();
     setIsDragging(false);
     const file = e.dataTransfer.files?.[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error("图片大小不能超过5MB");
-        return;
-      }
-      if (!file.type.startsWith("image/")) {
-        toast.error("请选择图片文件");
-        return;
-      }
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
+    renderImage(file);
   };
 
   return (
@@ -427,6 +448,7 @@ function CreateGoods() {
                               accept="image/*"
                               onChange={handleImageChange}
                             />
+                            <input type="hidden" name="image_url" id="image_url" />
                             <CloudUploadIcon
                               sx={{ fontSize: 48, color: "text.secondary", mb: 2 }}
                             />
