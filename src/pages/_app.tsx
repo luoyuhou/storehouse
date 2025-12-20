@@ -14,6 +14,7 @@ import { createTheme } from "src/theme";
 import { createEmotionCache } from "src/utils/create-emotion-cache";
 import "simplebar-react/dist/simplebar.min.css";
 import "react-toastify/dist/ReactToastify.css";
+import { SocketProvider } from "src/contexts/socket";
 
 const clientSideEmotionCache = createEmotionCache();
 
@@ -52,11 +53,13 @@ function App(props: {
       </Head>
       <LocalizationProvider dateAdapter={AdapterDateFns}>
         <AuthProvider>
-          <ThemeProvider theme={theme}>
-            <CssBaseline />
-            <AuthConsumer>{(auth) => render(auth.isLoading)}</AuthConsumer>
-            <ToastContainer />
-          </ThemeProvider>
+          <SocketProvider>
+            <ThemeProvider theme={theme}>
+              <CssBaseline />
+              <AuthConsumer>{(auth) => render(auth.isLoading)}</AuthConsumer>
+              <ToastContainer />
+            </ThemeProvider>
+          </SocketProvider>
         </AuthProvider>
       </LocalizationProvider>
     </CacheProvider>

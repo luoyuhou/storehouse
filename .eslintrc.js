@@ -70,6 +70,20 @@ module.exports = {
   },
   overrides: [
     {
+      // 根目录的 .js 文件（如 server.js）使用普通 JS 规则
+      files: ["*.js"],
+      excludedFiles: ["src/**/*.js"],
+      env: { node: true, es2020: true },
+      extends: ["eslint:recommended", "prettier"],
+      parserOptions: {
+        ecmaVersion: 2020,
+        sourceType: "module",
+      },
+      rules: {
+        "no-console": "off",
+      },
+    },
+    {
       files: ["**/*.js", "**/*.ts", "**/*.tsx"],
       env: { browser: true, es6: true, node: true },
       extends: [

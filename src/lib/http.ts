@@ -4,14 +4,18 @@ import { LocalStorage } from "src/lib/localStorage";
 
 type Payload = NonNullable<unknown>;
 
-const formatRequestConfig = (config?: AxiosRequestConfig) => {
+const formatRequestConfig = (config?: AxiosRequestConfig & { isFile?: boolean }) => {
   const token = LocalStorage.getCache(Env.JWT_TOKEN_KEY);
-  const headers = {
-    "Content-Type": "application/json",
+  const { isFile, ...innerConfig } = config || {};
+  const headers: { "Content-Type"?: string; Authorization: string } = {
     Authorization: `Bearer ${token}`,
   };
 
-  return { ...config, headers: { ...config?.headers, ...headers } };
+  if (!isFile) {
+    headers["Content-Type"] = "application/json";
+  }
+
+  return { ...innerConfig, headers: { ...config?.headers, ...headers } };
 };
 
 export const get = async <T>(url: string, config?: AxiosRequestConfig): Promise<T> => {
@@ -57,7 +61,7 @@ export const del = async (url: string, config?: AxiosRequestConfig): Promise<nev
 export const post = async <T>(arg: {
   url: string;
   payload: Payload | FormDataEntryValue;
-  config?: AxiosRequestConfig;
+  config?: AxiosRequestConfig & { isFile?: boolean };
 }): Promise<T> => {
   const { url, payload, config } = arg;
   return new Promise((resolve, reject) => {

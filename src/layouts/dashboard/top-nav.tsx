@@ -21,7 +21,7 @@ import ChatDashboard from "src/sections/chat/chat.dashboard";
 import { ChatContentItem } from "src/sections/chat/chat.list";
 import { useAuth } from "src/hooks/use-auth";
 import { UserSessionType } from "src/types/users";
-import io from "socket.io-client";
+import { useSocket } from "src/contexts/socket";
 import { AccountPopover } from "./account-popover";
 
 const SIDE_NAV_WIDTH = 280;
@@ -38,21 +38,14 @@ export function TopNav(props: { onNavOpen: () => void }) {
 
   const [chatList, setChatList] = useState<ChatContentItem[]>([]);
 
-  const socket = useMemo(() => {
-    const connect = io("http://localhost:3001/chat", { auth: { userId: user.id } });
-    connect.on("connect", () => {
-      console.log("已连接到 WebSocket 服务");
-    });
+  const { socket } = useSocket();
 
-    return connect;
-  }, []);
-
-  socket.on("receiveMessage", (data: ChatContentItem) => {
+  socket?.on("receiveMessage", (data: ChatContentItem) => {
     if (chatList.some((i) => i.key === data.key)) {
       return;
     }
 
-    setChatList([data, ...chatList]);
+    setChatList([{ ...data, isRead: chatModal }, ...chatList]);
   });
 
   return (
@@ -101,10 +94,21 @@ export function TopNav(props: { onNavOpen: () => void }) {
           </Stack>
           <Stack alignItems="center" direction="row" spacing={2}>
             <Tooltip title="联系">
-              <IconButton onClick={() => setChatModal(true)}>
-                <SvgIcon fontSize="small">
-                  <UsersIcon />
-                </SvgIcon>
+              <IconButton
+                onClick={() => {
+                  const allReadList = chatList.map((item) => ({ ...item, isRead: true }));
+                  setChatList(allReadList);
+                  setChatModal(true);
+                }}
+              >
+                <Badge
+                  badgeContent={chatList.filter((item) => !item.isRead).length}
+                  color="success"
+                >
+                  <SvgIcon fontSize="small">
+                    <UsersIcon />
+                  </SvgIcon>
+                </Badge>
               </IconButton>
             </Tooltip>
             <Tooltip title="Notifications">

@@ -14,6 +14,7 @@ import {
   ServerStackIcon,
   BuildingStorefrontIcon,
   LockClosedIcon,
+  UserMinusIcon,
 } from "@heroicons/react/24/solid";
 import { DashboardItemType } from "src/layouts/dashboard/public-config";
 
@@ -116,6 +117,15 @@ export const privateItems: (DashboardItemType & { group?: DashboardItemType[] })
         icon: (
           <SvgIcon fontSize="small">
             <LockClosedIcon />
+          </SvgIcon>
+        ),
+      },
+      {
+        title: "踢人下线",
+        path: "/manage/kick-offline",
+        icon: (
+          <SvgIcon fontSize="small">
+            <UserMinusIcon />
           </SvgIcon>
         ),
       },

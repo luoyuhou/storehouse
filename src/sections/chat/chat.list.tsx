@@ -8,6 +8,7 @@ export type ChatContentItem = {
   sender: string;
   message: string;
   isMe: boolean;
+  isRead?: boolean;
 };
 
 export default function ChatList({

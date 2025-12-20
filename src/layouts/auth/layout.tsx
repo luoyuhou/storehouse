@@ -1,7 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 import NextLink from "next/link";
-import { Box, Typography, Unstable_Grid2 as Grid } from "@mui/material";
+import { Box, TextField, Typography, Unstable_Grid2 as Grid } from "@mui/material";
 import { Logo } from "src/components/logo";
 import RootLayout from "src/layouts";
 
@@ -86,7 +86,11 @@ export function Layout(props: { children: React.ReactNode }) {
             <Typography align="center" sx={{ mb: 3 }} variant="subtitle1">
               A personal web server
             </Typography>
-            <img alt="" src="/assets/auth-illustration.svg" />
+            <Typography>
+              <Box>
+                <Box>登录此刻，开启成就非凡自我的征程。</Box>
+              </Box>
+            </Typography>
           </Box>
         </Grid>
       </Grid>

@@ -30,3 +30,16 @@ export type UserLoginHistory = {
   create_date: string;
   update_date: string;
 };
+
+export type OnlineUserType = {
+  id: string;
+  user_id: string;
+  avatar: string | null;
+  first_name: string;
+  last_name: string;
+  phone: string;
+  email: string | null;
+  login_time: Date;
+  last_activity: Date;
+  ip: string;
+};

@@ -113,7 +113,7 @@ function Page() {
                   fullWidth
                   required
                   helperText={formik.touched.password && formik.errors.password}
-                  label="Password"
+                  label="密码"
                   name="password"
                   onBlur={formik.handleBlur}
                   onChange={formik.handleChange}
