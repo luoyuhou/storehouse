@@ -27,7 +27,7 @@ jobs:
       - name: Build application
         run: npm run build
         env:
-          NEXT_PUBLIC_API_URL: ${{ secrets.API_URL }}
+          BACKEND_URL: ${{ secrets.API_URL }}
 
       # 打包构建产物
       - name: Create deployment package
