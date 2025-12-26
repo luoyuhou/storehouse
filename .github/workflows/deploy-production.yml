@@ -39,6 +39,7 @@ jobs:
           cp package.json deploy/
           cp package-lock.json deploy/
           cp next.config.js deploy/
+          cp server.js deploy/
           cd deploy && tar -czf ../deploy.frontend.tar.gz .
       # 上传到服务器
       - name: Deploy to server
