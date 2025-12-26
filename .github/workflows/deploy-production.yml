@@ -62,9 +62,9 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
             # 🔑 备份环境变量文件
-            if [ -f /home/apps/storehouse/.env.local ]; then
-              cp /home/apps/storehouse/.env.local /tmp/storehouse.env.backup
-              echo "✅ Backed up .env.local file"
+            if [ -f /home/apps/storehouse/.env ]; then
+              cp /home/apps/storehouse/.env /tmp/storehouse.env.backup
+              echo "✅ Backed up .env file"
             fi
             
             # 备份旧版本
@@ -78,12 +78,12 @@ jobs:
             
             # 🔑 恢复环境变量文件
             if [ -f /tmp/storehouse.env.backup ]; then
-              cp /tmp/storehouse.env.backup /home/apps/storehouse/.env.local
+              cp /tmp/storehouse.env.backup /home/apps/storehouse/.env
               rm /tmp/storehouse.env.backup
-              echo "✅ Restored .env.local file"
+              echo "✅ Restored .env file"
             else
-              echo "⚠️ No .env.local backup found, creating default"
-              cat > /home/apps/storehouse/.env.local << 'EOF'
+              echo "⚠️ No .env backup found, creating default"
+              cat > /home/apps/storehouse/.env << 'EOF'
             NODE_ENV=production
             HOSTNAME=0.0.0.0
             PORT=3000
