@@ -89,6 +89,7 @@ const reducer = (
 
 export const AuthContext = createContext({
   signIn: async (phone: string, password: string) => {},
+  signInByScan: (res: { user: UserEntity; resources: [] }) => {},
   signUp: async (args: {
     first_name: string;
     last_name: string;
@@ -165,6 +166,14 @@ export function AuthProvider(props: { children: React.ReactNode }) {
     dispatch({ type: HANDLERS.SIGN_IN, payload: user, authPaths: res?.resources ?? [] });
   };
 
+  const signInByScan = async (res: { user: UserEntity; resources: [] }) => {
+    const user = formatUser(res.user);
+
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
+    dispatch({ type: HANDLERS.SIGN_IN, payload: user, authPaths: res?.resources ?? [] });
+  };
+
   const signUp = async (args: {
     first_name: string;
     last_name: string;
@@ -190,7 +199,7 @@ export function AuthProvider(props: { children: React.ReactNode }) {
   };
 
   // eslint-disable-next-line react/jsx-no-constructed-context-values
-  const values = { ...state, signIn, signUp, signOut };
+  const values = { ...state, signIn, signInByScan, signUp, signOut };
 
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-expect-error

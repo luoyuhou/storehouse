@@ -11,6 +11,7 @@ import { toast } from "react-toastify";
 import { useAuth } from "src/hooks/use-auth";
 import { Layout as AuthLayout } from "src/layouts/auth/layout";
 import LoggedIn from "src/hooks/logged-in";
+import QrCodeLogin from "src/components/qr-code-login";
 
 function Page() {
   const router = useRouter();
@@ -69,6 +70,18 @@ function Page() {
     [],
   );
 
+  // 扫码登录成功回调
+  const handleQrLoginSuccess = useCallback(
+    (res: { user: never; resources: [] }) => {
+      auth.signInByScan(res);
+      const asPath = decodeURIComponent(nextRouter.asPath);
+      const arr = asPath.split("continueUrl=");
+      const url = arr?.[1] || "/";
+      router.push(url);
+    },
+    [router, nextRouter],
+  );
+
   return (
     <>
       <Head>
@@ -109,7 +122,7 @@ function Page() {
             </Stack>
             <Tabs onChange={handleMethodChange} sx={{ mb: 3 }} value={method}>
               <Tab label="手机登录" value="phone" />
-              <Tab label="扫码登录" value="scarCode" />
+              <Tab label="扫码登录" value="qrCode" />
             </Tabs>
             {method === "phone" && (
               <>
@@ -174,6 +187,7 @@ function Page() {
                 </Grid>
               </>
             )}
+            {method === "qrCode" && <QrCodeLogin onSuccess={handleQrLoginSuccess} />}
             {method === "phoneNumber" && (
               <div>
                 <Typography sx={{ mb: 1 }} variant="h6">

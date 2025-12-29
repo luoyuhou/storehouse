@@ -29,8 +29,11 @@ export const get = async <T>(url: string, config?: AxiosRequestConfig): Promise<
         return resolve(response.data);
       })
       .catch((e) => {
-        console.log("e", e);
-        console.log("url", url);
+        if (/^\/api\/auth\/qr-code\/status\/[\w-]+$/.test(url)) {
+          resolve(e.response.data);
+          return;
+        }
+
         if (e.response.status === 401 && url !== "/api/auth/sign-in") {
           window.location.href = "/auth/sign-in";
         }
