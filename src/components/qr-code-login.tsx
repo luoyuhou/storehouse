@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Box, Typography, CircularProgress, Button } from "@mui/material";
+import { Box, Typography, Button } from "@mui/material";
 import { get, post } from "src/lib/http";
 import { toast } from "react-toastify";
 // eslint-disable-next-line import/no-extraneous-dependencies
-import QRCode from "qrcode";
+import QRCode from "react-qr-code";
 
 interface QrCodeLoginProps {
   onSuccess: (res: { user: never; resources: [] }) => void;
@@ -30,7 +30,7 @@ const QrCodeLogin: React.FC<QrCodeLoginProps> = ({ onSuccess }) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState<number>(0);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [qrCodeId, setQrCodeId] = useState<string>("");
   const pollingRef = useRef<NodeJS.Timeout | null>(null);
   const countdownRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -47,7 +47,7 @@ const QrCodeLogin: React.FC<QrCodeLoginProps> = ({ onSuccess }) => {
   };
 
   // 开始轮询
-  const startPolling = (qrCodeId: string) => {
+  const startPolling = (codeId: string) => {
     if (pollingRef.current) {
       clearInterval(pollingRef.current);
     }
@@ -60,7 +60,7 @@ const QrCodeLogin: React.FC<QrCodeLoginProps> = ({ onSuccess }) => {
           data?: never;
           remainingTime?: number;
           resources: [];
-        }>(`/api/auth/qr-code/status/${qrCodeId}`);
+        }>(`/api/auth/qr-code/status/${codeId}`);
 
         // 获取状态（可能在顶层或 data 中）
         const newStatus = response.status;
@@ -118,28 +118,11 @@ const QrCodeLogin: React.FC<QrCodeLoginProps> = ({ onSuccess }) => {
         config: {},
         payload: {},
       });
+      setQrCodeId(response.data.qrCodeId);
 
       setQrCodeData(response.data);
       setCountdown(response.data.expiresIn);
       setRetryCount(0); // 重置重试次数
-
-      // 生成二维码到 canvas
-      if (canvasRef.current) {
-        const qrContent = JSON.stringify({
-          type: "qr-login",
-          qrCodeId: response.data.qrCodeId,
-        });
-
-        // 使用 qrcode 库生成二维码
-        await QRCode.toCanvas(canvasRef.current, qrContent, {
-          width: 200,
-          margin: 2,
-          color: {
-            dark: "#000000",
-            light: "#FFFFFF",
-          },
-        });
-      }
 
       setLoading(false);
 
@@ -221,7 +204,6 @@ const QrCodeLogin: React.FC<QrCodeLoginProps> = ({ onSuccess }) => {
         minHeight={300}
         gap={2}
       >
-        <CircularProgress />
         {retryCount > 0 && (
           <Typography variant="caption" color="text.secondary">
             正在重试... ({retryCount}/3)
@@ -271,12 +253,9 @@ const QrCodeLogin: React.FC<QrCodeLoginProps> = ({ onSuccess }) => {
             transition: "opacity 0.3s",
           }}
         >
-          <canvas
-            ref={canvasRef}
-            style={{
-              display: "block",
-            }}
-          />
+          <Box width={190}>
+            <QRCode size={200} value={qrCodeId} />
+          </Box>
         </Box>
 
         {/* 过期遮罩 */}
