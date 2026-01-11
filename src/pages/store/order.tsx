@@ -1,7 +1,17 @@
 import { Layout as DashboardLayout } from "src/layouts/dashboard/layout";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Head from "next/head";
-import { Box, Button, Container, Stack, SvgIcon, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Container,
+  Stack,
+  SvgIcon,
+  Typography,
+  Grid,
+  Card,
+  CardContent,
+} from "@mui/material";
 import CustomerTabs from "src/components/tabs/customer-tabs";
 import StoreOrderPendingTable from "src/sections/store/order/order-pending.table";
 import StoreOrderProgressTable from "src/sections/store/order/progress-pending.table";
@@ -10,12 +20,36 @@ import StoreOrderAllTable from "src/sections/store/order/order-all.table";
 import { CustomerFilter } from "src/components/filter/customer-filter";
 import ArrowUpOnSquareIcon from "@heroicons/react/24/solid/ArrowUpOnSquareIcon";
 import ArrowDownOnSquareIcon from "@heroicons/react/24/solid/ArrowDownOnSquareIcon";
+import { post } from "src/lib/http";
+import { toast } from "react-toastify";
 
 function Order() {
+  const [statistics, setStatistics] = useState({
+    pending: 0,
+    processing: 0,
+    finished: 0,
+    total: 0,
+    totalAmount: 0,
+  });
+
+  useEffect(() => {
+    // 加载订单统计数据
+    post<never>({
+      url: "/api/store/order/statistics",
+      payload: {},
+    })
+      .then((res) => {
+        setStatistics(res);
+      })
+      .catch((err) => {
+        console.error("Failed to load statistics:", err);
+      });
+  }, []);
+
   return (
     <>
       <Head>
-        <title>Order</title>
+        <title>订单管理</title>
       </Head>
       <Box
         component="main"
@@ -28,7 +62,7 @@ function Order() {
           <Stack spacing={3}>
             <Stack direction="row" justifyContent="space-between" spacing={4}>
               <Stack spacing={1}>
-                <Typography variant="h4">订单</Typography>
+                <Typography variant="h4">订单管理</Typography>
                 <Stack alignItems="center" direction="row" spacing={1}>
                   <Button
                     color="inherit"
@@ -38,7 +72,7 @@ function Order() {
                       </SvgIcon>
                     }
                   >
-                    Import
+                    导入
                   </Button>
                   <Button
                     color="inherit"
@@ -48,11 +82,68 @@ function Order() {
                       </SvgIcon>
                     }
                   >
-                    Export
+                    导出
                   </Button>
                 </Stack>
               </Stack>
             </Stack>
+
+            {/* 订单统计卡片 */}
+            <Grid container spacing={3}>
+              <Grid item xs={12} sm={6} md={2.4}>
+                <Card>
+                  <CardContent>
+                    <Typography color="textSecondary" gutterBottom variant="overline">
+                      待处理
+                    </Typography>
+                    <Typography variant="h4">{statistics.pending}</Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+              <Grid item xs={12} sm={6} md={2.4}>
+                <Card>
+                  <CardContent>
+                    <Typography color="textSecondary" gutterBottom variant="overline">
+                      处理中
+                    </Typography>
+                    <Typography variant="h4">{statistics.processing}</Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+              <Grid item xs={12} sm={6} md={2.4}>
+                <Card>
+                  <CardContent>
+                    <Typography color="textSecondary" gutterBottom variant="overline">
+                      已完成
+                    </Typography>
+                    <Typography variant="h4">{statistics.finished}</Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+              <Grid item xs={12} sm={6} md={2.4}>
+                <Card>
+                  <CardContent>
+                    <Typography color="textSecondary" gutterBottom variant="overline">
+                      总订单数
+                    </Typography>
+                    <Typography variant="h4">{statistics.total}</Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+              <Grid item xs={12} sm={6} md={2.4}>
+                <Card>
+                  <CardContent>
+                    <Typography color="textSecondary" gutterBottom variant="overline">
+                      总金额
+                    </Typography>
+                    <Typography variant="h4">
+                      ¥{(statistics.totalAmount / 100).toFixed(2)}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+            </Grid>
+
             <Box>
               <CustomerFilter />
             </Box>
@@ -62,7 +153,7 @@ function Order() {
                   {
                     key: 0,
                     isDefault: true,
-                    label: "等待处理",
+                    label: "待处理",
                     children: <StoreOrderPendingTable />,
                   },
                   {
@@ -74,10 +165,10 @@ function Order() {
                   {
                     key: 2,
                     isDefault: true,
-                    label: "处理完成",
+                    label: "已完成",
                     children: <StoreOrderFinishedTable />,
                   },
-                  { key: 3, isDefault: true, label: "所有订单", children: <StoreOrderAllTable /> },
+                  { key: 3, isDefault: true, label: "全部订单", children: <StoreOrderAllTable /> },
                 ]}
               />
             </Box>

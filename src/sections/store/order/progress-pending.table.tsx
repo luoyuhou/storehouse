@@ -1,18 +1,18 @@
-import React from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { StoreOrderTable } from "src/sections/store/order/order-table";
+import { UserOrderType } from "src/types/store.type";
+import { post } from "src/lib/http";
+import { toast } from "react-toastify";
 
 function StoreOrderProgressTable() {
   return (
     <StoreOrderTable
       onDeselectAll={() => {}}
       onDeselectOne={() => {}}
-      onPageChange={() => {}}
-      onRowsPerPageChange={() => {}}
       onSelectAll={() => {}}
       onSelectOne={() => {}}
-      page={0}
-      rowsPerPage={0}
       selected={[]}
+      defaultFiltered={[{ id: "stage", value: [2, 3] }]}
     />
   );
 }

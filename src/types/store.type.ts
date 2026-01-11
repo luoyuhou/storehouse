@@ -37,8 +37,8 @@ export type UserOrderType = {
   order_id: string;
   user_id: string;
   store_id: string;
-  status: number;
-  stage: number;
+  status: 0 | 1 | 2 | 3 | 4 | 5;
+  stage: 1 | 2 | 3;
   recipient: string;
   money: number;
   phone: string;
@@ -52,10 +52,5 @@ export type UserOrderType = {
 
   _store?: {
     store_name: string;
-  };
-
-  _user?: {
-    first_name: string;
-    last_name: string;
   };
 };
