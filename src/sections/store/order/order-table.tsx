@@ -2,18 +2,15 @@ import React from "react";
 import PropTypes from "prop-types";
 import { format } from "date-fns";
 import {
-  Avatar,
   Box,
   Card,
   Checkbox,
-  Stack,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TablePagination,
   TableRow,
-  Typography,
 } from "@mui/material";
 import { Scrollbar } from "src/components/scrollbar";
 import { UserOrderType } from "src/types/store.type";
@@ -71,10 +68,12 @@ export function StoreOrderTable(props: {
                 <TableCell>商铺</TableCell>
                 <TableCell>订单 ID</TableCell>
                 <TableCell>金额</TableCell>
+                <TableCell>下单时间</TableCell>
                 <TableCell>状态</TableCell>
                 <TableCell>进度</TableCell>
                 <TableCell>用户</TableCell>
                 <TableCell>联系方式</TableCell>
+                <TableCell>送货时间</TableCell>
                 <TableCell>送货地址</TableCell>
               </TableRow>
             </TableHead>
@@ -96,14 +95,28 @@ export function StoreOrderTable(props: {
                         }}
                       />
                     </TableCell>
-                    <TableCell>{order.store_id}</TableCell>
+                    {/* eslint-disable-next-line no-underscore-dangle */}
+                    <TableCell>{order?._store?.store_name}</TableCell>
                     <TableCell>{order.order_id}</TableCell>
-                    <TableCell>{(order.money / 100).toString(2)}</TableCell>
+                    <TableCell>{(order.money / 100).toFixed(2)}</TableCell>
+                    <TableCell>
+                      {format(new Date(order.create_date), "yyyy-MM-dd HH:mm:ss")}
+                    </TableCell>
                     <TableCell>{order.status}</TableCell>
                     <TableCell>{order.stage}</TableCell>
-                    <TableCell>{order.user_id}</TableCell>
+                    {/* eslint-disable-next-line no-underscore-dangle */}
+                    <TableCell>{`${order?._user?.first_name}${order?._user?.last_name}`}</TableCell>
                     <TableCell>{order.phone}</TableCell>
-                    <TableCell>{order.address}</TableCell>
+                    <TableCell>
+                      {format(new Date(order.delivery_date), "yyyy-MM-dd HH:mm:ss")}
+                    </TableCell>
+                    <TableCell>
+                      {order.province}
+                      {order.city}
+                      {order.area}
+                      {order.town}
+                      {order.address}
+                    </TableCell>
                   </TableRow>
                 );
               })}

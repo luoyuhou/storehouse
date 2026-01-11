@@ -48,4 +48,14 @@ export type UserOrderType = {
   town: string;
   address: string;
   delivery_date: string;
+  create_date: string;
+
+  _store?: {
+    store_name: string;
+  };
+
+  _user?: {
+    first_name: string;
+    last_name: string;
+  };
 };
