@@ -24,7 +24,7 @@ function Copyright() {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <Container className={inter.className} style={{ maxWidth: "1400px" }}>
+    <Container className={inter.className} style={{ maxWidth: "1650px" }}>
       {children}
       <Copyright />
     </Container>

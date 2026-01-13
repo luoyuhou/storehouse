@@ -37,8 +37,8 @@ export type UserOrderType = {
   order_id: string;
   user_id: string;
   store_id: string;
-  status: number;
-  stage: number;
+  status: 0 | 1 | 2 | 3 | 4 | 5;
+  stage: 1 | 2 | 3;
   recipient: string;
   money: number;
   phone: string;
@@ -48,4 +48,9 @@ export type UserOrderType = {
   town: string;
   address: string;
   delivery_date: string;
+  create_date: string;
+
+  _store?: {
+    store_name: string;
+  };
 };

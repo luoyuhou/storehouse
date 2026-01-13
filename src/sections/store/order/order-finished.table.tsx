@@ -1,18 +1,19 @@
-import React from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { StoreOrderTable } from "src/sections/store/order/order-table";
+import { UserOrderType } from "src/types/store.type";
+import { post } from "src/lib/http";
+import { toast } from "react-toastify";
 
-function StoreOrderFinishedTable() {
+function StoreOrderFinishedTable(props: { setTrigger: () => void }) {
   return (
     <StoreOrderTable
       onDeselectAll={() => {}}
       onDeselectOne={() => {}}
-      onPageChange={() => {}}
-      onRowsPerPageChange={() => {}}
       onSelectAll={() => {}}
       onSelectOne={() => {}}
-      page={0}
-      rowsPerPage={0}
       selected={[]}
+      setTrigger={props.setTrigger}
+      defaultFiltered={[{ id: "stage", value: 4 }]}
     />
   );
 }
