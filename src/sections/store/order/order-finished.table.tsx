@@ -4,7 +4,7 @@ import { UserOrderType } from "src/types/store.type";
 import { post } from "src/lib/http";
 import { toast } from "react-toastify";
 
-function StoreOrderFinishedTable() {
+function StoreOrderFinishedTable(props: { setTrigger: () => void }) {
   return (
     <StoreOrderTable
       onDeselectAll={() => {}}
@@ -12,6 +12,7 @@ function StoreOrderFinishedTable() {
       onSelectAll={() => {}}
       onSelectOne={() => {}}
       selected={[]}
+      setTrigger={props.setTrigger}
       defaultFiltered={[{ id: "stage", value: 4 }]}
     />
   );

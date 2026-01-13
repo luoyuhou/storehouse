@@ -13,20 +13,22 @@ import {
   CardContent,
 } from "@mui/material";
 import CustomerTabs from "src/components/tabs/customer-tabs";
-import StoreOrderPendingTable from "src/sections/store/order/order-pending.table";
-import StoreOrderProgressTable from "src/sections/store/order/progress-pending.table";
+import StoreOrderAcceptTable from "src/sections/store/order/accept-pending.table";
 import StoreOrderFinishedTable from "src/sections/store/order/order-finished.table";
 import StoreOrderAllTable from "src/sections/store/order/order-all.table";
 import { CustomerFilter } from "src/components/filter/customer-filter";
 import ArrowUpOnSquareIcon from "@heroicons/react/24/solid/ArrowUpOnSquareIcon";
 import ArrowDownOnSquareIcon from "@heroicons/react/24/solid/ArrowDownOnSquareIcon";
 import { post } from "src/lib/http";
-import { toast } from "react-toastify";
+import StoreOrderDeliveryTable from "src/sections/store/order/delivery-pending.table";
+import StoreOrderPendingTable from "src/sections/store/order/order-pending.table";
 
 function Order() {
+  const [trigger, setTrigger] = useState(0);
   const [statistics, setStatistics] = useState({
     pending: 0,
-    processing: 0,
+    stocking: 0,
+    shipping: 0,
     finished: 0,
     total: 0,
     totalAmount: 0,
@@ -44,7 +46,7 @@ function Order() {
       .catch((err) => {
         console.error("Failed to load statistics:", err);
       });
-  }, []);
+  }, [trigger]);
 
   return (
     <>
@@ -90,7 +92,7 @@ function Order() {
 
             {/* 订单统计卡片 */}
             <Grid container spacing={3}>
-              <Grid item xs={12} sm={6} md={2.4}>
+              <Grid item xs={12} sm={6} md={2}>
                 <Card>
                   <CardContent>
                     <Typography color="textSecondary" gutterBottom variant="overline">
@@ -100,17 +102,27 @@ function Order() {
                   </CardContent>
                 </Card>
               </Grid>
-              <Grid item xs={12} sm={6} md={2.4}>
+              <Grid item xs={12} sm={6} md={2}>
                 <Card>
                   <CardContent>
                     <Typography color="textSecondary" gutterBottom variant="overline">
-                      处理中
+                      备货中
                     </Typography>
-                    <Typography variant="h4">{statistics.processing}</Typography>
+                    <Typography variant="h4">{statistics.stocking}</Typography>
                   </CardContent>
                 </Card>
               </Grid>
-              <Grid item xs={12} sm={6} md={2.4}>
+              <Grid item xs={12} sm={6} md={2}>
+                <Card>
+                  <CardContent>
+                    <Typography color="textSecondary" gutterBottom variant="overline">
+                      运输中
+                    </Typography>
+                    <Typography variant="h4">{statistics.shipping}</Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+              <Grid item xs={12} sm={6} md={2}>
                 <Card>
                   <CardContent>
                     <Typography color="textSecondary" gutterBottom variant="overline">
@@ -120,7 +132,7 @@ function Order() {
                   </CardContent>
                 </Card>
               </Grid>
-              <Grid item xs={12} sm={6} md={2.4}>
+              <Grid item xs={12} sm={6} md={2}>
                 <Card>
                   <CardContent>
                     <Typography color="textSecondary" gutterBottom variant="overline">
@@ -130,7 +142,7 @@ function Order() {
                   </CardContent>
                 </Card>
               </Grid>
-              <Grid item xs={12} sm={6} md={2.4}>
+              <Grid item xs={12} sm={6} md={2}>
                 <Card>
                   <CardContent>
                     <Typography color="textSecondary" gutterBottom variant="overline">
@@ -154,21 +166,38 @@ function Order() {
                     key: 0,
                     isDefault: true,
                     label: "待处理",
-                    children: <StoreOrderPendingTable />,
+                    children: (
+                      <StoreOrderPendingTable setTrigger={() => setTrigger((c) => c + 1)} />
+                    ),
                   },
                   {
                     key: 1,
                     isDefault: true,
-                    label: "处理中",
-                    children: <StoreOrderProgressTable />,
+                    label: "备货中",
+                    children: <StoreOrderAcceptTable setTrigger={() => setTrigger((c) => c + 1)} />,
                   },
                   {
                     key: 2,
                     isDefault: true,
-                    label: "已完成",
-                    children: <StoreOrderFinishedTable />,
+                    label: "运输中",
+                    children: (
+                      <StoreOrderDeliveryTable setTrigger={() => setTrigger((c) => c + 1)} />
+                    ),
                   },
-                  { key: 3, isDefault: true, label: "全部订单", children: <StoreOrderAllTable /> },
+                  {
+                    key: 3,
+                    isDefault: true,
+                    label: "已完成",
+                    children: (
+                      <StoreOrderFinishedTable setTrigger={() => setTrigger((c) => c + 1)} />
+                    ),
+                  },
+                  {
+                    key: 4,
+                    isDefault: true,
+                    label: "全部订单",
+                    children: <StoreOrderAllTable setTrigger={() => setTrigger((c) => c + 1)} />,
+                  },
                 ]}
               />
             </Box>

@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React from "react";
 import { StoreOrderTable } from "src/sections/store/order/order-table";
 
-function StoreOrderPendingTable() {
+function StoreOrderPendingTable(props: { setTrigger: () => void }) {
   return (
     <StoreOrderTable
       onDeselectAll={() => {}}
@@ -9,6 +9,7 @@ function StoreOrderPendingTable() {
       onSelectAll={() => {}}
       onSelectOne={() => {}}
       selected={[]}
+      setTrigger={props.setTrigger}
       defaultFiltered={[{ id: "stage", value: 1 }]}
     />
   );

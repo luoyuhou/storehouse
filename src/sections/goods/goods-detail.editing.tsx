@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { GoodsType } from "src/types/goods.type";
-import { get, patch, post } from "src/lib/http";
+import { get, patch } from "src/lib/http";
 import { toast } from "react-toastify";
 import {
   Box,
@@ -11,15 +11,12 @@ import {
   Typography,
   Unstable_Grid2 as Grid,
   Fab,
-  Button,
 } from "@mui/material";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { Cancel, Edit, Save } from "@mui/icons-material";
 import { CategoryType } from "src/types/category.type";
 import utils from "src/lib/utils";
-import { boolean } from "yup";
-import { tree } from "next/dist/build/templates/app-page";
 
 const GOODS_STATUS_MAP = [
   { label: "活跃", value: 1 },

@@ -14,6 +14,7 @@ import {
   DialogTitle,
   Grid,
   IconButton,
+  Link,
   Stack,
   Table,
   TableBody,
@@ -32,6 +33,8 @@ import TruckIcon from "@heroicons/react/24/solid/TruckIcon";
 import XCircleIcon from "@heroicons/react/24/solid/XCircleIcon";
 import { post, get } from "src/lib/http";
 import { toast } from "react-toastify";
+import ConfirmDialog from "src/components/dialog/confirm-dialog";
+import { OrderHistoryDialog } from "./order-history-dialog";
 
 // 订单商品明细类型
 interface OrderItemDetail {
@@ -81,8 +84,10 @@ const ORDER_STATUS_CONFIG = {
 // 订单阶段配置
 const ORDER_STAGE_CONFIG = {
   1: { label: "待处理", color: "default" },
-  2: { label: "处理中", color: "primary" },
-  3: { label: "已完成", color: "success" },
+  2: { label: "已接单", color: "primary" },
+  3: { label: "配送中", color: "warning" },
+  4: { label: "已接收", color: "error" },
+  5: { label: "已完成", color: "success" },
 };
 
 function OrderDetailTableBody(props: {
@@ -191,6 +196,7 @@ export function StoreOrderTable(props: {
   onSelectAll: () => void;
   onSelectOne: (id: string) => void;
   selected: string[];
+  setTrigger: () => void;
   defaultFiltered?: { id: string; value: unknown }[];
 }) {
   const {
@@ -199,6 +205,7 @@ export function StoreOrderTable(props: {
     onSelectAll,
     onSelectOne,
     selected = [],
+    setTrigger,
     defaultFiltered,
   } = props;
 
@@ -215,6 +222,9 @@ export function StoreOrderTable(props: {
   const [selectedOrder, setSelectedOrder] = useState<UserOrderType | null>(null);
   const [orderDetails, setOrderDetails] = useState<OrderItemDetail[]>([]);
   const [loadingDetails, setLoadingDetails] = useState(false);
+  const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
+  const [historyOrderId, setHistoryOrderId] = useState<string>("");
+  const [historyOrderNumber, setHistoryOrderNumber] = useState<string>("");
 
   const selectedSome = selected.length > 0 && selected.length < data.length;
   const selectedAll = data.length > 0 && selected.length === data.length;
@@ -231,6 +241,8 @@ export function StoreOrderTable(props: {
       })
       .catch((err) => toast.error(err.message || "加载数据失败"))
       .finally(() => setLoading(false));
+
+    setTrigger();
   }, [page, pageSize, filtered]);
 
   useEffect(() => {
@@ -328,48 +340,68 @@ export function StoreOrderTable(props: {
     // 待处理状态 - 显示接单和取消按钮
     if (order.stage === 1) {
       buttons.push(
-        <Tooltip key="accept" title="接单">
-          <IconButton
-            size="small"
-            color="success"
-            onClick={() => handleAcceptOrder(order.order_id)}
-          >
-            <CheckCircleIcon style={{ width: 20, height: 20 }} />
-          </IconButton>
-        </Tooltip>,
+        <ConfirmDialog
+          ButtonIcon={
+            <Tooltip key="accept" title="接单">
+              <IconButton size="small" color="success">
+                <CheckCircleIcon style={{ width: 20, height: 20 }} />
+              </IconButton>
+            </Tooltip>
+          }
+          confirmFunc={() => handleAcceptOrder(order.order_id)}
+          title="确认接单"
+          content={`确定接单 ${order.order_id} 吗？`}
+        />,
       );
       buttons.push(
-        <Tooltip key="cancel" title="取消订单">
-          <IconButton size="small" color="error" onClick={() => handleCancelOrder(order.order_id)}>
-            <XCircleIcon style={{ width: 20, height: 20 }} />
-          </IconButton>
-        </Tooltip>,
+        <ConfirmDialog
+          ButtonIcon={
+            <Tooltip key="cancel" title="取消订单">
+              <IconButton size="small" color="error">
+                <XCircleIcon style={{ width: 20, height: 20 }} />
+              </IconButton>
+            </Tooltip>
+          }
+          title="确认取消订单"
+          content={`确定取消订单 ${order.order_id} 吗？`}
+          confirmFunc={() => handleCancelOrder(order.order_id)}
+        />,
       );
     }
 
     // 处理中状态 - 显示发货按钮
-    if (order.stage === 1 && order.status === 1) {
+    if (order.stage === 2) {
       buttons.push(
-        <Tooltip key="ship" title="发货">
-          <IconButton size="small" color="primary" onClick={() => handleShipOrder(order.order_id)}>
-            <TruckIcon style={{ width: 20, height: 20 }} />
-          </IconButton>
-        </Tooltip>,
+        <ConfirmDialog
+          ButtonIcon={
+            <Tooltip key="ship" title="发货">
+              <IconButton size="small" color="primary">
+                <TruckIcon style={{ width: 20, height: 20 }} />
+              </IconButton>
+            </Tooltip>
+          }
+          title="确认发货"
+          content={`确认发货 ${order.order_id} 吗？`}
+          confirmFunc={() => handleShipOrder(order.order_id)}
+        />,
       );
     }
 
     // 配送中状态 - 显示完成按钮
-    if (order.status === 2) {
+    if (order.status === 3) {
       buttons.push(
-        <Tooltip key="complete" title="完成订单">
-          <IconButton
-            size="small"
-            color="success"
-            onClick={() => handleCompleteOrder(order.order_id)}
-          >
-            <CheckCircleIcon style={{ width: 20, height: 20 }} />
-          </IconButton>
-        </Tooltip>,
+        <ConfirmDialog
+          ButtonIcon={
+            <Tooltip key="complete" title="完成订单">
+              <IconButton size="small" color="success">
+                <CheckCircleIcon style={{ width: 20, height: 20 }} />
+              </IconButton>
+            </Tooltip>
+          }
+          title="完成订单"
+          content={`确认完成订单 ${order.order_id} 吗？`}
+          confirmFunc={() => handleCompleteOrder(order.order_id)}
+        />,
       );
     }
 
@@ -400,11 +432,12 @@ export function StoreOrderTable(props: {
                   <TableCell>订单号</TableCell>
                   <TableCell>商铺</TableCell>
                   <TableCell>用户</TableCell>
+                  <TableCell>收货地址</TableCell>
                   <TableCell>金额</TableCell>
                   <TableCell>状态</TableCell>
                   <TableCell>进度</TableCell>
                   <TableCell>下单时间</TableCell>
-                  <TableCell>送货时间</TableCell>
+                  <TableCell>送达时间</TableCell>
                   <TableCell>操作</TableCell>
                 </TableRow>
               </TableHead>
@@ -435,15 +468,48 @@ export function StoreOrderTable(props: {
                         />
                       </TableCell>
                       <TableCell>
-                        <Typography variant="subtitle2">{order.order_id}</Typography>
+                        {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
+                        <Link
+                          component="button"
+                          variant="subtitle2"
+                          onClick={() => {
+                            setHistoryOrderId(order.order_id);
+                            setHistoryOrderNumber(order.order_id);
+                            setHistoryDialogOpen(true);
+                          }}
+                          sx={{
+                            cursor: "pointer",
+                            textDecoration: "none",
+                            "&:hover": {
+                              textDecoration: "underline",
+                            },
+                          }}
+                        >
+                          {order.order_id}
+                        </Link>
                       </TableCell>
-                      {/* eslint-disable-next-line no-underscore-dangle */}
-                      <TableCell>{order?._store?.store_name || "-"}</TableCell>
+                      <TableCell>
+                        <Typography color="darkorange">
+                          {/* eslint-disable-next-line no-underscore-dangle */}
+                          {order?._store?.store_name || "-"}
+                        </Typography>
+                      </TableCell>
                       <TableCell>
                         {order.recipient}
                         <br />
                         <Typography variant="caption" color="textSecondary">
                           {order.phone}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="subtitle2" color="secondary">
+                          {order.province}
+                          {order.city}
+                          {order.area}
+                        </Typography>
+                        <Typography variant="subtitle2" color="secondary">
+                          {order.town}
+                          {order.address}
                         </Typography>
                       </TableCell>
                       <TableCell>
@@ -484,11 +550,13 @@ export function StoreOrderTable(props: {
                       </TableCell>
                       <TableCell>
                         <Stack direction="row" spacing={0.5}>
-                          <Tooltip title="查看详情">
-                            <IconButton size="small" onClick={() => handleViewDetail(order)}>
-                              <EyeIcon style={{ width: 20, height: 20 }} />
-                            </IconButton>
-                          </Tooltip>
+                          <Button>
+                            <Tooltip title="查看详情">
+                              <IconButton size="small" onClick={() => handleViewDetail(order)}>
+                                <EyeIcon style={{ width: 20, height: 20 }} />
+                              </IconButton>
+                            </Tooltip>
+                          </Button>
                           {renderActionButtons(order)}
                         </Stack>
                       </TableCell>
@@ -647,6 +715,14 @@ export function StoreOrderTable(props: {
           <Button onClick={() => setDetailDialogOpen(false)}>关闭</Button>
         </DialogActions>
       </Dialog>
+
+      {/* 订单历史时间线对话框 */}
+      <OrderHistoryDialog
+        open={historyDialogOpen}
+        onClose={() => setHistoryDialogOpen(false)}
+        orderId={historyOrderId}
+        orderNumber={historyOrderNumber}
+      />
     </>
   );
 }
