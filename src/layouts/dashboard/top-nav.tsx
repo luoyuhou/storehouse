@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import BellIcon from "@heroicons/react/24/solid/BellIcon";
 import UsersIcon from "@heroicons/react/24/solid/UsersIcon";
@@ -22,31 +22,88 @@ import { ChatContentItem } from "src/sections/chat/chat.list";
 import { useAuth } from "src/hooks/use-auth";
 import { UserSessionType } from "src/types/users";
 import { useSocket } from "src/contexts/socket";
+import { OrderNotificationsPopover } from "src/components/order-notifications-popover";
 import { AccountPopover } from "./account-popover";
 
 const SIDE_NAV_WIDTH = 280;
 const TOP_NAV_HEIGHT = 64;
+
+// 新订单通知类型定义
+interface NewOrderNotification {
+  order_id: string;
+  store_name: string;
+  recipient: string;
+  money: number;
+  goods_count: number;
+  total_items: number;
+  create_time: string;
+}
 
 export function TopNav(props: { onNavOpen: () => void }) {
   const { onNavOpen } = props;
   const [chatModal, setChatModal] = useState<boolean>(false);
   const lgUp = useMediaQuery<Theme>((theme) => theme.breakpoints.up("lg"));
   const accountPopover = usePopover();
+  const notificationsPopover = usePopover();
 
   const auth = useAuth();
   const { user } = auth as unknown as { user: UserSessionType };
 
   const [chatList, setChatList] = useState<ChatContentItem[]>([]);
+  const [orderNotifications, setOrderNotifications] = useState<NewOrderNotification[]>([]);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const { socket } = useSocket();
 
-  socket?.on("receiveMessage", (data: ChatContentItem) => {
-    if (chatList.some((i) => i.key === data.key)) {
-      return;
-    }
+  // 初始化音频
+  useEffect(() => {
+    audioRef.current = new Audio("/audio/order.wav");
+    audioRef.current.preload = "auto";
+  }, []);
 
-    setChatList([{ ...data, isRead: chatModal }, ...chatList]);
-  });
+  // 监听聊天消息
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleReceiveMessage = (data: ChatContentItem) => {
+      if (chatList.some((i) => i.key === data.key)) {
+        return;
+      }
+      setChatList((prev) => [{ ...data, isRead: chatModal }, ...prev]);
+    };
+
+    socket.on("receiveMessage", handleReceiveMessage);
+
+    // eslint-disable-next-line consistent-return
+    return () => {
+      socket.off("receiveMessage", handleReceiveMessage);
+    };
+  }, [socket, chatList, chatModal]);
+
+  // 监听新订单通知
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleNewOrder = (data: NewOrderNotification) => {
+      // 播放音频
+      if (audioRef.current) {
+        audioRef.current.play().catch((error) => {
+          console.error("播放音频失败:", error);
+        });
+      }
+
+      // 添加到通知列表（最新的在前面）
+      setOrderNotifications((prev) => [data, ...prev]);
+    };
+
+    socket.on("newOrder", handleNewOrder);
+
+    // 清理事件监听器
+    // eslint-disable-next-line consistent-return
+    return () => {
+      socket.off("newOrder", handleNewOrder);
+    };
+  }, [socket]);
 
   return (
     <>
@@ -112,8 +169,11 @@ export function TopNav(props: { onNavOpen: () => void }) {
               </IconButton>
             </Tooltip>
             <Tooltip title="Notifications">
-              <IconButton>
-                <Badge badgeContent={4} color="success" variant="dot">
+              <IconButton
+                onClick={notificationsPopover.handleOpen}
+                ref={notificationsPopover.anchorRef}
+              >
+                <Badge badgeContent={orderNotifications.length} color="success">
                   <SvgIcon fontSize="small">
                     <BellIcon />
                   </SvgIcon>
@@ -128,7 +188,7 @@ export function TopNav(props: { onNavOpen: () => void }) {
                 height: 40,
                 width: 40,
               }}
-              src="/assets/avatars/avatar-anika-visser.png"
+              src={user.avatar ?? "/assets/avatars/avatar-anika-visser.png"}
             />
           </Stack>
         </Stack>
@@ -137,6 +197,13 @@ export function TopNav(props: { onNavOpen: () => void }) {
         anchorEl={accountPopover.anchorRef.current}
         open={accountPopover.open}
         onClose={accountPopover.handleClose}
+      />
+      <OrderNotificationsPopover
+        anchorEl={notificationsPopover.anchorRef.current}
+        open={notificationsPopover.open}
+        onClose={notificationsPopover.handleClose}
+        notifications={orderNotifications}
+        onClearAll={() => setOrderNotifications([])}
       />
       <ChatDashboard
         open={chatModal}
