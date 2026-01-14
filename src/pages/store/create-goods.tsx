@@ -20,7 +20,6 @@ import {
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { get, post } from "src/lib/http";
-import axios from "axios";
 import { toast } from "react-toastify";
 import { StoreType } from "src/types/store.type";
 import { CategoryType } from "src/types/category.type";
@@ -28,8 +27,6 @@ import utils from "src/lib/utils";
 import { GOODS_UNIT_NAMES } from "src/constant/goods.const";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { LocalStorage } from "src/lib/localStorage";
-import { Env } from "src/constant/env";
 
 type Option = { label: string; value: string };
 

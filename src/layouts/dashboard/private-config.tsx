@@ -15,6 +15,7 @@ import {
   BuildingStorefrontIcon,
   LockClosedIcon,
   UserMinusIcon,
+  PhotoIcon,
 } from "@heroicons/react/24/solid";
 import { DashboardItemType } from "src/layouts/dashboard/public-config";
 
@@ -108,6 +109,15 @@ export const privateItems: (DashboardItemType & { group?: DashboardItemType[] })
         icon: (
           <SvgIcon fontSize="small">
             <BuildingStorefrontIcon />
+          </SvgIcon>
+        ),
+      },
+      {
+        title: "首页轮播图",
+        path: "/manage/home-carousel",
+        icon: (
+          <SvgIcon fontSize="small">
+            <PhotoIcon />
           </SvgIcon>
         ),
       },
