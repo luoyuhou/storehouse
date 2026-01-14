@@ -472,6 +472,7 @@ export function StoreOrderTable(props: {
                         <Link
                           component="button"
                           variant="subtitle2"
+                          maxWidth="200px"
                           onClick={() => {
                             setHistoryOrderId(order.order_id);
                             setHistoryOrderNumber(order.order_id);
@@ -502,12 +503,10 @@ export function StoreOrderTable(props: {
                         </Typography>
                       </TableCell>
                       <TableCell>
-                        <Typography variant="subtitle2" color="secondary">
+                        <Typography variant="subtitle2" color="secondary" maxWidth="180px">
                           {order.province}
                           {order.city}
                           {order.area}
-                        </Typography>
-                        <Typography variant="subtitle2" color="secondary">
                           {order.town}
                           {order.address}
                         </Typography>
