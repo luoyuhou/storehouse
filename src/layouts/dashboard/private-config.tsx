@@ -83,6 +83,15 @@ export const privateItems: (DashboardItemType & { group?: DashboardItemType[] })
           </SvgIcon>
         ),
       },
+      {
+        title: "操作日志",
+        path: "/store/history",
+        icon: (
+          <SvgIcon fontSize="small">
+            <DocumentTextIcon />
+          </SvgIcon>
+        ),
+      },
     ],
   },
   {
