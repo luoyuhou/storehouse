@@ -42,6 +42,12 @@ export function CompanyHistoryTable({ id }: { id: string }) {
   const [data, setData] = React.useState<StoryHistoryType[]>([]);
 
   useEffect(() => {
+    if (!id) {
+      setData([]);
+      setRows(0);
+      return;
+    }
+
     setLoading(true);
     get<StoryHistoryType[]>(`/api/store/history/${id}`)
       .then((res) => {
@@ -50,7 +56,7 @@ export function CompanyHistoryTable({ id }: { id: string }) {
       })
       .catch((err) => toast.error(err.message))
       .finally(() => setLoading(false));
-  }, []);
+  }, [id]);
 
   return (
     <CircularPercentageLoading loading={loading}>
