@@ -23,6 +23,7 @@ import { useAuth } from "src/hooks/use-auth";
 import { UserSessionType } from "src/types/users";
 import { useSocket } from "src/contexts/socket";
 import { OrderNotificationsPopover } from "src/components/order-notifications-popover";
+import { AccountDialog } from "src/sections/account/account-dialog";
 import { AccountPopover } from "./account-popover";
 
 const SIDE_NAV_WIDTH = 280;
@@ -42,6 +43,7 @@ interface NewOrderNotification {
 export function TopNav(props: { onNavOpen: () => void }) {
   const { onNavOpen } = props;
   const [chatModal, setChatModal] = useState<boolean>(false);
+  const [accountDialogOpen, setAccountDialogOpen] = useState<boolean>(false);
   const lgUp = useMediaQuery<Theme>((theme) => theme.breakpoints.up("lg"));
   const accountPopover = usePopover();
   const notificationsPopover = usePopover();
@@ -197,7 +199,9 @@ export function TopNav(props: { onNavOpen: () => void }) {
         anchorEl={accountPopover.anchorRef.current}
         open={accountPopover.open}
         onClose={accountPopover.handleClose}
+        onOpenAccountDialog={() => setAccountDialogOpen(true)}
       />
+      <AccountDialog open={accountDialogOpen} onClose={() => setAccountDialogOpen(false)} />
       <OrderNotificationsPopover
         anchorEl={notificationsPopover.anchorRef.current}
         open={notificationsPopover.open}

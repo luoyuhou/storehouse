@@ -4,7 +4,6 @@ import React from "react";
 import { SvgIcon } from "@mui/material";
 import {
   ChartBarIcon,
-  UserIcon,
   CogIcon,
   WrenchScrewdriverIcon,
   PuzzlePieceIcon,
@@ -25,24 +24,6 @@ export const items: (DashboardItemType & { group?: DashboardItemType[] })[] = [
     icon: (
       <SvgIcon fontSize="small">
         <ChartBarIcon />
-      </SvgIcon>
-    ),
-  },
-  // {
-  //   title: "Companies",
-  //   path: "/companies",
-  //   icon: (
-  //     <SvgIcon fontSize="small">
-  //       <ShoppingBagIcon />
-  //     </SvgIcon>
-  //   ),
-  // },
-  {
-    title: "帐号",
-    path: "/account",
-    icon: (
-      <SvgIcon fontSize="small">
-        <UserIcon />
       </SvgIcon>
     ),
   },

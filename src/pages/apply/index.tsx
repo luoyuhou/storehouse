@@ -14,10 +14,10 @@ function Apply() {
         component="main"
         sx={{
           flexGrow: 1,
-          py: 8,
+          py: 3,
         }}
       >
-        <Container maxWidth="lg">
+        <Container maxWidth="xl">
           <Stack spacing={3}>
             <div>
               <Typography variant="h4">服务订阅</Typography>

@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import Head from "next/head";
-import { subDays, subHours } from "date-fns";
 import { Box, Container, Unstable_Grid2 as Grid } from "@mui/material";
 import { Layout as DashboardLayout } from "../layouts/dashboard/layout";
 import { OverviewBudget } from "../sections/overview/overview-budget";
@@ -12,8 +11,6 @@ import { OverviewTotalCustomers } from "../sections/overview/overview-total-cust
 import { OverviewTotalProfit } from "../sections/overview/overview-total-profit";
 import { OverviewTraffic } from "../sections/overview/overview-traffic";
 
-const now = new Date();
-
 function Page() {
   return (
     <>
@@ -24,7 +21,7 @@ function Page() {
         component="main"
         sx={{
           flexGrow: 1,
-          py: 8,
+          py: 3,
         }}
       >
         <Container maxWidth="xl">

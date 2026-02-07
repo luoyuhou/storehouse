@@ -7,8 +7,10 @@ import { useAuth } from "src/hooks/use-auth";
 import { UserSessionType } from "src/types/users";
 import { useSocket } from "src/contexts/socket";
 
-export function AccountPopover(props: PopoverProps & { onClose?: () => void }) {
-  const { anchorEl, onClose, open } = props;
+export function AccountPopover(
+  props: PopoverProps & { onClose?: () => void; onOpenAccountDialog?: () => void },
+) {
+  const { anchorEl, onClose, open, onOpenAccountDialog } = props;
   const router = useRouter();
   const auth = useAuth();
 
@@ -40,15 +42,14 @@ export function AccountPopover(props: PopoverProps & { onClose?: () => void }) {
           px: 2,
         }}
       >
-        <Typography variant="overline">
-          <a href="/account">Account</a>
-        </Typography>
+        <Typography variant="overline">账号</Typography>
         <Divider />
         <Typography sx={{ py: 1 }} color="secondary" variant="body2">
           {`${(user as unknown as UserSessionType)?.first_name} ${(user as unknown as UserSessionType)?.last_name}`}
         </Typography>
-        <Divider />
-        <Typography sx={{ py: 1 }}>{(user as unknown as UserSessionType)?.phone}</Typography>
+        <Typography sx={{ pb: 1 }} variant="body2">
+          {(user as unknown as UserSessionType)?.phone}
+        </Typography>
       </Box>
       <Divider />
       <MenuList
@@ -61,7 +62,15 @@ export function AccountPopover(props: PopoverProps & { onClose?: () => void }) {
           },
         }}
       >
-        <MenuItem onClick={handleSignOut}>Sign out</MenuItem>
+        <MenuItem
+          onClick={() => {
+            onClose?.();
+            onOpenAccountDialog?.();
+          }}
+        >
+          账号设置
+        </MenuItem>
+        <MenuItem onClick={handleSignOut}>退出登录</MenuItem>
       </MenuList>
     </Popover>
   );
@@ -72,4 +81,5 @@ AccountPopover.propTypes = {
   anchorEl: PropTypes.any,
   onClose: PropTypes.func,
   open: PropTypes.bool.isRequired,
+  onOpenAccountDialog: PropTypes.func,
 };
