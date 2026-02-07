@@ -50,7 +50,6 @@ export function AuthGuard(props: { children: never }) {
       "/403*",
       "/404*",
       "/auth*",
-      "/account*",
       "/settings*",
       "/tools*",
       "/apply*",
