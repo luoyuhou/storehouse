@@ -43,6 +43,31 @@ interface OrderHistoryItem {
   } | null;
 }
 
+interface OrderSummary {
+  order_id: string;
+  payment_method?: "online_qr" | "cod" | "pickup_pay" | string;
+  pay_status?: 0 | 1 | number | null;
+  pay_proof_url?: string | null;
+  paid_at?: string | null;
+}
+
+const PAYMENT_METHOD_LABEL: Record<string, string> = {
+  online_qr: "扫码支付",
+  cod: "货到付款",
+  pickup_pay: "到店付款",
+};
+
+const PAY_STATUS_CONFIG: Record<
+  number,
+  {
+    label: string;
+    color: "default" | "success";
+  }
+> = {
+  0: { label: "未收款", color: "default" },
+  1: { label: "已收款", color: "success" },
+};
+
 interface OrderHistoryDialogProps {
   open: boolean;
   onClose: () => void;
@@ -112,13 +137,15 @@ export function OrderHistoryDialog({
 }: OrderHistoryDialogProps) {
   const [loading, setLoading] = useState(false);
   const [history, setHistory] = useState<OrderHistoryItem[]>([]);
+  const [order, setOrder] = useState<OrderSummary | null>(null);
 
   const loadHistory = async () => {
     setLoading(true);
     try {
-      const response = await get<{ order: never; history: OrderHistoryItem[] }>(
+      const response = await get<{ order: OrderSummary | null; history: OrderHistoryItem[] }>(
         `/api/store/order/history/${orderId}`,
       );
+      setOrder(response.order || null);
       setHistory(response.history || []);
     } catch (err) {
       toast.error((err as { message: string }).message || "加载订单历史失败");
@@ -142,6 +169,54 @@ export function OrderHistoryDialog({
         </Stack>
       </DialogTitle>
       <DialogContent>
+        {order && (
+          <Box sx={{ mb: 3 }}>
+            <Paper variant="outlined" sx={{ p: 2 }}>
+              <Typography variant="subtitle1" gutterBottom>
+                支付信息
+              </Typography>
+              <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 1 }}>
+                <Chip
+                  label={PAYMENT_METHOD_LABEL[order.payment_method || "online_qr"] || "扫码支付"}
+                  size="small"
+                  variant="outlined"
+                />
+                <Chip
+                  label={PAY_STATUS_CONFIG[(order.pay_status ?? 0) as number]?.label || "未收款"}
+                  color={
+                    (PAY_STATUS_CONFIG[(order.pay_status ?? 0) as number]?.color ||
+                      "default") as never
+                  }
+                  size="small"
+                />
+                {order.paid_at && (
+                  <Typography variant="caption" color="textSecondary">
+                    收款时间：
+                    {format(new Date(order.paid_at), "yyyy-MM-dd HH:mm:ss")}
+                  </Typography>
+                )}
+              </Stack>
+              {order.pay_proof_url && (
+                <Box sx={{ mt: 1 }}>
+                  <Typography variant="caption" color="textSecondary" gutterBottom>
+                    支付凭证：
+                  </Typography>
+                  <Box
+                    component="img"
+                    src={order.pay_proof_url}
+                    alt="支付凭证"
+                    sx={{
+                      mt: 0.5,
+                      maxWidth: 260,
+                      borderRadius: 1,
+                      border: (theme) => `1px solid ${theme.palette.divider}`,
+                    }}
+                  />
+                </Box>
+              )}
+            </Paper>
+          </Box>
+        )}
         {/* eslint-disable-next-line no-nested-ternary */}
         {loading ? (
           <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>

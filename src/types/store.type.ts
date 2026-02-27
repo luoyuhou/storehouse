@@ -11,6 +11,8 @@ export type StoreType = {
   town_name?: string;
   address: string;
   logo?: string;
+  wechat_qr_url?: string | null;
+  alipay_qr_url?: string | null;
 
   status: number;
 
@@ -39,6 +41,10 @@ export type UserOrderType = {
   store_id: string;
   status: 0 | 1 | 2 | 3 | 4 | 5;
   stage: 1 | 2 | 3;
+  payment_method?: "online_qr" | "cod" | "pickup_pay";
+  pay_status?: 0 | 1;
+  paid_at?: string | null;
+  pay_proof_url?: string | null;
   recipient: string;
   money: number;
   phone: string;

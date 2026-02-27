@@ -20,6 +20,7 @@ import { UserInfoDialog } from "./user-info.dialog";
 import { ChatMessages } from "./chat.messages";
 import { ContactDialog } from "./contact-dialog";
 import { CreateGroupDialog } from "./create-group-dialog";
+import { GroupInfoDialog } from "./group-info.dialog";
 
 type ChatDashboardProps = {
   user: UserSessionType;
@@ -43,6 +44,7 @@ export default function ChatDashboard({
   const [userInfo, setUserInfo] = useState<UserEntity | null>(null);
   const [contactDialogOpen, setContactDialogOpen] = useState(false);
   const [createGroupDialogOpen, setCreateGroupDialogOpen] = useState(false);
+  const [groupInfoOpen, setGroupInfoOpen] = useState(false);
   const [groups, setGroups] = useState<{ id: string; name: string }[]>([]);
 
   const handleUserClick = (userId: string) => {
@@ -199,6 +201,12 @@ export default function ChatDashboard({
             return [...prev, { id: group.groupId, name: group.name }];
           });
         }}
+      />
+      <GroupInfoDialog
+        open={groupInfoOpen}
+        onClose={() => setGroupInfoOpen(false)}
+        groupId={recipientId}
+        groupName={recipientName}
       />
     </Dialog>
   );

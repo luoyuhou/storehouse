@@ -90,6 +90,25 @@ const ORDER_STAGE_CONFIG = {
   5: { label: "已完成", color: "success" },
 };
 
+// 支付方式配置
+const PAYMENT_METHOD_LABEL: Record<string, string> = {
+  online_qr: "扫码支付",
+  cod: "货到付款",
+  pickup_pay: "到店付款",
+};
+
+// 支付状态配置（是否已收款）
+const PAY_STATUS_CONFIG: Record<
+  number,
+  {
+    label: string;
+    color: "default" | "success";
+  }
+> = {
+  0: { label: "未收款", color: "default" },
+  1: { label: "已收款", color: "success" },
+};
+
 function OrderDetailTableBody(props: {
   loadingDetails: boolean;
   orderDetails: OrderItemDetail[];
@@ -305,7 +324,7 @@ export function StoreOrderTable(props: {
     }
   };
 
-  // 完成订单
+  // 完成订单（暂未在后端实现，保留占位）
   const handleCompleteOrder = async (orderId: string) => {
     try {
       await post({
@@ -316,6 +335,20 @@ export function StoreOrderTable(props: {
       loadData();
     } catch (err) {
       toast.error((err as { message: string }).message || "操作失败");
+    }
+  };
+
+  // 确认收款
+  const handleConfirmPayment = async (orderId: string) => {
+    try {
+      await post({
+        url: "/api/store/order/confirm-payment",
+        payload: { order_id: orderId },
+      });
+      toast.success("已确认收款");
+      loadData();
+    } catch (err) {
+      toast.error((err as { message: string }).message || "确认收款失败");
     }
   };
 
@@ -405,6 +438,24 @@ export function StoreOrderTable(props: {
       );
     }
 
+    // 未收款订单 - 显示确认收款按钮
+    if ((order.pay_status ?? 0) === 0) {
+      buttons.push(
+        <ConfirmDialog
+          ButtonIcon={
+            <Tooltip key="confirm-pay" title="确认已收款">
+              <IconButton size="small" color="primary">
+                <CheckCircleIcon style={{ width: 20, height: 20 }} />
+              </IconButton>
+            </Tooltip>
+          }
+          title="确认已收款"
+          content={`确认订单 ${order.order_id} 的货款已收到？`}
+          confirmFunc={() => handleConfirmPayment(order.order_id)}
+        />,
+      );
+    }
+
     return buttons;
   };
 
@@ -434,6 +485,7 @@ export function StoreOrderTable(props: {
                   <TableCell>用户</TableCell>
                   <TableCell>收货地址</TableCell>
                   <TableCell>金额</TableCell>
+                  <TableCell>支付</TableCell>
                   <TableCell>状态</TableCell>
                   <TableCell>进度</TableCell>
                   <TableCell>下单时间</TableCell>
@@ -515,6 +567,26 @@ export function StoreOrderTable(props: {
                         <Typography variant="subtitle2" color="primary">
                           ¥{(order.money / 100).toFixed(2)}
                         </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Stack spacing={0.5}>
+                          <Chip
+                            label={
+                              PAYMENT_METHOD_LABEL[order.payment_method || "online_qr"] ||
+                              "扫码支付"
+                            }
+                            size="small"
+                            variant="outlined"
+                          />
+                          <Chip
+                            label={PAY_STATUS_CONFIG[order.pay_status ?? 0]?.label || "未收款"}
+                            color={
+                              (PAY_STATUS_CONFIG[order.pay_status ?? 0]?.color ||
+                                "default") as never
+                            }
+                            size="small"
+                          />
+                        </Stack>
                       </TableCell>
                       <TableCell>
                         <Chip
@@ -655,6 +727,53 @@ export function StoreOrderTable(props: {
                         {format(new Date(selectedOrder.delivery_date), "yyyy-MM-dd HH:mm:ss")}
                       </Typography>
                     </Grid>
+                    <Grid item xs={12} md={6}>
+                      <Typography variant="subtitle2" color="textSecondary">
+                        支付方式 / 收款状态
+                      </Typography>
+                      <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 0.5 }}>
+                        <Chip
+                          label={
+                            PAYMENT_METHOD_LABEL[selectedOrder.payment_method || "online_qr"] ||
+                            "扫码支付"
+                          }
+                          size="small"
+                          variant="outlined"
+                        />
+                        <Chip
+                          label={
+                            PAY_STATUS_CONFIG[selectedOrder.pay_status ?? 0]?.label || "未收款"
+                          }
+                          color={
+                            (PAY_STATUS_CONFIG[selectedOrder.pay_status ?? 0]?.color ||
+                              "default") as never
+                          }
+                          size="small"
+                        />
+                      </Stack>
+                    </Grid>
+                    {selectedOrder.pay_proof_url && (
+                      <Grid item xs={12}>
+                        <Typography variant="subtitle2" color="textSecondary">
+                          支付凭证
+                        </Typography>
+                        <Box
+                          sx={{
+                            mt: 1,
+                            borderRadius: 1,
+                            overflow: "hidden",
+                            border: (theme) => `1px solid ${theme.palette.divider}`,
+                            maxWidth: 260,
+                          }}
+                        >
+                          <img
+                            src={selectedOrder.pay_proof_url}
+                            alt="支付凭证"
+                            style={{ width: "100%", display: "block" }}
+                          />
+                        </Box>
+                      </Grid>
+                    )}
                   </Grid>
                 </Box>
               </Card>
