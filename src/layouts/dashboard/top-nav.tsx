@@ -68,10 +68,12 @@ export function TopNav(props: { onNavOpen: () => void }) {
     if (!socket) return;
 
     const handleReceiveMessage = (data: ChatContentItem) => {
-      if (chatList.some((i) => i.key === data.key)) {
-        return;
-      }
-      setChatList((prev) => [{ ...data, isRead: chatModal }, ...prev]);
+      setChatList((prev) => {
+        if (prev.some((i) => i.key === data.key)) {
+          return prev;
+        }
+        return [{ ...data, isRead: chatModal }, ...prev];
+      });
     };
 
     socket.on("receiveMessage", handleReceiveMessage);
@@ -80,7 +82,7 @@ export function TopNav(props: { onNavOpen: () => void }) {
     return () => {
       socket.off("receiveMessage", handleReceiveMessage);
     };
-  }, [socket, chatList, chatModal]);
+  }, [chatModal]);
 
   // 监听新订单通知
   useEffect(() => {
@@ -190,7 +192,7 @@ export function TopNav(props: { onNavOpen: () => void }) {
                 height: 40,
                 width: 40,
               }}
-              src={user.avatar ?? "/assets/avatars/avatar-anika-visser.png"}
+              src={user?.avatar ?? "/assets/avatars/avatar-anika-visser.png"}
             />
           </Stack>
         </Stack>
