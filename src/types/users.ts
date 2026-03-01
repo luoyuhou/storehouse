@@ -7,6 +7,7 @@ export type UserEntity = {
   phone: string;
   status: number;
   email: string | null;
+  bio: string;
   create_date: Date;
   update_date: Date;
 };
