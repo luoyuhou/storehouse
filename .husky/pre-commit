@@ -3,3 +3,4 @@
 
 echo 'nextjs:pre-commit'
 npx lint-staged
+npm run ts-check

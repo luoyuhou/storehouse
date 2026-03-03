@@ -1,11 +1,7 @@
 import React from "react";
-import { Inter } from "next/font/google";
-// import "./globals.css";
 import Typography from "@mui/material/Typography";
 import Link from "@mui/material/Link";
 import Container from "@mui/material/Container";
-
-const inter = Inter({ subsets: ["latin"] });
 
 function Copyright() {
   return (
@@ -24,7 +20,7 @@ function Copyright() {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <Container className={inter.className} style={{ maxWidth: "1650px" }}>
+    <Container style={{ maxWidth: "1650px" }}>
       {children}
       <Copyright />
     </Container>
