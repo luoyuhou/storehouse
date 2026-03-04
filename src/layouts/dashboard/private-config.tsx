@@ -131,6 +131,15 @@ export const privateItems: (DashboardItemType & { group?: DashboardItemType[] })
         ),
       },
       {
+        title: "店铺服务",
+        path: "/manage/store-service",
+        icon: (
+          <SvgIcon fontSize="small">
+            <ServerStackIcon />
+          </SvgIcon>
+        ),
+      },
+      {
         title: "权限系统",
         path: "/manage/role-management",
         icon: (

@@ -54,6 +54,49 @@ function a11yProps(index: number) {
   };
 }
 
+interface StoreServicePlanSummary {
+  id: number;
+  name: string;
+  monthly_fee: number;
+}
+
+interface StoreServiceSubscriptionSummary {
+  id: number;
+  store_id: string;
+  plan_id: number;
+  start_date: string;
+  end_date: string;
+  status: number;
+  plan?: StoreServicePlanSummary;
+}
+
+interface StoreServiceInvoiceSummary {
+  id: number;
+  subscription_id: number;
+  month: string;
+  amount: number;
+  status: number;
+  due_date: string;
+  paid_at?: string | null;
+  subscription: StoreServiceSubscriptionSummary;
+}
+
+function formatDate(value?: string | null) {
+  if (!value) return "-";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return value;
+  const year = d.getFullYear();
+  const month = `${d.getMonth() + 1}`.padStart(2, "0");
+  const day = `${d.getDate()}`.padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function getStatusName(value: number) {
+  if (value === 0) return "待支付";
+  if (value === 1) return "已支付";
+  return value === 2 ? "逾期" : "已取消";
+}
+
 function CompanyDetail() {
   const router = useRouter();
   const { id } = router.query;
@@ -62,7 +105,14 @@ function CompanyDetail() {
 
   const [value, setValue] = React.useState(0);
 
+  const [serviceSubscriptions, setServiceSubscriptions] = React.useState<
+    StoreServiceSubscriptionSummary[]
+  >([]);
+  const [serviceInvoices, setServiceInvoices] = React.useState<StoreServiceInvoiceSummary[]>([]);
+  const [serviceLoading, setServiceLoading] = React.useState(false);
+
   useEffect(() => {
+    if (!id) return;
     setCompanyLoading(true);
     get<StoreType>(`/api/store/${id}`)
       .then((res) => {
@@ -70,7 +120,36 @@ function CompanyDetail() {
       })
       .catch((err) => toast.error(err.message))
       .finally(() => setCompanyLoading(false));
-  }, []);
+  }, [id]);
+
+  useEffect(() => {
+    if (!id) return;
+    setServiceLoading(true);
+    Promise.all([
+      get<{ data: StoreServiceSubscriptionSummary[] }>(
+        `/api/store-service/subscriptions?store_id=${id}`,
+      ),
+      get<{ data: StoreServiceInvoiceSummary[] }>(`/api/store-service/invoices?store_id=${id}`),
+    ])
+      .then(([subsRes, invRes]) => {
+        setServiceSubscriptions(subsRes.data || []);
+        setServiceInvoices(invRes.data || []);
+      })
+      .catch((err) => toast.error(err.message))
+      .finally(() => setServiceLoading(false));
+  }, [id]);
+
+  const activeSubscription = React.useMemo(() => {
+    if (!serviceSubscriptions.length) return undefined;
+    const active = serviceSubscriptions.find((s) => s.status === 1);
+    return active || serviceSubscriptions[0];
+  }, [serviceSubscriptions]);
+
+  const latestInvoice = React.useMemo(() => {
+    if (!serviceInvoices.length) return undefined;
+    return serviceInvoices[0];
+  }, [serviceInvoices]);
+
   return (
     <>
       <Head>
@@ -147,6 +226,36 @@ function CompanyDetail() {
                   <Grid>
                     <Grid>{id && <CompanyRejecter id={id as string} />}</Grid>
                   </Grid>
+
+                  <Box mt={3}>
+                    <Typography variant="h6" gutterBottom>
+                      店铺服务
+                    </Typography>
+                    {/* eslint-disable-next-line no-nested-ternary */}
+                    {serviceLoading ? (
+                      <Typography variant="body2">服务信息加载中...</Typography>
+                    ) : !activeSubscription ? (
+                      <Typography variant="body2">暂无服务订阅</Typography>
+                    ) : (
+                      <>
+                        <Typography variant="body2">
+                          当前订阅：
+                          {activeSubscription.plan?.name || "未知套餐"}（
+                          {formatDate(activeSubscription.start_date)} ~{" "}
+                          {formatDate(activeSubscription.end_date)}）
+                        </Typography>
+                        {latestInvoice && (
+                          <Typography variant="body2" sx={{ mt: 1 }}>
+                            最近账单：{latestInvoice.month}，金额 {latestInvoice.amount} 元，状态{" "}
+                            {getStatusName(latestInvoice.status)}
+                            ，到期日 {formatDate(latestInvoice.due_date)}
+                            {latestInvoice.paid_at &&
+                              `，支付时间 ${formatDate(latestInvoice.paid_at)}`}
+                          </Typography>
+                        )}
+                      </>
+                    )}
+                  </Box>
                 </Box>
               </TabPanel>
               <TabPanel value={value} index={2}>
