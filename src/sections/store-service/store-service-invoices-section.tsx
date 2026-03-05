@@ -24,10 +24,14 @@ import { get, post } from "src/lib/http";
 import { StoreServiceInvoice, formatDate } from "./types";
 import { StoreServiceStatusCellRender } from "./store-service-cell.components";
 
-export function StoreServiceInvoicesSection() {
+interface StoreServiceInvoicesSectionProps {
+  currentStoreId?: string;
+}
+
+export function StoreServiceInvoicesSection({ currentStoreId }: StoreServiceInvoicesSectionProps) {
   const [invoices, setInvoices] = useState<StoreServiceInvoice[]>([]);
   const [total, setTotal] = useState(0);
-  const [invoiceStoreId, setInvoiceStoreId] = useState("");
+  const [invoiceStoreId, setInvoiceStoreId] = useState(currentStoreId || "");
   const [invoiceStatus, setInvoiceStatus] = useState<number | "">("");
 
   const [page, setPage] = useState(1);

@@ -1,11 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from "react";
 import Head from "next/head";
-import { AppBar, Box, Container, Tab, Tabs, Typography } from "@mui/material";
+import { AppBar, Box, Container, Stack, Tab, Tabs, Typography } from "@mui/material";
 import { Layout as DashboardLayout } from "src/layouts/dashboard/layout";
 import { StoreServicePlansSection } from "src/sections/store-service/store-service-plans-section";
 import { StoreServiceSubscriptionsSection } from "src/sections/store-service/store-service-subscriptions-section";
 import { StoreServiceInvoicesSection } from "src/sections/store-service/store-service-invoices-section";
+import { StoreServiceContractsSection } from "src/sections/store-service/store-service-contracts-section";
+import { StoreSelector } from "src/components/store/store-selector";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -38,6 +40,7 @@ function a11yProps(index: number) {
 
 function StoreServiceManagePage() {
   const [value, setValue] = React.useState(0);
+  const [currentStoreId, setCurrentStoreId] = React.useState<string | undefined>();
 
   return (
     <>
@@ -56,6 +59,16 @@ function StoreServiceManagePage() {
             店铺服务管理
           </Typography>
 
+          <Stack direction="row" alignItems="center" justifyContent="space-between" mb={2}>
+            <Typography variant="subtitle1" color="text.secondary">
+              请选择需要管理的店铺
+            </Typography>
+            <StoreSelector
+              label="选择店铺（按名称搜索）"
+              onChange={(storeId) => setCurrentStoreId(storeId)}
+            />
+          </Stack>
+
           <AppBar position="static" color="default">
             <Tabs
               value={value}
@@ -69,17 +82,21 @@ function StoreServiceManagePage() {
               <Tab label="店铺订阅" {...a11yProps(0)} />
               <Tab label="账单列表" {...a11yProps(1)} />
               <Tab label="店铺服务套餐" {...a11yProps(2)} />
+              <Tab label="合同" {...a11yProps(3)} />
             </Tabs>
           </AppBar>
 
           <TabPanel value={value} index={0}>
-            <StoreServiceSubscriptionsSection />
+            <StoreServiceSubscriptionsSection currentStoreId={currentStoreId} />
           </TabPanel>
           <TabPanel value={value} index={1}>
-            <StoreServiceInvoicesSection />
+            <StoreServiceInvoicesSection currentStoreId={currentStoreId} />
           </TabPanel>
           <TabPanel value={value} index={2}>
             <StoreServicePlansSection />
+          </TabPanel>
+          <TabPanel value={value} index={3}>
+            <StoreServiceContractsSection currentStoreId={currentStoreId} />
           </TabPanel>
         </Container>
       </Box>

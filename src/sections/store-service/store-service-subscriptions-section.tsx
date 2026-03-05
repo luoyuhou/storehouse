@@ -34,7 +34,13 @@ import {
   StoreServiceSubscriptionCellRender,
 } from "src/sections/store-service/store-service-cell.components";
 
-export function StoreServiceSubscriptionsSection() {
+interface StoreServiceSubscriptionsSectionProps {
+  currentStoreId?: string;
+}
+
+export function StoreServiceSubscriptionsSection({
+  currentStoreId,
+}: StoreServiceSubscriptionsSectionProps) {
   const [plans, setPlans] = useState<StoreServicePlan[]>([]);
   const [subscriptions, setSubscriptions] = useState<StoreServiceSubscription[]>([]);
   const [total, setTotal] = useState(0);
@@ -75,11 +81,14 @@ export function StoreServiceSubscriptionsSection() {
   }, [filterStoreId, filterStatus, page, pageSize]);
 
   const handleCreateSubscription = async () => {
-    if (!subStoreId.trim() || !subPlanId) return;
+    if (!currentStoreId || !subPlanId) {
+      toast.error("请先在页面顶部选择店铺，再创建订阅");
+      return;
+    }
     await post<{ data: StoreServiceSubscription }>({
       url: "/api/store-service/subscriptions",
       payload: {
-        store_id: subStoreId.trim(),
+        store_id: currentStoreId,
         plan_id: subPlanId,
       },
     }).catch((err) => toast.error(err.message));
@@ -107,11 +116,13 @@ export function StoreServiceSubscriptionsSection() {
             label="店铺ID（store_id）"
             size="small"
             value={filterStoreId}
+            placeholder={currentStoreId || ""}
             onChange={(e) => {
               setPage(1);
               setFilterStoreId(e.target.value);
             }}
           />
+
           <FormControl size="small" sx={{ minWidth: 120 }}>
             <InputLabel id="sub-status-filter-label">状态</InputLabel>
             <Select
@@ -196,8 +207,9 @@ export function StoreServiceSubscriptionsSection() {
             <TextField
               label="店铺ID（store_id）"
               fullWidth
-              value={subStoreId}
-              onChange={(e) => setSubStoreId(e.target.value)}
+              value={currentStoreId || ""}
+              disabled
+              helperText={currentStoreId ? "" : "请先在页面顶部选择店铺"}
             />
             <FormControl fullWidth>
               <InputLabel id="plan-select-label">套餐</InputLabel>

@@ -25,3 +25,16 @@ export function StoreServiceStatusCellRender({ value }: { value: number }) {
   }
   return <Typography color="grey">已取消</Typography>;
 }
+
+export function StoreServiceContractStatusCellRender({ value }: { value: number }) {
+  if (value === 1) {
+    return <Typography color="green">生效中</Typography>;
+  }
+  if (value === 2) {
+    return <Typography color="orange">已到期</Typography>;
+  }
+  if (value === 3) {
+    return <Typography color="red">已终止</Typography>;
+  }
+  return <Typography color="grey">未知</Typography>;
+}
