@@ -84,6 +84,15 @@ export const privateItems: (DashboardItemType & { group?: DashboardItemType[] })
         ),
       },
       {
+        title: "订单日报",
+        path: "/store/order-daily-report",
+        icon: (
+          <SvgIcon fontSize="small">
+            <DocumentTextIcon />
+          </SvgIcon>
+        ),
+      },
+      {
         title: "操作日志",
         path: "/store/history",
         icon: (
@@ -136,6 +145,15 @@ export const privateItems: (DashboardItemType & { group?: DashboardItemType[] })
         icon: (
           <SvgIcon fontSize="small">
             <ServerStackIcon />
+          </SvgIcon>
+        ),
+      },
+      {
+        title: "订单趋势（按月）",
+        path: "/manage/order-monthly-trend",
+        icon: (
+          <SvgIcon fontSize="small">
+            <DocumentTextIcon />
           </SvgIcon>
         ),
       },

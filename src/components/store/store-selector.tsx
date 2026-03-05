@@ -5,7 +5,7 @@ import { StoreType } from "src/types/store.type";
 
 interface StoreSelectorProps {
   label?: string;
-  onChange?: (storeId?: string, store?: StoreType) => void;
+  onChange?: (storeId?: string) => void;
 }
 
 export function StoreSelector(props: StoreSelectorProps) {
@@ -53,7 +53,7 @@ export function StoreSelector(props: StoreSelectorProps) {
   return (
     <Autocomplete
       size="small"
-      sx={{ minWidth: 480 }}
+      sx={{ minWidth: 600 }}
       options={options}
       loading={loading}
       getOptionLabel={(option) => renderLabel(option)}
@@ -61,7 +61,7 @@ export function StoreSelector(props: StoreSelectorProps) {
       onChange={(event, newValue) => {
         setSelectedStore(newValue);
         if (onChange) {
-          onChange(newValue?.store_id, newValue || undefined);
+          onChange(newValue?.store_id);
         }
       }}
       inputValue={inputValue}
