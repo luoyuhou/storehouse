@@ -127,7 +127,7 @@ export function SideNav(props: { open: boolean; onClose: () => void }) {
             </SvgIcon>
           }
           fullWidth
-          href="/comment-feature"
+          href="/feedback"
           sx={{ mt: 2 }}
           target="_blank"
           variant="contained"
