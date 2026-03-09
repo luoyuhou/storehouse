@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import PropTypes from "prop-types";
 import { useAuthContext } from "src/contexts/auth-context";
@@ -7,7 +7,7 @@ import { authPermission } from "src/utils/auth";
 export function AuthGuard(props: { children: never }) {
   const { children } = props;
   const router = useRouter();
-  const { isAuthenticated, authPaths, user } = useAuthContext();
+  const { isAuthenticated, authPaths } = useAuthContext();
   const ignore = useRef(false);
   const [checked, setChecked] = useState(false);
 
@@ -53,7 +53,7 @@ export function AuthGuard(props: { children: never }) {
       "/settings*",
       "/tools*",
       "/apply*",
-      "/comment-feature*",
+      "/feedback*",
     ];
     const { pathname } = router;
     const isNotNeedCheck = notCheckPaths.some((p) => {
@@ -70,7 +70,7 @@ export function AuthGuard(props: { children: never }) {
 
       return arrByPath[0] === `/${arrByPathname?.[1]}`;
     });
-    console.log("isNotNeedCheck", isNotNeedCheck);
+
     if (isNotNeedCheck) {
       return;
     }
