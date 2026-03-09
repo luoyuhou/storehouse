@@ -95,7 +95,9 @@ export const AuthContext = createContext({
     last_name: string;
     phone: string;
     password: string;
+    code: string;
   }) => {},
+  sendSmsCode: async (phone: string) => {},
   signOut: () => {},
   user: null,
   isLoading: false,
@@ -179,11 +181,20 @@ export function AuthProvider(props: { children: React.ReactNode }) {
     last_name: string;
     phone: string;
     password: string;
+    code: string;
   }) => {
     return post({
       url: "/api/auth/local/sign-up",
       config: {},
       payload: args,
+    });
+  };
+
+  const sendSmsCode = async (phone: string) => {
+    return post({
+      url: "/api/auth/send-sms",
+      config: {},
+      payload: { phone },
     });
   };
 
@@ -199,7 +210,7 @@ export function AuthProvider(props: { children: React.ReactNode }) {
   };
 
   // eslint-disable-next-line react/jsx-no-constructed-context-values
-  const values = { ...state, signIn, signInByScan, signUp, signOut };
+  const values = { ...state, signIn, signInByScan, signUp, signOut, sendSmsCode };
 
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-expect-error
