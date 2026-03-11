@@ -16,7 +16,7 @@ export function CustomersSearch({ onChange }: { onChange: (v: string) => void })
             </SvgIcon>
           </InputAdornment>
         }
-        sx={{ maxWidth: 500 }}
+        sx={{ maxWidth: 500, minWidth: 500 }}
         onChange={(e) => onChange(e.target.value)}
       />
     </Card>
