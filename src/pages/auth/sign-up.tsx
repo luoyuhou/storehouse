@@ -5,16 +5,17 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { Box, Button, Link, Stack, TextField, Typography } from "@mui/material";
 import { toast } from "react-toastify";
-import Checkbox from "@mui/material/Checkbox";
-import FormControlLabel from "@mui/material/FormControlLabel";
 import Grid from "@mui/material/Grid";
 import { useAuth } from "src/hooks/use-auth";
 import { Layout as AuthLayout } from "src/layouts/auth/layout";
+import { SliderCaptcha } from "src/components/slider-captcha";
 
 function Page() {
   const router = useRouter();
   const auth = useAuth();
   const [verify, setVerify] = useState<boolean>(false);
+  const [smsToken, setSmsToken] = useState<string>("");
+  const [resetSlider, setResetSlider] = useState<boolean>(false);
   const [submitting, seSubmitting] = useState<boolean>(false);
   const [countdown, setCountdown] = useState<number>(0);
 
@@ -66,17 +67,44 @@ function Page() {
     },
   });
 
+  const handleSliderSuccess = async () => {
+    if (!formik.values.phone || formik.errors.phone) {
+      toast.error("请先输入正确的手机号");
+      setResetSlider(true);
+      setTimeout(() => setResetSlider(false), 100);
+      return;
+    }
+    try {
+      const res = await auth.getSmsToken(formik.values.phone);
+      setSmsToken(res.token);
+      setVerify(true);
+    } catch (err) {
+      toast.error((err as { message: string }).message || "获取验证 Token 失败");
+      setResetSlider(true);
+      setTimeout(() => setResetSlider(false), 100);
+    }
+  };
+
   const handleSendSms = async () => {
     if (!formik.values.phone || formik.errors.phone) {
       toast.error("请输入正确的手机号");
       return;
     }
+    if (!smsToken) {
+      toast.error("请先完成滑块验证");
+      return;
+    }
     try {
-      await auth.sendSmsCode(formik.values.phone);
+      await auth.sendSmsCode(formik.values.phone, smsToken);
       toast.success("验证码已发送");
       startCountdown();
     } catch (err) {
       toast.error((err as { message: string }).message || "发送失败");
+      // 发送失败后重置验证状态，要求重新滑动
+      setVerify(false);
+      setSmsToken("");
+      setResetSlider(true);
+      setTimeout(() => setResetSlider(false), 100);
     }
   };
 
@@ -131,40 +159,44 @@ function Page() {
                   type="text"
                   value={formik.values.first_name}
                 />
+
+                <TextField
+                  error={!!(formik.touched.phone && formik.errors.phone)}
+                  fullWidth
+                  required
+                  helperText={formik.touched.phone && formik.errors.phone}
+                  label="手机"
+                  name="phone"
+                  onBlur={formik.handleBlur}
+                  onChange={formik.handleChange}
+                  type="text"
+                  value={formik.values.phone}
+                />
+                <Grid item xs={12} mt={2}>
+                  <SliderCaptcha onSuccess={handleSliderSuccess} reset={resetSlider} />
+                </Grid>
                 <Stack direction="row" spacing={1} alignItems="flex-start">
                   <TextField
-                    error={!!(formik.touched.phone && formik.errors.phone)}
+                    error={!!(formik.touched.code && formik.errors.code)}
                     fullWidth
                     required
-                    helperText={formik.touched.phone && formik.errors.phone}
-                    label="手机"
-                    name="phone"
+                    helperText={formik.touched.code && formik.errors.code}
+                    label="短信验证码"
+                    name="code"
                     onBlur={formik.handleBlur}
                     onChange={formik.handleChange}
                     type="text"
-                    value={formik.values.phone}
+                    value={formik.values.code}
                   />
                   <Button
                     variant="outlined"
-                    disabled={countdown > 0}
+                    disabled={countdown > 0 || !verify}
                     onClick={handleSendSms}
                     sx={{ height: 56, minWidth: 120 }}
                   >
                     {countdown > 0 ? `${countdown}s` : "获取验证码"}
                   </Button>
                 </Stack>
-                <TextField
-                  error={!!(formik.touched.code && formik.errors.code)}
-                  fullWidth
-                  required
-                  helperText={formik.touched.code && formik.errors.code}
-                  label="短信验证码"
-                  name="code"
-                  onBlur={formik.handleBlur}
-                  onChange={formik.handleChange}
-                  type="text"
-                  value={formik.values.code}
-                />
                 <TextField
                   error={!!(formik.touched.password && formik.errors.password)}
                   fullWidth
@@ -195,19 +227,6 @@ function Page() {
                   {formik.errors.submit}
                 </Typography>
               )}
-              <Grid item xs={12} mt={2}>
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      value="allowExtraEmails"
-                      color="primary"
-                      checked={verify}
-                      onClick={() => setVerify(!verify)}
-                    />
-                  }
-                  label="我是真人"
-                />
-              </Grid>
               <Button
                 disabled={!verify || submitting}
                 fullWidth

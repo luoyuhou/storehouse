@@ -60,7 +60,7 @@ const handlers = {
       authPaths,
     };
   },
-  [HANDLERS.SIGN_OUT]: (state: AuthContextType, action: { type: HandlerType; payload: never }) => {
+  [HANDLERS.SIGN_OUT]: (state: AuthContextType, _action: { type: HandlerType; payload: never }) => {
     return {
       ...state,
       isAuthenticated: false,
@@ -88,16 +88,17 @@ const reducer = (
 // The role of this context is to propagate authentication state through the App tree.
 
 export const AuthContext = createContext({
-  signIn: async (phone: string, password: string) => {},
-  signInByScan: (res: { user: UserEntity; resources: [] }) => {},
-  signUp: async (args: {
+  signIn: async (_phone: string, _password: string) => {},
+  signInByScan: (_res: { user: UserEntity; resources: [] }) => {},
+  signUp: async (_args: {
     first_name: string;
     last_name: string;
     phone: string;
     password: string;
     code: string;
   }) => {},
-  sendSmsCode: async (phone: string) => {},
+  sendSmsCode: async (_phone: string, _token: string) => {},
+  getSmsToken: async (_phone: string) => ({ token: "" }),
   signOut: () => {},
   user: null,
   isLoading: false,
@@ -190,11 +191,15 @@ export function AuthProvider(props: { children: React.ReactNode }) {
     });
   };
 
-  const sendSmsCode = async (phone: string) => {
+  const getSmsToken = async (phone: string) => {
+    return get<{ token: string }>(`/api/auth/sms-token?phone=${phone}`);
+  };
+
+  const sendSmsCode = async (phone: string, token: string) => {
     return post({
       url: "/api/auth/send-sms",
       config: {},
-      payload: { phone },
+      payload: { phone, token },
     });
   };
 
@@ -210,7 +215,7 @@ export function AuthProvider(props: { children: React.ReactNode }) {
   };
 
   // eslint-disable-next-line react/jsx-no-constructed-context-values
-  const values = { ...state, signIn, signInByScan, signUp, signOut, sendSmsCode };
+  const values = { ...state, signIn, signInByScan, signUp, signOut, sendSmsCode, getSmsToken };
 
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-expect-error

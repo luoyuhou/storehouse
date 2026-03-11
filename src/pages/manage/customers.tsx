@@ -2,12 +2,12 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Head from "next/head";
 import ArrowDownOnSquareIcon from "@heroicons/react/24/solid/ArrowDownOnSquareIcon";
 import ArrowUpOnSquareIcon from "@heroicons/react/24/solid/ArrowUpOnSquareIcon";
-import PlusIcon from "@heroicons/react/24/solid/PlusIcon";
 import { Box, Button, Container, Stack, SvgIcon, Typography } from "@mui/material";
 import { CustomersTable } from "src/sections/customer/customers-table";
 import { CustomersSearch } from "src/sections/customer/customers-search";
+import { RetentionRateChart } from "src/sections/customer/retention-rate-chart";
 import { useSelection } from "src/hooks/use-selection";
-import { post } from "src/lib/http";
+import { get, post } from "src/lib/http";
 import { toast } from "react-toastify";
 import { UserEntity } from "src/types/users";
 import { Layout as DashboardLayout } from "../../layouts/dashboard/layout";
@@ -27,6 +27,31 @@ function Page() {
   const customersSelection = useSelection(customersIds);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
+  const [retentionData, setRetentionData] = useState<
+    { date: string; day1: number; day3: number; day7: number; newUsers: number }[]
+  >([]);
+  const [retentionLoading, setRetentionLoading] = useState(false);
+
+  useEffect(() => {
+    setRetentionLoading(true);
+    get<{ date: string; day1: number; day3: number; day7: number; newUsers: number }[]>(
+      "/api/users/stats/retention-rate",
+    )
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setRetentionData(data);
+        } else {
+          console.error("Retention data is not an array:", data);
+          setRetentionData([]);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to fetch retention rate:", err);
+      })
+      .finally(() => {
+        setRetentionLoading(false);
+      });
+  }, []);
 
   useEffect(() => {
     setLoading(true);
@@ -70,40 +95,38 @@ function Page() {
         component="main"
         sx={{
           flexGrow: 1,
-          py: 8,
+          py: 2,
         }}
       >
         <Container maxWidth="xl">
           <Stack spacing={3}>
+            <Typography variant="h4">Customers</Typography>
             <Stack direction="row" justifyContent="space-between" spacing={4}>
-              <Stack spacing={1}>
-                <Typography variant="h4">Customers</Typography>
-                <Stack alignItems="center" direction="row" spacing={1}>
-                  <Button
-                    color="inherit"
-                    startIcon={
-                      <SvgIcon fontSize="small">
-                        <ArrowUpOnSquareIcon />
-                      </SvgIcon>
-                    }
-                  >
-                    Import
-                  </Button>
-                  <Button
-                    color="inherit"
-                    startIcon={
-                      <SvgIcon fontSize="small">
-                        <ArrowDownOnSquareIcon />
-                      </SvgIcon>
-                    }
-                  >
-                    Export
-                  </Button>
-                </Stack>
+              <CustomersSearch onChange={(v) => setSearch(v.trim())} />
+              <Stack alignItems="center" direction="row" justifyContent="center" spacing={1}>
+                <Button
+                  color="inherit"
+                  startIcon={
+                    <SvgIcon fontSize="small">
+                      <ArrowUpOnSquareIcon />
+                    </SvgIcon>
+                  }
+                >
+                  Import
+                </Button>
+                <Button
+                  color="inherit"
+                  startIcon={
+                    <SvgIcon fontSize="small">
+                      <ArrowDownOnSquareIcon />
+                    </SvgIcon>
+                  }
+                >
+                  Export
+                </Button>
               </Stack>
-              <div />
             </Stack>
-            <CustomersSearch onChange={(v) => setSearch(v.trim())} />
+            <RetentionRateChart data={retentionData} loading={retentionLoading} />
             <CustomersTable
               count={rows}
               items={customers}
