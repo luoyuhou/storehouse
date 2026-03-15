@@ -27,12 +27,14 @@ import { get, post } from "src/lib/http";
 import { StoreType } from "src/types/store.type";
 import dayjs from "dayjs";
 import CircularPercentageLoading from "src/components/loading/circular-percentage.loading";
+import Dialog from "@mui/material/Dialog";
 
 function Row(props: { row: GoodsType & { versions?: number } }) {
   const { row } = props;
   const [loading, setLoading] = React.useState(false);
   const [open, setOpen] = React.useState(false);
   const [versionInfos, setVersionInfos] = React.useState<GoodsVersionType[]>([]);
+  const [showImgUrl, setShowImgUrl] = React.useState<string | null>();
 
   useEffect(() => {
     if (!open) {
@@ -58,9 +60,6 @@ function Row(props: { row: GoodsType & { versions?: number } }) {
           <IconButton aria-label="expand row" size="small" onClick={() => setOpen(!open)}>
             {open ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
           </IconButton>
-        </TableCell>
-        <TableCell component="th" scope="row">
-          {row.store_name ?? row.store_id}
         </TableCell>
         <TableCell align="right">{row.category_name ?? row.category_id}</TableCell>
         <TableCell align="right">
@@ -103,7 +102,15 @@ function Row(props: { row: GoodsType & { versions?: number } }) {
                         </TableCell>
                         <TableCell>{v.price.toFixed(2)}</TableCell>
                         <TableCell align="left">
-                          <img src={v.image_url} alt="图片加载失败或缺失" />
+                          {/* eslint-disable-next-line no-script-url,react/jsx-no-script-url,jsx-a11y/anchor-is-valid,jsx-a11y/control-has-associated-label */}
+                          <a href="javascript:void(0)" onClick={() => setShowImgUrl(v.image_url)}>
+                            <img
+                              style={{ whiteSpace: "nowrap" }}
+                              width="20px"
+                              src={v.image_url ? `http://${v.image_url}` : ""}
+                              alt=" "
+                            />
+                          </a>
                         </TableCell>
                         <TableCell align="right">{v.count}</TableCell>
                         <TableCell align="right">{v.status}</TableCell>
@@ -124,6 +131,9 @@ function Row(props: { row: GoodsType & { versions?: number } }) {
                   </CircularPercentageLoading>
                 </TableBody>
               </Table>
+              <Dialog open={!!showImgUrl} onClose={() => setShowImgUrl(null)}>
+                <img width="400px" src={`http://${showImgUrl}`} alt="图片加载失败" />
+              </Dialog>
             </Box>
           </Collapse>
         </TableCell>
@@ -217,7 +227,6 @@ export default function GoodsList() {
             <TableHead>
               <TableRow>
                 <TableCell />
-                <TableCell>商铺</TableCell>
                 <TableCell align="right">分类</TableCell>
                 <TableCell align="right">商品名</TableCell>
                 <TableCell align="right">状态</TableCell>

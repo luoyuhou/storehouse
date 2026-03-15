@@ -36,7 +36,8 @@ export function FeedbackCreate({
   const [content, setContent] = useState("");
   const [uploading, setUploading] = useState(false);
 
-  const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [videoUrlInput, setVideoUrlInput] = useState("");
   const [videoUrls, setVideoUrls] = useState<string[]>([]);
 
@@ -59,34 +60,21 @@ export function FeedbackCreate({
       return;
     }
 
-    setUploading(true);
+    setSelectedFiles((prev) => [...prev, ...fileArray]);
 
-    Promise.all(
-      fileArray.map((file) => {
-        const formData = new FormData();
-        formData.append("file", file);
-        return post<{ url: string }>({
-          url: "/api/file/upload",
-          payload: formData,
-          config: { isFile: true },
-        });
-      }),
-    )
-      .then((results) => {
-        const urls = results.map((res) => res.url).filter(Boolean);
-        setImageUrls((prev) => [...prev, ...urls]);
-        toast.success("图片上传成功");
-      })
-      .catch((error) => {
-        toast.error((error as { message?: string })?.message || "图片上传失败");
-      })
-      .finally(() => {
-        setUploading(false);
-      });
+    // 生成本地预览
+    fileArray.forEach((file) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewUrls((prev) => [...prev, reader.result as string]);
+      };
+      reader.readAsDataURL(file);
+    });
   };
 
-  const handleRemoveImage = (url: string) => {
-    setImageUrls((prev) => prev.filter((item) => item !== url));
+  const handleRemoveImage = (index: number) => {
+    setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
+    setPreviewUrls((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleAddVideoUrl = () => {
@@ -110,31 +98,38 @@ export function FeedbackCreate({
       return;
     }
 
-    const attachments: { type: "image" | "video"; url: string }[] = [];
-    imageUrls.forEach((url) => {
-      attachments.push({ type: "image", url });
-    });
-    videoUrls.forEach((url) => {
-      attachments.push({ type: "video", url });
-    });
-
     setSaving(true);
     try {
+      const formData = new FormData();
+      formData.append("title", title.trim());
+      formData.append("content", content.trim());
+      if (category) formData.append("category", category);
+
+      // 处理视频链接（通过 JSON 字符串传递）
+      if (videoUrls.length > 0) {
+        const attachments = videoUrls.map((url) => ({ type: "video", url }));
+        formData.append("attachments", JSON.stringify(attachments));
+      }
+
+      // 处理图片文件
+      if (selectedFiles.length > 0) {
+        selectedFiles.forEach((file) => {
+          formData.append("files", file);
+        });
+      }
+
       await post<{ message: string }>({
         url: "/api/feedback",
-        payload: {
-          title: title.trim(),
-          content: content.trim(),
-          category: category || undefined,
-          attachments,
-        },
+        payload: formData,
+        config: { isFile: true },
       });
       toast.success("提交成功");
       handleCloseDialog(false);
       setTitle("");
-      setCategory("");
+      setCategory("feature");
       setContent("");
-      setImageUrls([]);
+      setSelectedFiles([]);
+      setPreviewUrls([]);
       setVideoUrlInput("");
       setVideoUrls([]);
 
@@ -201,9 +196,9 @@ export function FeedbackCreate({
                 </Typography>
               )}
             </Stack>
-            {imageUrls.length > 0 && (
+            {previewUrls.length > 0 && (
               <Stack direction="row" spacing={1} mt={1} flexWrap="wrap">
-                {imageUrls.map((url) => (
+                {previewUrls.map((url, index) => (
                   <Box key={url} sx={{ position: "relative", width: 80, height: 80, mr: 1, mb: 1 }}>
                     <Box
                       component="img"
@@ -225,7 +220,7 @@ export function FeedbackCreate({
                         backgroundColor: "rgba(0,0,0,0.6)",
                         color: "white",
                       }}
-                      onClick={() => handleRemoveImage(url)}
+                      onClick={() => handleRemoveImage(index)}
                     >
                       <SvgIcon fontSize="small">
                         <DeleteIcon />
