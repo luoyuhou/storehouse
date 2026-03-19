@@ -1,6 +1,6 @@
 import React from "react";
 import Head from "next/head";
-import { Box, Container, Stack } from "@mui/material";
+import { Box, Container, Stack, Typography } from "@mui/material";
 import { Layout as DashboardLayout } from "src/layouts/dashboard/layout";
 import CustomerTabs from "src/components/tabs/customer-tabs";
 import { AuthForRoleManagement } from "src/sections/role-management/auth-for-role-management";
@@ -21,7 +21,15 @@ function Page() {
           py: 8,
         }}
       >
-        <Container style={{ maxWidth: "1400px" }}>
+        <Container maxWidth="xl">
+          <Typography variant="h4" mb={3}>
+            权限管理
+          </Typography>
+          <Stack direction="row" alignItems="center" justifyContent="space-between" mb={2}>
+            <Typography variant="subtitle1" color="text.secondary">
+              分配权限后，重新登录即可生效
+            </Typography>
+          </Stack>
           <Stack>
             <CustomerTabs
               tabs={[

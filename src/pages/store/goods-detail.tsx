@@ -23,7 +23,7 @@ function GoodsDetail() {
           py: 8,
         }}
       >
-        <Container maxWidth="lg">
+        <Container maxWidth="xl">
           <Stack spacing={3}>
             <div>
               <Typography variant="h4">商品详情</Typography>

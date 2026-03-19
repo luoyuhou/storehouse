@@ -1,6 +1,4 @@
 import React from "react";
-// import LockClosedIcon from "@heroicons/react/24/solid/LockClosedIcon";
-// import UserPlusIcon from "@heroicons/react/24/solid/UserPlusIcon";
 import { SvgIcon } from "@mui/material";
 import {
   ListBulletIcon,
@@ -16,6 +14,8 @@ import {
   LockClosedIcon,
   UserMinusIcon,
   PhotoIcon,
+  CircleStackIcon,
+  CreditCardIcon,
 } from "@heroicons/react/24/solid";
 import { DashboardItemType } from "src/layouts/dashboard/public-config";
 
@@ -93,6 +93,24 @@ export const privateItems: (DashboardItemType & { group?: DashboardItemType[] })
         ),
       },
       {
+        title: "图片额度",
+        path: "/store/resource",
+        icon: (
+          <SvgIcon fontSize="small">
+            <CircleStackIcon />
+          </SvgIcon>
+        ),
+      },
+      {
+        title: "服务订阅",
+        path: "/store/subscription",
+        icon: (
+          <SvgIcon fontSize="small">
+            <CreditCardIcon />
+          </SvgIcon>
+        ),
+      },
+      {
         title: "操作日志",
         path: "/store/history",
         icon: (
@@ -140,7 +158,7 @@ export const privateItems: (DashboardItemType & { group?: DashboardItemType[] })
         ),
       },
       {
-        title: "店铺服务",
+        title: "店铺服务管理",
         path: "/manage/store-service",
         icon: (
           <SvgIcon fontSize="small">

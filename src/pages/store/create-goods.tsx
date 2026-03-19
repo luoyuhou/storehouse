@@ -207,7 +207,7 @@ function CreateGoods() {
           py: 2,
         }}
       >
-        <Container maxWidth="lg">
+        <Container maxWidth="xl">
           <Stack spacing={3}>
             <div>
               <Typography variant="h4">创建商品</Typography>

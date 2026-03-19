@@ -61,3 +61,10 @@ export type UserOrderType = {
     store_name: string;
   };
 };
+
+export interface StoreSubscriptionPlan {
+  id: number;
+  name: string;
+  description: string;
+  monthly_fee: number;
+}

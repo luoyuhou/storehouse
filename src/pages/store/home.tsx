@@ -142,7 +142,7 @@ function Store() {
           py: 3,
         }}
       >
-        <Container maxWidth="lg">
+        <Container maxWidth="xl">
           <Stack spacing={3}>
             <div>
               <Typography variant="h4">我的商店</Typography>
