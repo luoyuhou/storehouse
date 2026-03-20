@@ -127,9 +127,9 @@ function CompanyDetail() {
     setServiceLoading(true);
     Promise.all([
       get<{ data: StoreServiceSubscriptionSummary[] }>(
-        `/api/store-service/subscriptions?store_id=${id}`,
+        `/api/store/service/subscriptions?store_id=${id}`,
       ),
-      get<{ data: StoreServiceInvoiceSummary[] }>(`/api/store-service/invoices?store_id=${id}`),
+      get<{ data: StoreServiceInvoiceSummary[] }>(`/api/store/service/invoices?store_id=${id}`),
     ])
       .then(([subsRes, invRes]) => {
         setServiceSubscriptions(subsRes.data || []);

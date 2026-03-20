@@ -30,7 +30,7 @@ export function StoreServicePlansSection() {
   const [newPlanPrice, setNewPlanPrice] = useState("");
 
   const fetchPlans = async () => {
-    const res = await get<{ data: StoreServicePlan[] }>("/api/store-service/plans");
+    const res = await get<{ data: StoreServicePlan[] }>("/api/store/service/plans");
     setPlans(res.data || []);
   };
 
@@ -42,7 +42,7 @@ export function StoreServicePlansSection() {
     const price = Number(newPlanPrice);
     if (!newPlanName.trim() || price < 0) return;
     post<{ data: StoreServicePlan }>({
-      url: "/api/store-service/plans",
+      url: "/api/store/service/plans",
       payload: {
         name: newPlanName.trim(),
         description: newPlanDesc || undefined,
@@ -61,7 +61,7 @@ export function StoreServicePlansSection() {
 
   const handleTogglePlanActive = async (plan: StoreServicePlan) => {
     await post<{ data: StoreServicePlan }>({
-      url: `/api/store-service/plans/${plan.id}/status`,
+      url: `/api/store/service/plans/${plan.id}/status`,
       payload: { is_active: !plan.is_active },
     });
     fetchPlans();

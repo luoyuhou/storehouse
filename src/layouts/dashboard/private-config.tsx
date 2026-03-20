@@ -140,7 +140,7 @@ export const privateItems: (DashboardItemType & { group?: DashboardItemType[] })
         ),
       },
       {
-        title: "商户",
+        title: "商铺服务管理",
         path: "/manage/companies",
         icon: (
           <SvgIcon fontSize="small">
@@ -158,8 +158,8 @@ export const privateItems: (DashboardItemType & { group?: DashboardItemType[] })
         ),
       },
       {
-        title: "店铺服务管理",
-        path: "/manage/store-service",
+        title: "服务套餐",
+        path: "/manage/plans",
         icon: (
           <SvgIcon fontSize="small">
             <ServerStackIcon />

@@ -66,7 +66,7 @@ export function StoreSubscriptionContent({
   const fetchData = useCallback(() => {
     if (!storeId) return;
     setLoading(true);
-    get<{ data: Subscription[] }>(`/api/store-service/subscriptions?store_id=${storeId}`)
+    get<{ data: Subscription[] }>(`/api/store/service/subscriptions?store_id=${storeId}`)
       .then((subRes) => setSubscriptions(subRes.data))
       .catch((err) => toast.error((err as { message: string }).message))
       .finally(() => setLoading(false));
@@ -79,7 +79,7 @@ export function StoreSubscriptionContent({
   const handleSubscribe = async (planId: number) => {
     try {
       await post({
-        url: "/api/store-service/subscriptions",
+        url: "/api/store/service/subscriptions",
         payload: {
           store_id: storeId,
           plan_id: planId,
@@ -212,7 +212,7 @@ export function StoreSubscriptionContent({
               <CardContent sx={{ flexGrow: 1 }}>
                 <Stack spacing={3}>
                   <Box sx={{ display: "flex", alignItems: "baseline" }}>
-                    <Typography variant="h3">¥{plan.monthly_fee}</Typography>
+                    <Typography variant="h3">¥{(plan.monthly_fee / 100).toFixed(2)}</Typography>
                     <Typography variant="subtitle1" color="textSecondary" sx={{ ml: 1 }}>
                       / 月
                     </Typography>
@@ -234,8 +234,8 @@ export function StoreSubscriptionContent({
                         <CreditCardIcon width={20} color="green" />
                       </ListItemIcon>
                       <ListItemText
-                        primary="按需付费：¥50 + 订单分成"
-                        secondary="每完成 1 单收货订单，下月续费仅加收 ¥1"
+                        primary={`按需付费：¥${(plan.monthly_fee / 100).toFixed(2)} + 订单分成`}
+                        secondary="每完成 1 单收货订单，下月续费仅加收 ¥0.1 元"
                       />
                     </ListItem>
                     <ListItem>
@@ -248,7 +248,14 @@ export function StoreSubscriptionContent({
 
                   <Box sx={{ p: 2, bgcolor: "primary.lightest", borderRadius: 1 }}>
                     <Typography variant="caption" color="primary">
-                      * 计费公式：续费金额 = 50元 (基础服务费) + 上个周期有效订单数 (订单量加成)
+                      * 计费公式：续费金额 = {(plan.monthly_fee / 100).toFixed(2)}元 (基础服务费) +
+                      上个周期有效订单数 (订单量加成, 扣去每天10单的免费额度)
+                    </Typography>
+                    <hr />
+                    <Typography variant="caption" color="primary">
+                      * 举例说明：{(plan.monthly_fee / 100).toFixed(2)}元 +
+                      [400（上个周期有效订单数）- 28 (如：二月28天) * 10 (每天 10 单 免费额度)] *
+                      0.1元
                     </Typography>
                   </Box>
                 </Stack>

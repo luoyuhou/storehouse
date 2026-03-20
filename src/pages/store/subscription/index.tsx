@@ -17,7 +17,7 @@ function Page() {
   useEffect(() => {
     Promise.all([
       get<{ data: StoreType[] }>("/api/store"),
-      get<{ data: StoreSubscriptionPlan[] }>("/api/store-service/plans"),
+      get<{ data: StoreSubscriptionPlan[] }>("/api/store/service/plans"),
     ])
       .then(([storesRes, plansRes]) => {
         setStores(storesRes.data || []);

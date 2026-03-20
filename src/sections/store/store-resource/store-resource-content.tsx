@@ -48,7 +48,7 @@ export function StoreResourceContent({ storeId }: { storeId: string }) {
   const fetchInfo = useCallback(async () => {
     if (!storeId) return;
     setLoading(true);
-    get<{ data: ResourceInfo }>(`/api/store-resource/info?store_id=${storeId}`)
+    get<{ data: ResourceInfo }>(`/api/store/resource/info?store_id=${storeId}`)
       .then((res) => setInfo(res.data))
       .catch((err) => toast.error((err as { message: string }).message))
       .finally(() => setLoading(false));
@@ -57,7 +57,7 @@ export function StoreResourceContent({ storeId }: { storeId: string }) {
   const fetchOrders = useCallback(async () => {
     try {
       const res = await get<{ data: QuotaOrder[] }>(
-        `/api/store-resource/orders?store_id=${storeId}`,
+        `/api/store/resource/orders?store_id=${storeId}`,
       );
       setOrders(res.data);
     } catch (err) {
@@ -73,7 +73,7 @@ export function StoreResourceContent({ storeId }: { storeId: string }) {
   const handleApply = async () => {
     try {
       await post({
-        url: "/api/store-resource/apply-quota",
+        url: "/api/store/resource/apply-quota",
         payload: {
           store_id: storeId,
           quota_amount: 50 * 1024 * 1024, // 50MB
