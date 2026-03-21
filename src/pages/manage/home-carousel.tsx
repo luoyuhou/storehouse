@@ -46,6 +46,8 @@ function Page() {
   const [uploading, setUploading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingBanner, setEditingBanner] = useState<HomeBannerItem | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string>("");
   const [formValues, setFormValues] = useState({
     title: "",
     description: "",
@@ -100,6 +102,8 @@ function Page() {
 
   const handleCloseDialog = () => {
     setDialogOpen(false);
+    setSelectedFile(null);
+    setPreviewUrl("");
   };
 
   const handleChange =
@@ -122,25 +126,14 @@ function Page() {
       return;
     }
 
-    const formData = new FormData();
-    formData.append("file", file);
-
-    setUploading(true);
-    post<{ url: string }>({
-      url: "/api/file/upload",
-      payload: formData,
-      config: { isFile: true },
-    })
-      .then(({ url }) => {
-        setFormValues((prev) => ({ ...prev, image_url: url }));
-        toast.success("图片上传成功");
-      })
-      .catch((err) => {
-        toast.error((err as { message: string })?.message || "图片上传失败");
-      })
-      .finally(() => {
-        setUploading(false);
-      });
+    setSelectedFile(file);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPreviewUrl(reader.result as string);
+      // 更新 formValues 中的 image_url 仅用于显示预览（如果是 Base64）
+      // 或者保持为空，在提交时上传
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleSubmit = async () => {
@@ -148,51 +141,52 @@ function Page() {
       toast.error("请填写标题");
       return;
     }
-    if (!formValues.image_url.trim()) {
-      toast.error("请填写图片地址");
+
+    // 如果既没有原图片地址，也没有选择新图片，则报错
+    if (!formValues.image_url.trim() && !selectedFile) {
+      toast.error("请选择图片");
       return;
     }
 
-    const width = formValues.width ? Number(formValues.width) : undefined;
-    const height = formValues.height ? Number(formValues.height) : undefined;
-    const sort = formValues.sort ? Number(formValues.sort) : undefined;
-
-    if ((formValues.width && Number.isNaN(width)) || (formValues.height && Number.isNaN(height))) {
-      toast.error("尺寸请输入数字");
-      return;
-    }
-    if (formValues.sort && Number.isNaN(sort)) {
-      toast.error("排序请输入数字");
-      return;
-    }
-
-    const payload = {
-      title: formValues.title.trim(),
-      description: formValues.description.trim() || undefined,
-      image_url: formValues.image_url.trim(),
-      width,
-      height,
-      sort,
-    };
-
+    setUploading(true);
     try {
+      const formData = new FormData();
+      formData.append("title", formValues.title.trim());
+      formData.append("description", formValues.description.trim() || "");
+      formData.append("image_url", formValues.image_url);
+
+      if (formValues.width) formData.append("width", formValues.width);
+      if (formValues.height) formData.append("height", formValues.height);
+      if (formValues.sort) formData.append("sort", formValues.sort);
+
+      // 如果选择了新图片，添加到 formData
+      if (selectedFile) {
+        formData.append("file", selectedFile);
+      }
+
       if (editingBanner) {
         await patch<HomeBannerItem>({
           url: `/api/home-banners/${editingBanner.banner_id}`,
-          payload,
+          payload: formData,
+          config: { isFile: true },
         });
         toast.success("更新成功");
       } else {
         await post<HomeBannerItem>({
           url: "/api/home-banners",
-          payload,
+          payload: formData,
+          config: { isFile: true },
         });
         toast.success("创建成功");
       }
       setDialogOpen(false);
+      setSelectedFile(null);
+      setPreviewUrl("");
       fetchBanners();
     } catch (error) {
       toast.error((error as { message: string })?.message || "保存失败");
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -406,14 +400,14 @@ function Page() {
               onChange={handleChange("sort")}
               fullWidth
             />
-            {formValues.image_url && (
+            {(previewUrl || formValues.image_url) && (
               <Box mt={2}>
                 <Typography variant="subtitle2" gutterBottom>
                   预览：
                 </Typography>
                 <Box
                   component="img"
-                  src={formValues.image_url}
+                  src={previewUrl || formValues.image_url}
                   alt={formValues.title}
                   sx={{
                     width: "100%",

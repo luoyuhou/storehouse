@@ -88,7 +88,7 @@ export const post = async <T>(arg: {
 export const patch = async <T>(arg: {
   url: string;
   payload: Payload | FormDataEntryValue;
-  config?: AxiosRequestConfig;
+  config?: AxiosRequestConfig & { isFile?: boolean };
 }): Promise<T> => {
   const { url, payload, config } = arg;
   return new Promise((resolve, reject) => {

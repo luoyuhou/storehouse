@@ -7,7 +7,6 @@ import {
   Stack,
   Typography,
   Unstable_Grid2 as Grid,
-  Paper,
   MobileStepper,
   Button,
   CardContent,
@@ -18,7 +17,7 @@ import {
 } from "@mui/material";
 import { KeyboardArrowLeft, KeyboardArrowRight } from "@mui/icons-material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
-import { get, patch, post } from "src/lib/http";
+import { get, patch } from "src/lib/http";
 import { toast } from "react-toastify";
 import CircularPercentageLoading from "src/components/loading/circular-percentage.loading";
 import { CompanyProfileDetails } from "src/sections/companies/company-profile-details";
@@ -48,11 +47,14 @@ function Store() {
     setActiveStep((prevActiveStep) => prevActiveStep - 1);
   };
 
-  const handleUploadQr =
-    (type: "wechat" | "alipay") => async (event: React.ChangeEvent<HTMLInputElement>) => {
-      const currentStore = stores[activeStep];
+  const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
+  const [selectedType, setSelectedType] = React.useState<"wechat" | "alipay" | null>(null);
+  const [previewUrl, setPreviewUrl] = React.useState<string | null>(null);
+
+  const handleFileChange =
+    (type: "wechat" | "alipay") => (event: React.ChangeEvent<HTMLInputElement>) => {
       const file = event.target.files?.[0];
-      if (!currentStore || !file) return;
+      if (!file) return;
 
       if (file.size > 5 * 1024 * 1024) {
         toast.error("图片大小不能超过5MB");
@@ -64,47 +66,69 @@ function Store() {
         return;
       }
 
-      const formData = new FormData();
-      formData.append("file", file);
-
-      if (type === "wechat") setUploadingWechat(true);
-      if (type === "alipay") setUploadingAlipay(true);
-
-      try {
-        const { url } = (await post<{ url: string }>({
-          url: "/api/file/upload",
-          payload: formData,
-          config: { isFile: true },
-        })) as { url: string };
-
-        await patch({
-          url: `/api/store/${currentStore.store_id}/qr`,
-          payload: {
-            wechat_qr_url: type === "wechat" ? url : undefined,
-            alipay_qr_url: type === "alipay" ? url : undefined,
-          },
-        });
-
-        setStores((prev) => {
-          const next = [...prev];
-          next[activeStep] = {
-            ...next[activeStep],
-            wechat_qr_url: type === "wechat" ? url : next[activeStep].wechat_qr_url,
-            alipay_qr_url: type === "alipay" ? url : next[activeStep].alipay_qr_url,
-          };
-          return next;
-        });
-
-        toast.success(`${type === "wechat" ? "微信" : "支付宝"}收款码已更新`);
-      } catch (err) {
-        toast.error((err as { message?: string })?.message || "上传收款码失败");
-      } finally {
-        if (type === "wechat") setUploadingWechat(false);
-        if (type === "alipay") setUploadingAlipay(false);
-        // eslint-disable-next-line no-param-reassign
-        event.target.value = "";
-      }
+      setSelectedFile(file);
+      setSelectedType(type);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewUrl(reader.result as string);
+      };
+      reader.readAsDataURL(file);
     };
+
+  const handleUploadQr = async () => {
+    const currentStore = stores[activeStep];
+    if (!currentStore || !selectedFile || !selectedType) return;
+
+    const type = selectedType;
+    if (type === "wechat") setUploadingWechat(true);
+    if (type === "alipay") setUploadingAlipay(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", selectedFile);
+      // 添加对应的占位符以告知后端更新哪个字段
+      if (type === "wechat") {
+        formData.append("wechat_qr_url", "");
+      } else {
+        formData.append("alipay_qr_url", "");
+      }
+
+      const response = await patch<{ wechat_qr_url?: string; alipay_qr_url?: string }>({
+        url: `/api/store/${currentStore.store_id}/qr`,
+        payload: formData,
+        config: { isFile: true },
+      });
+
+      const updatedUrl = type === "wechat" ? response.wechat_qr_url : response.alipay_qr_url;
+
+      setStores((prev) => {
+        const next = [...prev];
+        next[activeStep] = {
+          ...next[activeStep],
+          wechat_qr_url: type === "wechat" ? updatedUrl : next[activeStep].wechat_qr_url,
+          alipay_qr_url: type === "alipay" ? updatedUrl : next[activeStep].alipay_qr_url,
+        };
+        return next;
+      });
+
+      toast.success(`${type === "wechat" ? "微信" : "支付宝"}收款码已更新`);
+      // 重置预览状态
+      setSelectedFile(null);
+      setSelectedType(null);
+      setPreviewUrl(null);
+    } catch (err) {
+      toast.error((err as { message?: string })?.message || "上传收款码失败");
+    } finally {
+      if (type === "wechat") setUploadingWechat(false);
+      if (type === "alipay") setUploadingAlipay(false);
+    }
+  };
+
+  const handleCancelUpload = () => {
+    setSelectedFile(null);
+    setSelectedType(null);
+    setPreviewUrl(null);
+  };
 
   return (
     <>
@@ -118,7 +142,7 @@ function Store() {
           py: 3,
         }}
       >
-        <Container maxWidth="lg">
+        <Container maxWidth="xl">
           <Stack spacing={3}>
             <div>
               <Typography variant="h4">我的商店</Typography>
@@ -180,7 +204,8 @@ function Store() {
                                 sx={{
                                   flex: 1,
                                   border: "1px dashed",
-                                  borderColor: "grey.300",
+                                  borderColor:
+                                    selectedType === "wechat" ? "primary.main" : "grey.300",
                                   borderRadius: 1,
                                   p: 1,
                                   display: "flex",
@@ -188,6 +213,8 @@ function Store() {
                                   alignItems: "center",
                                   justifyContent: "center",
                                   cursor: "pointer",
+                                  backgroundColor:
+                                    selectedType === "wechat" ? "action.hover" : "transparent",
                                   "&:hover": {
                                     borderColor: "primary.main",
                                   },
@@ -197,7 +224,7 @@ function Store() {
                                   type="file"
                                   hidden
                                   accept="image/*"
-                                  onChange={handleUploadQr("wechat")}
+                                  onChange={handleFileChange("wechat")}
                                 />
                                 <CloudUploadIcon
                                   sx={{ fontSize: 28, color: "text.secondary", mb: 0.5 }}
@@ -205,10 +232,14 @@ function Store() {
                                 <Typography variant="caption" color="text.secondary">
                                   {uploadingWechat ? "微信收款码上传中..." : "微信收款码"}
                                 </Typography>
-                                {stores[activeStep].wechat_qr_url && (
+                                {(selectedType === "wechat" && previewUrl) ||
+                                stores[activeStep].wechat_qr_url ? (
                                   <Box
                                     component="img"
-                                    src={stores[activeStep].wechat_qr_url as string}
+                                    src={
+                                      (selectedType === "wechat" && previewUrl) ||
+                                      (stores[activeStep].wechat_qr_url as string)
+                                    }
                                     alt="微信收款码"
                                     sx={{
                                       mt: 1,
@@ -216,16 +247,18 @@ function Store() {
                                       height: 72,
                                       objectFit: "contain",
                                       borderRadius: 1,
+                                      opacity: selectedType === "wechat" ? 0.7 : 1,
                                     }}
                                   />
-                                )}
+                                ) : null}
                               </Box>
                               <Box
                                 component="label"
                                 sx={{
                                   flex: 1,
                                   border: "1px dashed",
-                                  borderColor: "grey.300",
+                                  borderColor:
+                                    selectedType === "alipay" ? "primary.main" : "grey.300",
                                   borderRadius: 1,
                                   p: 1,
                                   display: "flex",
@@ -233,6 +266,8 @@ function Store() {
                                   alignItems: "center",
                                   justifyContent: "center",
                                   cursor: "pointer",
+                                  backgroundColor:
+                                    selectedType === "alipay" ? "action.hover" : "transparent",
                                   "&:hover": {
                                     borderColor: "primary.main",
                                   },
@@ -242,7 +277,7 @@ function Store() {
                                   type="file"
                                   hidden
                                   accept="image/*"
-                                  onChange={handleUploadQr("alipay")}
+                                  onChange={handleFileChange("alipay")}
                                 />
                                 <CloudUploadIcon
                                   sx={{ fontSize: 28, color: "text.secondary", mb: 0.5 }}
@@ -250,10 +285,14 @@ function Store() {
                                 <Typography variant="caption" color="text.secondary">
                                   {uploadingAlipay ? "支付宝收款码上传中..." : "支付宝收款码"}
                                 </Typography>
-                                {stores[activeStep].alipay_qr_url && (
+                                {(selectedType === "alipay" && previewUrl) ||
+                                stores[activeStep].alipay_qr_url ? (
                                   <Box
                                     component="img"
-                                    src={stores[activeStep].alipay_qr_url as string}
+                                    src={
+                                      (selectedType === "alipay" && previewUrl) ||
+                                      (stores[activeStep].alipay_qr_url as string)
+                                    }
                                     alt="支付宝收款码"
                                     sx={{
                                       mt: 1,
@@ -261,11 +300,33 @@ function Store() {
                                       height: 72,
                                       objectFit: "contain",
                                       borderRadius: 1,
+                                      opacity: selectedType === "alipay" ? 0.7 : 1,
                                     }}
                                   />
-                                )}
+                                ) : null}
                               </Box>
                             </Stack>
+                            {selectedFile && (
+                              <Stack direction="row" spacing={1} mt={2}>
+                                <Button
+                                  size="small"
+                                  variant="contained"
+                                  onClick={handleUploadQr}
+                                  disabled={uploadingWechat || uploadingAlipay}
+                                  fullWidth
+                                >
+                                  确认上传 {selectedType === "wechat" ? "微信" : "支付宝"}
+                                </Button>
+                                <Button
+                                  size="small"
+                                  variant="outlined"
+                                  onClick={handleCancelUpload}
+                                  disabled={uploadingWechat || uploadingAlipay}
+                                >
+                                  取消
+                                </Button>
+                              </Stack>
+                            )}
                           </Box>
                         </CardActions>
                       </Card>

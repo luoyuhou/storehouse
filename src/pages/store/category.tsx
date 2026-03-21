@@ -35,7 +35,7 @@ function Category() {
           py: 2,
         }}
       >
-        <Container maxWidth="lg">
+        <Container maxWidth="xl">
           <Stack spacing={3}>
             <div>
               <Typography variant="h4" mb={2}>

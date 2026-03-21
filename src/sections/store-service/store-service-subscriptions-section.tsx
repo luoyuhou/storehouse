@@ -2,17 +2,14 @@ import React, { useEffect, useState } from "react";
 import {
   Box,
   Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
+  Collapse,
   FormControl,
+  IconButton,
   InputLabel,
   MenuItem,
   Paper,
   Select,
   Stack,
-  SvgIcon,
   Table,
   TableBody,
   TableCell,
@@ -20,34 +17,222 @@ import {
   TableRow,
   TextField,
   Typography,
+  Chip,
 } from "@mui/material";
-import PlusIcon from "@heroicons/react/24/solid/PlusIcon";
-import { get, post } from "src/lib/http";
-import { toast } from "react-toastify";
+import { get } from "src/lib/http";
+import { KeyboardArrowDown, KeyboardArrowUp } from "@mui/icons-material";
 import {
   StoreServicePlan,
   StoreServiceSubscription,
   formatDate,
 } from "src/sections/store-service/types";
 import {
-  StoreServiceStatusCellRender,
   StoreServiceSubscriptionCellRender,
+  StoreServiceStatusCellRender,
+  StoreServiceContractStatusCellRender,
 } from "src/sections/store-service/store-service-cell.components";
 
-interface StoreServiceSubscriptionsSectionProps {
-  currentStoreId?: string;
+interface Invoice {
+  id: number;
+  subscription_id: number;
+  month: string;
+  start_date: string;
+  end_date: string;
+  amount: number;
+  status: number;
+  due_date: string;
+  paid_at?: string | null;
 }
 
-export function StoreServiceSubscriptionsSection({
-  currentStoreId,
-}: StoreServiceSubscriptionsSectionProps) {
-  const [plans, setPlans] = useState<StoreServicePlan[]>([]);
-  const [subscriptions, setSubscriptions] = useState<StoreServiceSubscription[]>([]);
-  const [total, setTotal] = useState(0);
+interface Contract {
+  id: number;
+  contract_no: string;
+  store_id: string;
+  plan_id: string;
+  start_date: string;
+  end_date: string;
+  status: number;
+  sign_type: number;
+  signed_at?: string | null;
+  total_amount: number;
+  file_url?: string | null;
+}
 
-  const [subDialogOpen, setSubDialogOpen] = useState(false);
-  const [subStoreId, setSubStoreId] = useState("");
-  const [subPlanId, setSubPlanId] = useState<number | "">("");
+interface SubscriptionWithDetails extends StoreServiceSubscription {
+  invoice?: Invoice[];
+  contract?: Contract | null;
+}
+
+function SubscriptionRow({ sub }: { sub: SubscriptionWithDetails }) {
+  const [open, setOpen] = useState(false);
+  const latestInvoice = sub.invoice?.[0];
+
+  return (
+    <>
+      <TableRow sx={{ "& > *": { borderBottom: "unset" } }}>
+        <TableCell>
+          <IconButton aria-label="expand row" size="small" onClick={() => setOpen(!open)}>
+            {open ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
+          </IconButton>
+        </TableCell>
+        <TableCell>{sub.store_name || sub.store_id}</TableCell>
+        <TableCell>{sub.plan?.name}</TableCell>
+        <TableCell>{formatDate(sub.start_date)}</TableCell>
+        <TableCell>{formatDate(sub.end_date)}</TableCell>
+        <TableCell>
+          <StoreServiceSubscriptionCellRender value={sub.status} />
+        </TableCell>
+        <TableCell>
+          {latestInvoice ? (
+            <Stack direction="row" spacing={1} alignItems="center">
+              <Typography variant="body2">¥{(latestInvoice.amount / 100).toFixed(2)}</Typography>
+              <Chip
+                label={latestInvoice.status === 1 ? "已支付" : "待支付"}
+                color={latestInvoice.status === 1 ? "success" : "warning"}
+                size="small"
+              />
+            </Stack>
+          ) : (
+            <Typography variant="body2" color="text.secondary">
+              -
+            </Typography>
+          )}
+        </TableCell>
+        <TableCell>
+          {sub.contract ? (
+            <Stack direction="row" spacing={1} alignItems="center">
+              <Typography variant="body2">{sub.contract.contract_no}</Typography>
+              <StoreServiceContractStatusCellRender value={sub.contract.status} />
+            </Stack>
+          ) : (
+            <Typography variant="body2" color="text.secondary">
+              -
+            </Typography>
+          )}
+        </TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={9}>
+          <Collapse in={open} timeout="auto" unmountOnExit>
+            <Box sx={{ margin: 1 }}>
+              <Typography variant="h6" gutterBottom component="div">
+                详细信息
+              </Typography>
+              <Stack direction="row" spacing={4}>
+                {/* 账单列表 */}
+                <Box sx={{ flex: 1 }}>
+                  <Typography variant="subtitle2" color="text.secondary" mb={1}>
+                    账单记录 ({sub.invoice?.length || 0})
+                  </Typography>
+                  {sub.invoice && sub.invoice.length > 0 ? (
+                    <Table size="small">
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>月份</TableCell>
+                          <TableCell>金额</TableCell>
+                          <TableCell>状态</TableCell>
+                          <TableCell>到期日</TableCell>
+                          <TableCell>支付时间</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {sub.invoice.map((inv) => (
+                          <TableRow key={inv.id}>
+                            <TableCell>{inv.month}</TableCell>
+                            <TableCell>¥{(inv.amount / 100).toFixed(2)}</TableCell>
+                            <TableCell>
+                              <StoreServiceStatusCellRender value={inv.status} />
+                            </TableCell>
+                            <TableCell>{formatDate(inv.due_date)}</TableCell>
+                            <TableCell>{formatDate(inv.paid_at || undefined)}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  ) : (
+                    <Typography variant="body2" color="text.secondary">
+                      暂无账单
+                    </Typography>
+                  )}
+                </Box>
+
+                {/* 合同信息 */}
+                <Box sx={{ flex: 1 }}>
+                  <Typography variant="subtitle2" color="text.secondary" mb={1}>
+                    合同信息
+                  </Typography>
+                  {sub.contract ? (
+                    <Table size="small">
+                      <TableBody>
+                        <TableRow>
+                          <TableCell component="th" scope="row">
+                            合同号
+                          </TableCell>
+                          <TableCell>{sub.contract.contract_no}</TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell component="th" scope="row">
+                            有效期
+                          </TableCell>
+                          <TableCell>
+                            {formatDate(sub.contract.start_date)} ~{" "}
+                            {formatDate(sub.contract.end_date)}
+                          </TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell component="th" scope="row">
+                            总金额
+                          </TableCell>
+                          <TableCell>¥{(sub.contract.total_amount / 100).toFixed(2)}</TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell component="th" scope="row">
+                            状态
+                          </TableCell>
+                          <TableCell>
+                            <StoreServiceContractStatusCellRender value={sub.contract.status} />
+                          </TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell component="th" scope="row">
+                            签署方式
+                          </TableCell>
+                          <TableCell>
+                            {/* eslint-disable-next-line no-nested-ternary */}
+                            {sub.contract.sign_type === 1
+                              ? "线下签署"
+                              : sub.contract.sign_type === 2
+                                ? "电子签署"
+                                : "其他"}
+                          </TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell component="th" scope="row">
+                            签署时间
+                          </TableCell>
+                          <TableCell>{formatDate(sub.contract.signed_at || undefined)}</TableCell>
+                        </TableRow>
+                      </TableBody>
+                    </Table>
+                  ) : (
+                    <Typography variant="body2" color="text.secondary">
+                      暂无合同
+                    </Typography>
+                  )}
+                </Box>
+              </Stack>
+            </Box>
+          </Collapse>
+        </TableCell>
+      </TableRow>
+    </>
+  );
+}
+
+export function StoreServiceSubscriptionsSection() {
+  const [plans, setPlans] = useState<StoreServicePlan[]>([]);
+  const [subscriptions, setSubscriptions] = useState<SubscriptionWithDetails[]>([]);
+  const [total, setTotal] = useState(0);
 
   const [filterStoreId, setFilterStoreId] = useState("");
   const [filterStatus, setFilterStatus] = useState<number | "">("");
@@ -66,9 +251,9 @@ export function StoreServiceSubscriptionsSection({
     query.append("pageSize", String(pageSize));
 
     const [plansRes, subsRes] = await Promise.all([
-      get<{ data: StoreServicePlan[] }>("/api/store-service/plans"),
-      get<{ data: StoreServiceSubscription[]; total: number }>(
-        `/api/store-service/subscriptions?${query.toString()}`,
+      get<{ data: StoreServicePlan[] }>("/api/store/service/plans"),
+      get<{ data: SubscriptionWithDetails[]; total: number }>(
+        `/api/store/service/subscriptions?${query.toString()}`,
       ),
     ]);
     setPlans(plansRes.data || []);
@@ -80,43 +265,16 @@ export function StoreServiceSubscriptionsSection({
     fetchData().catch(() => undefined);
   }, [filterStoreId, filterStatus, page, pageSize]);
 
-  const handleCreateSubscription = async () => {
-    if (!currentStoreId || !subPlanId) {
-      toast.error("请先在页面顶部选择店铺，再创建订阅");
-      return;
-    }
-    await post<{ data: StoreServiceSubscription }>({
-      url: "/api/store-service/subscriptions",
-      payload: {
-        store_id: currentStoreId,
-        plan_id: subPlanId,
-      },
-    }).catch((err) => toast.error(err.message));
-    setSubDialogOpen(false);
-    setSubStoreId("");
-    setSubPlanId("");
-    setPage(1);
-    fetchData();
-  };
-
-  const handleTerminateSubscription = async (sub: StoreServiceSubscription) => {
-    await post<{ data: StoreServiceSubscription }>({
-      url: `/api/store-service/subscriptions/${sub.id}/terminate`,
-      payload: {},
-    });
-    fetchData();
-  };
-
   return (
     <Box>
       <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
-        <Typography variant="h5">店铺订阅</Typography>
+        <Typography variant="h5">店铺订阅（含账单与合同）</Typography>
         <Stack direction="row" spacing={2} alignItems="center">
           <TextField
             label="店铺ID（store_id）"
             size="small"
             value={filterStoreId}
-            placeholder={currentStoreId || ""}
+            placeholder=""
             onChange={(e) => {
               setPage(1);
               setFilterStoreId(e.target.value);
@@ -135,6 +293,7 @@ export function StoreServiceSubscriptionsSection({
               }}
             >
               <MenuItem value="">全部</MenuItem>
+              <MenuItem value={0}>待审核</MenuItem>
               <MenuItem value={1}>生效中</MenuItem>
               <MenuItem value={2}>已过期</MenuItem>
               <MenuItem value={3}>已终止</MenuItem>
@@ -150,91 +309,38 @@ export function StoreServiceSubscriptionsSection({
             重置
           </Button>
         </Stack>
-        <Button
-          variant="contained"
-          startIcon={
-            <SvgIcon fontSize="small">
-              <PlusIcon />
-            </SvgIcon>
-          }
-          onClick={() => setSubDialogOpen(true)}
-        >
-          新建订阅
-        </Button>
       </Stack>
 
       <Paper>
         <Table size="small">
           <TableHead>
             <TableRow>
-              <TableCell>ID</TableCell>
+              <TableCell />
               <TableCell>店铺</TableCell>
               <TableCell>套餐</TableCell>
               <TableCell>开始日期</TableCell>
               <TableCell>结束日期</TableCell>
               <TableCell>状态</TableCell>
-              <TableCell>操作</TableCell>
+              <TableCell>最新账单</TableCell>
+              <TableCell>合同</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {subscriptions.map((sub) => (
-              <TableRow key={sub.id}>
-                <TableCell>{sub.id}</TableCell>
-                <TableCell>{sub.store_name || sub.store_id}</TableCell>
-                <TableCell>{sub.plan?.name}</TableCell>
-                <TableCell>{formatDate(sub.start_date)}</TableCell>
-                <TableCell>{formatDate(sub.end_date)}</TableCell>
-                <TableCell>
-                  <StoreServiceSubscriptionCellRender value={sub.status} />
-                </TableCell>
-                <TableCell>
-                  {sub.status === 1 && (
-                    <Button size="small" onClick={() => handleTerminateSubscription(sub)}>
-                      终止
-                    </Button>
-                  )}
+              <SubscriptionRow key={sub.id} sub={sub} />
+            ))}
+            {subscriptions.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={9} align="center">
+                  <Typography color="text.secondary" sx={{ py: 4 }}>
+                    暂无数据
+                  </Typography>
                 </TableCell>
               </TableRow>
-            ))}
+            )}
           </TableBody>
         </Table>
       </Paper>
-
-      <Dialog open={subDialogOpen} onClose={() => setSubDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>新建订阅</DialogTitle>
-        <DialogContent>
-          <Stack spacing={2} mt={1}>
-            <TextField
-              label="店铺ID（store_id）"
-              fullWidth
-              value={currentStoreId || ""}
-              disabled
-              helperText={currentStoreId ? "" : "请先在页面顶部选择店铺"}
-            />
-            <FormControl fullWidth>
-              <InputLabel id="plan-select-label">套餐</InputLabel>
-              <Select
-                labelId="plan-select-label"
-                label="套餐"
-                value={subPlanId}
-                onChange={(e) => setSubPlanId(e.target.value as number)}
-              >
-                {plans.map((p) => (
-                  <MenuItem key={p.id} value={p.id}>
-                    {p.name}（{(p.monthly_fee / 100).toFixed(2)} 元/月）
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Stack>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setSubDialogOpen(false)}>取消</Button>
-          <Button variant="contained" onClick={handleCreateSubscription}>
-            创建
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Box>
   );
 }

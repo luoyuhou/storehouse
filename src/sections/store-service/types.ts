@@ -1,5 +1,6 @@
 export interface StoreServicePlan {
   id: number;
+  plan_id: string;
   name: string;
   description?: string | null;
   monthly_fee: number;
@@ -10,7 +11,7 @@ export interface StoreServiceSubscription {
   id: number;
   store_id: string;
   store_name?: string;
-  plan_id: number;
+  plan_id: string;
   start_date: string;
   end_date: string;
   status: number;

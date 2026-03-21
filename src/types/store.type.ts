@@ -1,4 +1,5 @@
 export type StoreType = {
+  id: number;
   store_id: string;
   store_name: string;
   province: string;
@@ -60,3 +61,11 @@ export type UserOrderType = {
     store_name: string;
   };
 };
+
+export interface StoreSubscriptionPlan {
+  id: number;
+  plan_id: string;
+  name: string;
+  description: string;
+  monthly_fee: number;
+}

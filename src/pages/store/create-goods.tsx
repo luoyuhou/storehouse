@@ -80,16 +80,39 @@ function CreateGoods() {
       bar_code: Yup.string().max(8).max(32),
       supplier: Yup.string().max(255),
     }),
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     onSubmit: async ({ submit, ...values }, helpers) => {
       setSubmitting(true);
       try {
+        const formData = new FormData();
+        // 将所有表单字段添加到 formData
+        Object.keys(values).forEach((key) => {
+          const value = values[key as keyof typeof values];
+          if (value !== undefined && value !== null) {
+            if (key === "price") {
+              formData.append(key, ((value as unknown as number) * 100).toString());
+            } else {
+              formData.append(key, value as string);
+            }
+          }
+        });
+
+        // 如果有本地待上传的文件，添加到 formData
+        if (imageFile) {
+          formData.append("file", imageFile);
+        }
+
         await post({
           url: "/api/store/goods",
-          payload: { ...values, price: (values.price as unknown as number) * 100 },
-          config: {},
+          payload: formData,
+          config: { isFile: true },
         });
+
         toast.success(`创建 ${values.name} 商品成功`);
-        // router.push("/auth/sign-in");
+        // 成功后清除图片状态
+        setImageFile(null);
+        setImagePreview(null);
+        formik.resetForm();
       } catch (err) {
         helpers.setStatus({ success: false });
         helpers.setErrors({ submit: (err as { message: string }).message });
@@ -138,28 +161,7 @@ function CreateGoods() {
       setImagePreview(reader.result as string);
     };
     reader.readAsDataURL(file);
-
-    // 上传图片到服务器
-    const formData = new FormData();
-    formData.append("file", file);
-
-    post({
-      url: "/api/file/upload",
-      payload: formData,
-      config: { isFile: true },
-    })
-      .then((response) => {
-        const { url } = response as { url: string };
-        // 将上传成功的 URL 设置到表单的 image_url 字段
-        formik.setFieldValue("image_url", url);
-        toast.success("图片上传成功");
-      })
-      .catch((err) => {
-        toast.error(`图片上传失败: ${err.response?.data?.message || err.message}`);
-        // 上传失败时清除预览
-        // eslint-disable-next-line @typescript-eslint/no-use-before-define
-        handleRemoveImage();
-      });
+    // 不再这里调用上传接口，只在本地预览
   };
 
   // 处理图片选择
@@ -205,7 +207,7 @@ function CreateGoods() {
           py: 2,
         }}
       >
-        <Container maxWidth="lg">
+        <Container maxWidth="xl">
           <Stack spacing={3}>
             <div>
               <Typography variant="h4">创建商品</Typography>

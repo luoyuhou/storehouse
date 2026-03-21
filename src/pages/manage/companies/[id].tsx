@@ -56,6 +56,7 @@ function a11yProps(index: number) {
 
 interface StoreServicePlanSummary {
   id: number;
+  plan_id: string;
   name: string;
   monthly_fee: number;
 }
@@ -63,7 +64,7 @@ interface StoreServicePlanSummary {
 interface StoreServiceSubscriptionSummary {
   id: number;
   store_id: string;
-  plan_id: number;
+  plan_id: string;
   start_date: string;
   end_date: string;
   status: number;
@@ -127,9 +128,9 @@ function CompanyDetail() {
     setServiceLoading(true);
     Promise.all([
       get<{ data: StoreServiceSubscriptionSummary[] }>(
-        `/api/store-service/subscriptions?store_id=${id}`,
+        `/api/store/service/subscriptions?store_id=${id}`,
       ),
-      get<{ data: StoreServiceInvoiceSummary[] }>(`/api/store-service/invoices?store_id=${id}`),
+      get<{ data: StoreServiceInvoiceSummary[] }>(`/api/store/service/invoices?store_id=${id}`),
     ])
       .then(([subsRes, invRes]) => {
         setServiceSubscriptions(subsRes.data || []);

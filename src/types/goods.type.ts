@@ -21,6 +21,7 @@ export type GoodsVersionType = {
   count: number;
   price: number;
   unit_name: string;
+  image_url?: string;
   supplier: string | null;
   status: number;
   create_date: string;

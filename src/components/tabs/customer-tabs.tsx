@@ -1,37 +1,11 @@
-import React from "react";
-import { AppBar, Box, Stack, Tab, Tabs, Typography, Unstable_Grid2 as Grid } from "@mui/material";
-
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number;
-  value: number;
-}
+import React, { useMemo } from "react";
+import { AppBar, Box, Stack, Tab, Tabs, Unstable_Grid2 as Grid } from "@mui/material";
 
 function a11yProps(index: number) {
   return {
     id: `scrollable-auto-tab-${index}`,
     "aria-controls": `scrollable-auto-tabpanel-${index}`,
   };
-}
-
-function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props;
-
-  return (
-    <Box
-      role="tabpanel"
-      hidden={value !== index}
-      id={`scrollable-auto-tabpanel-${index}`}
-      aria-labelledby={`scrollable-auto-tab-${index}`}
-      {...other}
-    >
-      {value === index && (
-        <Box p={1}>
-          <Typography>{children}</Typography>
-        </Box>
-      )}
-    </Box>
-  );
 }
 
 type TabItem = {
@@ -46,16 +20,20 @@ type CustomerTabsProps = {
 };
 
 function getDefaultIndex(tabs: TabItem[]): number {
+  if (tabs.length === 0) return 0;
   const defaultItem = tabs.find((i) => i.isDefault);
-  if (defaultItem) {
-    return defaultItem.key;
-  }
-
-  return tabs[0].key;
+  return defaultItem ? defaultItem.key : tabs[0].key;
 }
 
 export default function CustomerTabs({ tabs }: CustomerTabsProps) {
-  const [index, setIndex] = React.useState(getDefaultIndex(tabs));
+  // 使用 useMemo 避免每次渲染都重新计算默认索引
+  const initialIndex = useMemo(() => getDefaultIndex(tabs), []);
+  const [index, setIndex] = React.useState(initialIndex);
+
+  // 只渲染当前选中的 tab 内容，避免未选中 tab 的组件挂载和 API 请求
+  const currentTab = tabs.find((tab) => tab.key === index);
+
+  if (tabs.length === 0) return null;
 
   return (
     <Stack spacing={3}>
@@ -81,15 +59,19 @@ export default function CustomerTabs({ tabs }: CustomerTabsProps) {
           </Tabs>
         </AppBar>
       </Box>
-      {tabs.map(({ key, children }) => (
-        <TabPanel key={`tab-panel-${key}`} value={index} index={key}>
-          <Box>
+      {currentTab && (
+        <Box
+          role="tabpanel"
+          id={`scrollable-auto-tabpanel-${currentTab.key}`}
+          aria-labelledby={`scrollable-auto-tab-${currentTab.key}`}
+        >
+          <Box p={1}>
             <Grid>
-              <Grid>{children}</Grid>
+              <Grid>{currentTab.children}</Grid>
             </Grid>
           </Box>
-        </TabPanel>
-      ))}
+        </Box>
+      )}
     </Stack>
   );
 }
