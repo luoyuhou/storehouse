@@ -48,7 +48,7 @@ interface Contract {
   id: number;
   contract_no: string;
   store_id: string;
-  plan_id: number;
+  plan_id: string;
   start_date: string;
   end_date: string;
   status: number;

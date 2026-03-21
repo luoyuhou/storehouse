@@ -56,6 +56,7 @@ function a11yProps(index: number) {
 
 interface StoreServicePlanSummary {
   id: number;
+  plan_id: string;
   name: string;
   monthly_fee: number;
 }
@@ -63,7 +64,7 @@ interface StoreServicePlanSummary {
 interface StoreServiceSubscriptionSummary {
   id: number;
   store_id: string;
-  plan_id: number;
+  plan_id: string;
   start_date: string;
   end_date: string;
   status: number;

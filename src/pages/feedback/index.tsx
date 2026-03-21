@@ -149,7 +149,7 @@ function CommentOrFeaturePage() {
     if (item.status === status) return;
     try {
       await patch<{ message: string }>({
-        url: `/api/feedback/${item.id}/status`,
+        url: `/api/feedback/${item.feedback_id}/status`,
         payload: { status },
       });
       toast.success("状态已更新");

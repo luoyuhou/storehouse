@@ -34,7 +34,7 @@ export function FeedbackComment({
   useEffect(() => {
     if (!commentDialogOpen || !commentTarget) return;
 
-    get<{ data: FeedbackCommentItem[] }>(`/api/feedback/${commentTarget.id}/comments`)
+    get<{ data: FeedbackCommentItem[] }>(`/api/feedback/${commentTarget.feedback_id}/comments`)
       .then((res) => {
         setComments(res.data || []);
       })
@@ -160,7 +160,7 @@ export function FeedbackComment({
                 payload.parent_id = replyParentId;
               }
               await post<{ data: FeedbackCommentItem }>({
-                url: `/api/feedback/${commentTarget.id}/comments`,
+                url: `/api/feedback/${commentTarget.feedback_id}/comments`,
                 payload,
               });
               setTrigger((c) => c + 1);

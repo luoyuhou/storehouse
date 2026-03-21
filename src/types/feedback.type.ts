@@ -17,6 +17,7 @@ interface FeedbackAttachmentItem {
 export interface FeedbackItem {
   id: number;
   user_id: string;
+  feedback_id: string;
   user?: FeedbackUserInfo | null;
   title: string;
   content: string;

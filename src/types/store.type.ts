@@ -64,6 +64,7 @@ export type UserOrderType = {
 
 export interface StoreSubscriptionPlan {
   id: number;
+  plan_id: string;
   name: string;
   description: string;
   monthly_fee: number;

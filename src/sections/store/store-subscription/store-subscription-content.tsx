@@ -76,7 +76,7 @@ export function StoreSubscriptionContent({
     fetchData();
   }, [fetchData]);
 
-  const handleSubscribe = async (planId: number) => {
+  const handleSubscribe = async (planId: string) => {
     try {
       await post({
         url: "/api/store/service/subscriptions",
@@ -155,7 +155,7 @@ export function StoreSubscriptionContent({
                 <Button
                   variant="outlined"
                   size="small"
-                  onClick={() => handleSubscribe(currentActiveSub.plan.id)}
+                  onClick={() => handleSubscribe(currentActiveSub.plan.plan_id)}
                 >
                   续费申请
                 </Button>
@@ -183,14 +183,14 @@ export function StoreSubscriptionContent({
 
       <Grid container spacing={3}>
         {plans.map((plan) => (
-          <Grid xs={12} md={6} key={plan.id}>
+          <Grid xs={12} md={6} key={plan.plan_id}>
             <Card
               sx={{
                 height: "100%",
                 display: "flex",
                 flexDirection: "column",
                 position: "relative",
-                ...(currentActiveSub?.plan.id === plan.id
+                ...(currentActiveSub?.plan.plan_id === plan.plan_id
                   ? {
                       border: "2px solid",
                       borderColor: "primary.main",
@@ -198,7 +198,7 @@ export function StoreSubscriptionContent({
                   : {}),
               }}
             >
-              {currentActiveSub?.plan.id === plan.id && (
+              {currentActiveSub?.plan.plan_id === plan.plan_id && (
                 <Box sx={{ position: "absolute", top: 12, right: 12 }}>
                   <Chip label="当前版本" color="primary" size="small" />
                 </Box>
@@ -263,14 +263,18 @@ export function StoreSubscriptionContent({
               <Divider />
               <Box sx={{ p: 2 }}>
                 <Button
-                  variant={currentActiveSub?.plan.id === plan.id ? "outlined" : "contained"}
+                  variant={
+                    currentActiveSub?.plan.plan_id === plan.plan_id ? "outlined" : "contained"
+                  }
                   fullWidth
                   size="large"
-                  onClick={() => handleSubscribe(plan.id)}
+                  onClick={() => handleSubscribe(plan.plan_id)}
                   disabled={loading || (pendingSub && !currentActiveSub)}
                   sx={{ py: 1.5, fontSize: "1.1rem" }}
                 >
-                  {currentActiveSub?.plan.id === plan.id ? "续费当前套餐" : "立即升级订阅"}
+                  {currentActiveSub?.plan.plan_id === plan.plan_id
+                    ? "续费当前套餐"
+                    : "立即升级订阅"}
                 </Button>
               </Box>
             </Card>
