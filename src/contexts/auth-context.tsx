@@ -100,6 +100,10 @@ export const AuthContext = createContext({
   sendSmsCode: async (_phone: string, _token: string) => {},
   getSmsToken: async (_phone: string) => ({ token: "" }),
   signOut: () => {},
+  // 忘记密码相关
+  getForgetPasswordSmsToken: async (_phone: string) => ({ token: "" }),
+  sendForgetPasswordSms: async (_phone: string, _token: string) => {},
+  resetPassword: async (_args: { phone: string; code: string; password: string }) => {},
   user: null,
   isLoading: false,
   isAuthenticated: true,
@@ -203,6 +207,26 @@ export function AuthProvider(props: { children: React.ReactNode }) {
     });
   };
 
+  const getForgetPasswordSmsToken = async (phone: string) => {
+    return get<{ token: string }>(`/api/auth/forget-password/sms-token?phone=${phone}`);
+  };
+
+  const sendForgetPasswordSms = async (phone: string, token: string) => {
+    return post({
+      url: "/api/auth/forget-password/send-sms",
+      config: {},
+      payload: { phone, token },
+    });
+  };
+
+  const resetPassword = async (args: { phone: string; code: string; password: string }) => {
+    return post({
+      url: "/api/auth/forget-password/reset",
+      config: {},
+      payload: args,
+    });
+  };
+
   const signOut = async () => {
     await deleteRequest({
       url: "/api/auth/logout",
@@ -215,7 +239,18 @@ export function AuthProvider(props: { children: React.ReactNode }) {
   };
 
   // eslint-disable-next-line react/jsx-no-constructed-context-values
-  const values = { ...state, signIn, signInByScan, signUp, signOut, sendSmsCode, getSmsToken };
+  const values = {
+    ...state,
+    signIn,
+    signInByScan,
+    signUp,
+    signOut,
+    sendSmsCode,
+    getSmsToken,
+    getForgetPasswordSmsToken,
+    sendForgetPasswordSms,
+    resetPassword,
+  };
 
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-expect-error

@@ -54,10 +54,11 @@ function Row(props: { row: StoreType }) {
         <TableCell component="th" scope="row">
           {row.store_name}
         </TableCell>
-        <TableCell>{row.province}</TableCell>
-        <TableCell>{row.city}</TableCell>
-        <TableCell>{row.area}</TableCell>
-        <TableCell align="right">{row.town}</TableCell>
+        <TableCell>{row.province_name}</TableCell>
+        <TableCell>{row.city_name}</TableCell>
+        <TableCell>{row.area_name}</TableCell>
+        <TableCell>{row.town_name}</TableCell>
+        <TableCell align="right">{row.address}</TableCell>
       </TableRow>
       <TableRow>
         <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
@@ -140,7 +141,7 @@ function StoreList() {
           py: 8,
         }}
       >
-        <Container maxWidth="lg">
+        <Container maxWidth="xl">
           <Stack spacing={3}>
             <Container>
               <Typography variant="h4">商店申请记录</Typography>
@@ -155,7 +156,8 @@ function StoreList() {
                       <TableCell>省/直辖市</TableCell>
                       <TableCell>市</TableCell>
                       <TableCell>区</TableCell>
-                      <TableCell align="right">城镇地区</TableCell>
+                      <TableCell>城镇地区</TableCell>
+                      <TableCell align="right">详细地址</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>

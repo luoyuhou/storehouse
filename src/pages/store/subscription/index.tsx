@@ -6,22 +6,17 @@ import { get } from "src/lib/http";
 import { toast } from "react-toastify";
 import CustomerTabs from "src/components/tabs/customer-tabs";
 import CircularPercentageLoading from "src/components/loading/circular-percentage.loading";
-import { StoreSubscriptionPlan, StoreType } from "src/types/store.type";
+import { StoreType } from "src/types/store.type";
 import { StoreSubscriptionContent } from "src/sections/store/store-subscription/store-subscription-content";
 
 function Page() {
   const [stores, setStores] = useState<StoreType[]>([]);
-  const [plans, setPlans] = useState<StoreSubscriptionPlan[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([
-      get<{ data: StoreType[] }>("/api/store"),
-      get<{ data: StoreSubscriptionPlan[] }>("/api/store/service/plans"),
-    ])
-      .then(([storesRes, plansRes]) => {
+    get<{ data: StoreType[] }>("/api/store")
+      .then((storesRes) => {
         setStores(storesRes.data || []);
-        setPlans(plansRes.data || []);
       })
       .catch((err) => {
         toast.error(`加载基础数据失败: ${err.message}`);
@@ -53,7 +48,7 @@ function Page() {
                     key: index,
                     label: store.store_name,
                     isDefault: index === 0,
-                    children: <StoreSubscriptionContent storeId={store.store_id} plans={plans} />,
+                    children: <StoreSubscriptionContent storeId={store.store_id} />,
                   }))}
                 />
               ) : (

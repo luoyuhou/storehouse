@@ -28,6 +28,7 @@ export function StoreServicePlansSection() {
   const [newPlanName, setNewPlanName] = useState("");
   const [newPlanDesc, setNewPlanDesc] = useState("");
   const [newPlanPrice, setNewPlanPrice] = useState("");
+  const [newPlanMaxSubs, setNewPlanMaxSubs] = useState(""); // 留空表示无限次
 
   const fetchPlans = async () => {
     const res = await get<{ data: StoreServicePlan[] }>("/api/store/service/plans");
@@ -41,12 +42,14 @@ export function StoreServicePlansSection() {
   const handleCreatePlan = async () => {
     const price = Number(newPlanPrice);
     if (!newPlanName.trim() || price < 0) return;
+    const maxSubs = newPlanMaxSubs.trim() ? Number(newPlanMaxSubs) : null;
     post<{ data: StoreServicePlan }>({
       url: "/api/store/service/plans",
       payload: {
         name: newPlanName.trim(),
         description: newPlanDesc || undefined,
         monthly_fee: price * 100,
+        max_subscriptions: maxSubs,
       },
     })
       .then(() => {
@@ -54,6 +57,7 @@ export function StoreServicePlansSection() {
         setNewPlanName("");
         setNewPlanDesc("");
         setNewPlanPrice("");
+        setNewPlanMaxSubs("");
         fetchPlans();
       })
       .catch((err) => toast.error(JSON.stringify(err.message)));
@@ -92,6 +96,7 @@ export function StoreServicePlansSection() {
               <TableCell>名称</TableCell>
               <TableCell>描述</TableCell>
               <TableCell>月费</TableCell>
+              <TableCell>每店订阅限制</TableCell>
               <TableCell>状态</TableCell>
               <TableCell>操作</TableCell>
             </TableRow>
@@ -103,6 +108,11 @@ export function StoreServicePlansSection() {
                 <TableCell>{plan.name}</TableCell>
                 <TableCell>{plan.description || "-"}</TableCell>
                 <TableCell>{(plan.monthly_fee / 100).toFixed(2)}</TableCell>
+                <TableCell>
+                  {plan.max_subscriptions === null || plan.max_subscriptions === undefined
+                    ? "不限"
+                    : `限 ${plan.max_subscriptions} 次`}
+                </TableCell>
                 <TableCell>{plan.is_active ? "启用" : "停用"}</TableCell>
                 <TableCell>
                   <Button size="small" onClick={() => handleTogglePlanActive(plan)}>
@@ -144,6 +154,14 @@ export function StoreServicePlansSection() {
               value={newPlanPrice}
               type="number"
               onChange={(e) => setNewPlanPrice(e.target.value)}
+            />
+            <TextField
+              label="每店最大订阅次数（留空表示不限）"
+              fullWidth
+              value={newPlanMaxSubs}
+              type="number"
+              onChange={(e) => setNewPlanMaxSubs(e.target.value)}
+              helperText="留空表示每个店铺可无限次订阅，填写正整数限制每个店铺最多订阅次数"
             />
           </Stack>
         </DialogContent>

@@ -53,21 +53,44 @@ function getColorByStatus(status: number) {
   return "default";
 }
 
-export function StoreSubscriptionContent({
-  storeId,
-  plans,
-}: {
-  storeId: string;
-  plans: StoreSubscriptionPlan[];
-}) {
+function isPlanAvailable(plan: StoreSubscriptionPlan): boolean {
+  // 如果 max_subscriptions 为 null 或 undefined，表示无限次
+  if (plan.max_subscriptions === null || plan.max_subscriptions === undefined) {
+    return true;
+  }
+  // 如果 current_subscriptions 存在且已达到上限，则不可用
+  const current = plan.current_subscriptions || 0;
+  return current < plan.max_subscriptions;
+}
+
+function getRemainingText(plan: StoreSubscriptionPlan): string | null {
+  if (plan.max_subscriptions === null || plan.max_subscriptions === undefined) {
+    return null;
+  }
+  const current = plan.current_subscriptions || 0;
+  const remaining = plan.max_subscriptions - current;
+  if (remaining <= 0) {
+    return `已达订阅上限 (${plan.max_subscriptions} 次)`;
+  }
+  return `本店剩余: ${remaining}/${plan.max_subscriptions} 次`;
+}
+
+export function StoreSubscriptionContent({ storeId }: { storeId: string }) {
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
+  const [plans, setPlans] = useState<StoreSubscriptionPlan[]>([]);
   const [loading, setLoading] = useState(false);
 
   const fetchData = useCallback(() => {
     if (!storeId) return;
     setLoading(true);
-    get<{ data: Subscription[] }>(`/api/store/service/subscriptions?store_id=${storeId}`)
-      .then((subRes) => setSubscriptions(subRes.data))
+    Promise.all([
+      get<{ data: Subscription[] }>(`/api/store/service/subscriptions?store_id=${storeId}`),
+      get<{ data: StoreSubscriptionPlan[] }>(`/api/store/service/plans?store_id=${storeId}`),
+    ])
+      .then(([subRes, plansRes]) => {
+        setSubscriptions(subRes.data);
+        setPlans(plansRes.data || []);
+      })
       .catch((err) => toast.error((err as { message: string }).message))
       .finally(() => setLoading(false));
   }, [storeId]);
@@ -182,104 +205,139 @@ export function StoreSubscriptionContent({
       )}
 
       <Grid container spacing={3}>
-        {plans.map((plan) => (
-          <Grid xs={12} md={6} key={plan.plan_id}>
-            <Card
-              sx={{
-                height: "100%",
-                display: "flex",
-                flexDirection: "column",
-                position: "relative",
-                ...(currentActiveSub?.plan.plan_id === plan.plan_id
-                  ? {
-                      border: "2px solid",
-                      borderColor: "primary.main",
+        {plans.map((plan) => {
+          const planAvailable = isPlanAvailable(plan);
+          const remainingText = getRemainingText(plan);
+          return (
+            <Grid xs={12} md={6} key={plan.plan_id}>
+              <Card
+                sx={{
+                  height: "100%",
+                  display: "flex",
+                  flexDirection: "column",
+                  position: "relative",
+                  // eslint-disable-next-line no-nested-ternary
+                  ...(!planAvailable
+                    ? {
+                        opacity: 0.6,
+                        bgcolor: "action.disabledBackground",
+                      }
+                    : currentActiveSub?.plan.plan_id === plan.plan_id
+                      ? {
+                          border: "2px solid",
+                          borderColor: "primary.main",
+                        }
+                      : {}),
+                }}
+              >
+                {!planAvailable && (
+                  <Box sx={{ position: "absolute", top: 12, right: 12 }}>
+                    <Chip label="已达上限" color="error" size="small" />
+                  </Box>
+                )}
+                {planAvailable && currentActiveSub?.plan.plan_id === plan.plan_id && (
+                  <Box sx={{ position: "absolute", top: 12, right: 12 }}>
+                    <Chip label="当前版本" color="primary" size="small" />
+                  </Box>
+                )}
+                <CardHeader
+                  title={plan.name}
+                  subheader={plan.description}
+                  titleTypographyProps={{ variant: "h5", color: "primary" }}
+                />
+                <Divider />
+                <CardContent sx={{ flexGrow: 1 }}>
+                  <Stack spacing={3}>
+                    <Box sx={{ display: "flex", alignItems: "baseline" }}>
+                      <Typography variant="h3">¥{(plan.monthly_fee / 100).toFixed(2)}</Typography>
+                      <Typography variant="subtitle1" color="textSecondary" sx={{ ml: 1 }}>
+                        / 月
+                      </Typography>
+                    </Box>
+
+                    {remainingText && (
+                      <Box
+                        sx={{
+                          p: 1.5,
+                          bgcolor: planAvailable ? "warning.lightest" : "error.lightest",
+                          borderRadius: 1,
+                        }}
+                      >
+                        <Typography
+                          variant="body2"
+                          color={planAvailable ? "warning.dark" : "error.dark"}
+                        >
+                          {remainingText}
+                        </Typography>
+                      </Box>
+                    )}
+
+                    <List sx={{ bgcolor: "action.hover", borderRadius: 1 }}>
+                      <ListItem divider>
+                        <ListItemIcon sx={{ minWidth: 32 }}>
+                          <ShoppingBagIcon width={20} color="green" />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary="解锁无限下单额度"
+                          secondary="不再受每日 10 单的免费额度限制"
+                          primaryTypographyProps={{ fontWeight: "bold" }}
+                        />
+                      </ListItem>
+                      <ListItem divider>
+                        <ListItemIcon sx={{ minWidth: 32 }}>
+                          <CreditCardIcon width={20} color="green" />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={`按需付费：¥${(plan.monthly_fee / 100).toFixed(2)} + 订单分成`}
+                          secondary="每完成 1 单收货订单，下月续费仅加收 ¥0.1 元"
+                        />
+                      </ListItem>
+                      <ListItem>
+                        <ListItemIcon sx={{ minWidth: 32 }}>
+                          <CalendarIcon width={20} color="green" />
+                        </ListItemIcon>
+                        <ListItemText primary="灵活订阅" secondary="按月自动计费，随时可申请停用" />
+                      </ListItem>
+                    </List>
+
+                    <Box sx={{ p: 2, bgcolor: "primary.lightest", borderRadius: 1 }}>
+                      <Typography variant="caption" color="primary">
+                        * 计费公式：续费金额 = {(plan.monthly_fee / 100).toFixed(2)}元 (基础服务费)
+                        + 上个周期有效订单数 (订单量加成, 扣去每天10单的免费额度)
+                      </Typography>
+                      <hr />
+                      <Typography variant="caption" color="primary">
+                        * 举例说明：{(plan.monthly_fee / 100).toFixed(2)}元 +
+                        [400（上个周期有效订单数）- 28 (如：二月28天) * 10 (每天 10 单 免费额度)] *
+                        0.1元
+                      </Typography>
+                    </Box>
+                  </Stack>
+                </CardContent>
+                <Divider />
+                <Box sx={{ p: 2 }}>
+                  <Button
+                    variant={
+                      currentActiveSub?.plan.plan_id === plan.plan_id ? "outlined" : "contained"
                     }
-                  : {}),
-              }}
-            >
-              {currentActiveSub?.plan.plan_id === plan.plan_id && (
-                <Box sx={{ position: "absolute", top: 12, right: 12 }}>
-                  <Chip label="当前版本" color="primary" size="small" />
+                    fullWidth
+                    size="large"
+                    onClick={() => handleSubscribe(plan.plan_id)}
+                    disabled={loading || !planAvailable || (pendingSub && !currentActiveSub)}
+                    sx={{ py: 1.5, fontSize: "1.1rem" }}
+                  >
+                    {/* eslint-disable-next-line no-nested-ternary */}
+                    {!planAvailable
+                      ? "已达上限"
+                      : currentActiveSub?.plan.plan_id === plan.plan_id
+                        ? "续费当前套餐"
+                        : "立即升级订阅"}
+                  </Button>
                 </Box>
-              )}
-              <CardHeader
-                title={plan.name}
-                subheader={plan.description}
-                titleTypographyProps={{ variant: "h5", color: "primary" }}
-              />
-              <Divider />
-              <CardContent sx={{ flexGrow: 1 }}>
-                <Stack spacing={3}>
-                  <Box sx={{ display: "flex", alignItems: "baseline" }}>
-                    <Typography variant="h3">¥{(plan.monthly_fee / 100).toFixed(2)}</Typography>
-                    <Typography variant="subtitle1" color="textSecondary" sx={{ ml: 1 }}>
-                      / 月
-                    </Typography>
-                  </Box>
-
-                  <List sx={{ bgcolor: "action.hover", borderRadius: 1 }}>
-                    <ListItem divider>
-                      <ListItemIcon sx={{ minWidth: 32 }}>
-                        <ShoppingBagIcon width={20} color="green" />
-                      </ListItemIcon>
-                      <ListItemText
-                        primary="解锁无限下单额度"
-                        secondary="不再受每日 10 单的免费额度限制"
-                        primaryTypographyProps={{ fontWeight: "bold" }}
-                      />
-                    </ListItem>
-                    <ListItem divider>
-                      <ListItemIcon sx={{ minWidth: 32 }}>
-                        <CreditCardIcon width={20} color="green" />
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={`按需付费：¥${(plan.monthly_fee / 100).toFixed(2)} + 订单分成`}
-                        secondary="每完成 1 单收货订单，下月续费仅加收 ¥0.1 元"
-                      />
-                    </ListItem>
-                    <ListItem>
-                      <ListItemIcon sx={{ minWidth: 32 }}>
-                        <CalendarIcon width={20} color="green" />
-                      </ListItemIcon>
-                      <ListItemText primary="灵活订阅" secondary="按月自动计费，随时可申请停用" />
-                    </ListItem>
-                  </List>
-
-                  <Box sx={{ p: 2, bgcolor: "primary.lightest", borderRadius: 1 }}>
-                    <Typography variant="caption" color="primary">
-                      * 计费公式：续费金额 = {(plan.monthly_fee / 100).toFixed(2)}元 (基础服务费) +
-                      上个周期有效订单数 (订单量加成, 扣去每天10单的免费额度)
-                    </Typography>
-                    <hr />
-                    <Typography variant="caption" color="primary">
-                      * 举例说明：{(plan.monthly_fee / 100).toFixed(2)}元 +
-                      [400（上个周期有效订单数）- 28 (如：二月28天) * 10 (每天 10 单 免费额度)] *
-                      0.1元
-                    </Typography>
-                  </Box>
-                </Stack>
-              </CardContent>
-              <Divider />
-              <Box sx={{ p: 2 }}>
-                <Button
-                  variant={
-                    currentActiveSub?.plan.plan_id === plan.plan_id ? "outlined" : "contained"
-                  }
-                  fullWidth
-                  size="large"
-                  onClick={() => handleSubscribe(plan.plan_id)}
-                  disabled={loading || (pendingSub && !currentActiveSub)}
-                  sx={{ py: 1.5, fontSize: "1.1rem" }}
-                >
-                  {currentActiveSub?.plan.plan_id === plan.plan_id
-                    ? "续费当前套餐"
-                    : "立即升级订阅"}
-                </Button>
-              </Box>
-            </Card>
-          </Grid>
-        ))}
+              </Card>
+            </Grid>
+          );
+        })}
       </Grid>
 
       <Card>

@@ -62,6 +62,7 @@ function ApplyStore() {
         };
         await post({ url: "/api/store", payload: data, config: {} });
         toast.success("创建用户成功");
+        window.location.href = "/apply/list";
         // router.push("/auth/sign-in");
       } catch (err) {
         helpers.setStatus({ success: false });
@@ -129,7 +130,7 @@ function ApplyStore() {
           py: 8,
         }}
       >
-        <Container maxWidth="lg">
+        <Container maxWidth="xl">
           <Stack spacing={3}>
             <div>
               <Typography variant="h4">商铺申请</Typography>

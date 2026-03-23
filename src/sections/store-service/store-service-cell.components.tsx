@@ -2,6 +2,10 @@ import React from "react";
 import { Typography } from "@mui/material";
 
 export function StoreServiceSubscriptionCellRender({ value }: { value: number }) {
+  if (value === 0) {
+    return <Typography color="gray">待处理</Typography>;
+  }
+
   if (value === 1) {
     return <Typography color="green">生效中</Typography>;
   }

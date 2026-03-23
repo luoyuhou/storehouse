@@ -4,7 +4,9 @@ export interface StoreServicePlan {
   name: string;
   description?: string | null;
   monthly_fee: number;
+  max_subscriptions?: number | null; // null 表示无限次，正整数表示最大订阅次数
   is_active: boolean;
+  current_subscriptions?: number; // 当前已订阅次数
 }
 
 export interface StoreServiceSubscription {
