@@ -1,5 +1,5 @@
 import { Layout as DashboardLayout } from "src/layouts/dashboard/layout";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Head from "next/head";
 import {
   Box,
@@ -14,22 +14,45 @@ import {
   Divider,
   CardActions,
   Card,
+  Collapse,
+  IconButton,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Pagination,
 } from "@mui/material";
-import { KeyboardArrowLeft, KeyboardArrowRight } from "@mui/icons-material";
+import {
+  KeyboardArrowLeft,
+  KeyboardArrowRight,
+  KeyboardArrowDown,
+  KeyboardArrowUp,
+} from "@mui/icons-material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import { get, patch } from "src/lib/http";
 import { toast } from "react-toastify";
 import CircularPercentageLoading from "src/components/loading/circular-percentage.loading";
 import { CompanyProfileDetails } from "src/sections/companies/company-profile-details";
-import { StoreType } from "src/types/store.type";
+import { StoreType, StoryHistoryType } from "src/types/store.type";
 import { CompanyStatus } from "src/sections/companies/company-status";
+import dayjs from "dayjs";
 
-function Store() {
-  const [listLoading, setListLoading] = React.useState(false);
-  const [stores, setStores] = React.useState<StoreType[]>([]);
-  const [activeStep, setActiveStep] = React.useState(0);
-  const [uploadingWechat, setUploadingWechat] = React.useState(false);
-  const [uploadingAlipay, setUploadingAlipay] = React.useState(false);
+function StoreHome() {
+  const [listLoading, setListLoading] = useState(false);
+  const [stores, setStores] = useState<StoreType[]>([]);
+  const [activeStep, setActiveStep] = useState(0);
+  const [uploadingWechat, setUploadingWechat] = useState(false);
+  const [uploadingAlipay, setUploadingAlipay] = useState(false);
+
+  // 操作日志状态
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [historyData, setHistoryData] = useState<StoryHistoryType[]>([]);
+  const [historyPage, setHistoryPage] = useState(0);
+  const historyPageSize = 5;
 
   useEffect(() => {
     setListLoading(true);
@@ -39,17 +62,31 @@ function Store() {
       .finally(() => setListLoading(false));
   }, []);
 
+  // 加载操作日志
+  useEffect(() => {
+    const currentStore = stores[activeStep];
+    if (!currentStore || !historyOpen) return;
+
+    setHistoryLoading(true);
+    get<StoryHistoryType[]>(`/api/store/history/${currentStore.store_id}`)
+      .then((res) => setHistoryData(res))
+      .catch((err) => toast.error(err.message))
+      .finally(() => setHistoryLoading(false));
+  }, [stores, activeStep, historyOpen]);
+
   const handleNext = () => {
     setActiveStep((prevActiveStep) => prevActiveStep + 1);
+    setHistoryOpen(false);
   };
 
   const handleBack = () => {
     setActiveStep((prevActiveStep) => prevActiveStep - 1);
+    setHistoryOpen(false);
   };
 
-  const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
-  const [selectedType, setSelectedType] = React.useState<"wechat" | "alipay" | null>(null);
-  const [previewUrl, setPreviewUrl] = React.useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedType, setSelectedType] = useState<"wechat" | "alipay" | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   const handleFileChange =
     (type: "wechat" | "alipay") => (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -86,7 +123,6 @@ function Store() {
     try {
       const formData = new FormData();
       formData.append("file", selectedFile);
-      // 添加对应的占位符以告知后端更新哪个字段
       if (type === "wechat") {
         formData.append("wechat_qr_url", "");
       } else {
@@ -112,7 +148,6 @@ function Store() {
       });
 
       toast.success(`${type === "wechat" ? "微信" : "支付宝"}收款码已更新`);
-      // 重置预览状态
       setSelectedFile(null);
       setSelectedType(null);
       setPreviewUrl(null);
@@ -130,10 +165,12 @@ function Store() {
     setPreviewUrl(null);
   };
 
+  const currentStore = stores[activeStep];
+
   return (
     <>
       <Head>
-        <title>Store List</title>
+        <title>我的商店</title>
       </Head>
       <Box
         component="main"
@@ -151,7 +188,7 @@ function Store() {
               <CircularPercentageLoading loading={listLoading}>
                 <Grid container spacing={3}>
                   <Grid xs={12} md={6} lg={4}>
-                    {stores[activeStep] && (
+                    {currentStore && (
                       <Card>
                         <CardContent>
                           <Box
@@ -162,7 +199,7 @@ function Store() {
                             }}
                           >
                             <Avatar
-                              src={stores[activeStep].logo}
+                              src={currentStore.logo}
                               sx={{
                                 height: 80,
                                 mb: 2,
@@ -170,20 +207,20 @@ function Store() {
                                 fontSize: "24px",
                               }}
                             >
-                              {stores[activeStep].store_name.slice(0, 2)}
+                              {currentStore.store_name.slice(0, 2)}
                             </Avatar>
                             <Typography gutterBottom variant="h5">
-                              {stores[activeStep].store_name}
+                              {currentStore.store_name}
                             </Typography>
-                            <CompanyStatus status={stores[activeStep].status} />
+                            <CompanyStatus status={currentStore.status} />
                             <Typography color="text.secondary" variant="body2">
-                              商家: {stores[activeStep].id_name}
-                            </Typography>
-                            <Typography color="text.secondary" variant="body2">
-                              身份证号码: {stores[activeStep].id_code}
+                              商家: {currentStore.id_name}
                             </Typography>
                             <Typography color="text.secondary" variant="body2">
-                              电话: {stores[activeStep].phone}
+                              身份证号码: {currentStore.id_code}
+                            </Typography>
+                            <Typography color="text.secondary" variant="body2">
+                              电话: {currentStore.phone}
                             </Typography>
                           </Box>
                         </CardContent>
@@ -233,12 +270,12 @@ function Store() {
                                   {uploadingWechat ? "微信收款码上传中..." : "微信收款码"}
                                 </Typography>
                                 {(selectedType === "wechat" && previewUrl) ||
-                                stores[activeStep].wechat_qr_url ? (
+                                currentStore.wechat_qr_url ? (
                                   <Box
                                     component="img"
                                     src={
                                       (selectedType === "wechat" && previewUrl) ||
-                                      (stores[activeStep].wechat_qr_url as string)
+                                      (currentStore.wechat_qr_url as string)
                                     }
                                     alt="微信收款码"
                                     sx={{
@@ -286,12 +323,12 @@ function Store() {
                                   {uploadingAlipay ? "支付宝收款码上传中..." : "支付宝收款码"}
                                 </Typography>
                                 {(selectedType === "alipay" && previewUrl) ||
-                                stores[activeStep].alipay_qr_url ? (
+                                currentStore.alipay_qr_url ? (
                                   <Box
                                     component="img"
                                     src={
                                       (selectedType === "alipay" && previewUrl) ||
-                                      (stores[activeStep].alipay_qr_url as string)
+                                      (currentStore.alipay_qr_url as string)
                                     }
                                     alt="支付宝收款码"
                                     sx={{
@@ -333,7 +370,73 @@ function Store() {
                     )}
                   </Grid>
                   <Grid xs={12} md={6} lg={8}>
-                    {stores[activeStep] && <CompanyProfileDetails company={stores[activeStep]} />}
+                    {currentStore && <CompanyProfileDetails company={currentStore} />}
+
+                    {/* 操作日志折叠面板 */}
+                    <Card sx={{ mt: 3 }}>
+                      <CardActions sx={{ justifyContent: "space-between", px: 2 }}>
+                        <Typography variant="h6">操作日志</Typography>
+                        <IconButton onClick={() => setHistoryOpen(!historyOpen)}>
+                          {historyOpen ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
+                        </IconButton>
+                      </CardActions>
+                      <Collapse in={historyOpen}>
+                        <Divider />
+                        <CircularPercentageLoading loading={historyLoading}>
+                          <TableContainer component={Paper} sx={{ maxHeight: 300 }}>
+                            <Table size="small" stickyHeader>
+                              <TableHead>
+                                <TableRow>
+                                  <TableCell>Store ID</TableCell>
+                                  <TableCell>类型</TableCell>
+                                  <TableCell>申请内容</TableCell>
+                                  <TableCell>申请时间</TableCell>
+                                  <TableCell>备注</TableCell>
+                                </TableRow>
+                              </TableHead>
+                              <TableBody>
+                                {historyData
+                                  .slice(
+                                    historyPage * historyPageSize,
+                                    (historyPage + 1) * historyPageSize,
+                                  )
+                                  .map((row) => (
+                                    <TableRow key={row.id} hover>
+                                      <TableCell>{row.store_id}</TableCell>
+                                      <TableCell>{row.action_type}</TableCell>
+                                      <TableCell>{row.action_content}</TableCell>
+                                      <TableCell>
+                                        {row.action_date
+                                          ? dayjs(row.action_date).format("YYYY-MM-DD HH:mm:ss")
+                                          : ""}
+                                      </TableCell>
+                                      <TableCell>{row.payload ?? "N/A"}</TableCell>
+                                    </TableRow>
+                                  ))}
+                                {historyData.length === 0 && (
+                                  <TableRow>
+                                    <TableCell colSpan={5} align="center">
+                                      <Typography color="textSecondary" sx={{ py: 2 }}>
+                                        暂无操作记录
+                                      </Typography>
+                                    </TableCell>
+                                  </TableRow>
+                                )}
+                              </TableBody>
+                            </Table>
+                          </TableContainer>
+                          {historyData.length > historyPageSize && (
+                            <Box sx={{ display: "flex", justifyContent: "center", py: 1 }}>
+                              <Pagination
+                                count={Math.ceil(historyData.length / historyPageSize)}
+                                size="small"
+                                onChange={(_, p) => setHistoryPage(p - 1)}
+                              />
+                            </Box>
+                          )}
+                        </CircularPercentageLoading>
+                      </Collapse>
+                    </Card>
                   </Grid>
                 </Grid>
                 <MobileStepper
@@ -367,6 +470,6 @@ function Store() {
   );
 }
 
-Store.getLayout = (page: JSX.Element) => <DashboardLayout>{page}</DashboardLayout>;
+StoreHome.getLayout = (page: JSX.Element) => <DashboardLayout>{page}</DashboardLayout>;
 
-export default Store;
+export default StoreHome;

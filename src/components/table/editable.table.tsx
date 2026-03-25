@@ -11,6 +11,7 @@ import {
   GridRowModesModel,
   GridRowsProp,
   GridToolbarContainer,
+  GridRenderEditCellParams,
 } from "@mui/x-data-grid";
 import { Box, Button } from "@mui/material";
 import { Add, Cancel, Delete, Edit, Save } from "@mui/icons-material";
@@ -51,8 +52,11 @@ type EditableTableProps = {
   loading: boolean;
   submitting: boolean;
   deletable?: boolean;
-  onChange: (payload: Record<string, any>) => Promise<boolean>;
+  onChange: (payload: Record<string, any>, file?: File | null) => Promise<boolean>;
   onDelete: (id: GridRowId) => void;
+  pendingImages?: Record<string | number, { file: File; previewUrl: string }>;
+  onImageChange?: (id: GridRowId, file: File | null, previewUrl: string | null) => void;
+  onImageReset?: (id: GridRowId) => void;
 };
 
 type RowType = Record<string, any> & { id: number; isNew?: boolean };
@@ -66,6 +70,9 @@ export function EditableTable(props: EditableTableProps) {
     deletable,
     onChange,
     onDelete,
+    pendingImages = {},
+    onImageChange,
+    onImageReset,
   } = props;
   const [rows, setRows] = React.useState<RowType[]>([]);
   const [rowModesModel, setRowModesModel] = React.useState<GridRowModesModel>({});
@@ -97,6 +104,10 @@ export function EditableTable(props: EditableTableProps) {
   };
 
   const handleCancelClick = (id: GridRowId) => () => {
+    // 清除图片变更状态（重置为原始状态）
+    if (onImageReset) {
+      onImageReset(id);
+    }
     setRowModesModel({
       ...rowModesModel,
       [id]: { mode: GridRowModes.View, ignoreModifications: true },
@@ -111,11 +122,17 @@ export function EditableTable(props: EditableTableProps) {
   const processRowUpdate = async (
     newRow: GridRowModel<Record<string, any> & { isNew?: boolean }>,
   ) => {
-    const result = await onChange(newRow as Record<string, any>);
+    // 获取该行对应的待上传图片
+    const pendingFile = pendingImages[newRow.id]?.file || null;
+    const result = await onChange(newRow as Record<string, any>, pendingFile);
     if (!result) {
       rowEditMapRef.current[newRow.id] = true;
       setRowModesModel({ ...rowModesModel, [newRow.id]: { mode: GridRowModes.Edit } });
       return newRow;
+    }
+    // 成功后清除图片变更状态
+    if (onImageReset) {
+      onImageReset(newRow.id);
     }
     delete rowEditMapRef.current[newRow.id];
     const updatedRow = { ...newRow, isNew: false };

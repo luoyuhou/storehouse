@@ -1,7 +1,7 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { AppBar, Box, Stack, Tab, Tabs, Unstable_Grid2 as Grid } from "@mui/material";
 
-function a11yProps(index: number) {
+function a11yProps(index: number | string) {
   return {
     id: `scrollable-auto-tab-${index}`,
     "aria-controls": `scrollable-auto-tabpanel-${index}`,
@@ -10,7 +10,7 @@ function a11yProps(index: number) {
 
 type TabItem = {
   label: string;
-  key: number;
+  key: number | string;
   isDefault?: boolean;
   children: React.ReactNode;
 };
@@ -19,7 +19,7 @@ type CustomerTabsProps = {
   tabs: TabItem[];
 };
 
-function getDefaultIndex(tabs: TabItem[]): number {
+function getDefaultKey(tabs: TabItem[]): number | string {
   if (tabs.length === 0) return 0;
   const defaultItem = tabs.find((i) => i.isDefault);
   return defaultItem ? defaultItem.key : tabs[0].key;
@@ -27,11 +27,16 @@ function getDefaultIndex(tabs: TabItem[]): number {
 
 export default function CustomerTabs({ tabs }: CustomerTabsProps) {
   // 使用 useMemo 避免每次渲染都重新计算默认索引
-  const initialIndex = useMemo(() => getDefaultIndex(tabs), []);
-  const [index, setIndex] = React.useState(initialIndex);
+  const initialKey = useMemo(() => getDefaultKey(tabs), [tabs]);
+  const [activeKey, setActiveKey] = useState<number | string>(initialKey);
+
+  // 当 tabs 变化时重置选中状态
+  useEffect(() => {
+    setActiveKey(getDefaultKey(tabs));
+  }, [tabs]);
 
   // 只渲染当前选中的 tab 内容，避免未选中 tab 的组件挂载和 API 请求
-  const currentTab = tabs.find((tab) => tab.key === index);
+  const currentTab = tabs.find((tab) => tab.key === activeKey);
 
   if (tabs.length === 0) return null;
 
@@ -40,8 +45,8 @@ export default function CustomerTabs({ tabs }: CustomerTabsProps) {
       <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
         <AppBar position="static" color="default">
           <Tabs
-            value={index}
-            onChange={(e, v) => setIndex(v)}
+            value={activeKey}
+            onChange={(e, v) => setActiveKey(v)}
             indicatorColor="primary"
             textColor="primary"
             variant="scrollable"
@@ -53,6 +58,7 @@ export default function CustomerTabs({ tabs }: CustomerTabsProps) {
                 sx={{ margin: "0 0.5rem", padding: "0 0.5rem" }}
                 key={`tab-index-${key}`}
                 label={label}
+                value={key}
                 {...a11yProps(key)}
               />
             ))}
