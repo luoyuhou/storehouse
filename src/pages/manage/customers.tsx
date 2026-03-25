@@ -10,6 +10,8 @@ import { useSelection } from "src/hooks/use-selection";
 import { get, post } from "src/lib/http";
 import { toast } from "react-toastify";
 import { UserEntity } from "src/types/users";
+import CustomerTabs from "src/components/tabs/customer-tabs";
+import KickOffline from "src/sections/online-users/kick-offline";
 import { Layout as DashboardLayout } from "../../layouts/dashboard/layout";
 
 const useCustomerIds = (customers: UserEntity[]) => {
@@ -73,7 +75,7 @@ function Page() {
   }, [page, search, rowsPerPage]);
 
   const handlePageChange = useCallback(
-    (event: React.MouseEvent<HTMLButtonElement> | null, value: number) => {
+    (_event: React.MouseEvent<HTMLButtonElement> | null, value: number) => {
       setPage(value);
     },
     [],
@@ -127,19 +129,37 @@ function Page() {
               </Stack>
             </Stack>
             <RetentionRateChart data={retentionData} loading={retentionLoading} />
-            <CustomersTable
-              count={rows}
-              items={customers}
-              onDeselectAll={customersSelection.handleDeselectAll}
-              onDeselectOne={customersSelection.handleDeselectOne}
-              onPageChange={handlePageChange}
-              onRowsPerPageChange={handleRowsPerPageChange}
-              onSelectAll={customersSelection.handleSelectAll}
-              onSelectOne={customersSelection.handleSelectOne}
-              page={page}
-              rowsPerPage={rowsPerPage}
-              selected={customersSelection.selected}
-              loading={loading}
+
+            {/* 商品列表/创建商品 Tabs */}
+            <CustomerTabs
+              tabs={[
+                {
+                  key: "user-list",
+                  label: "用户列表",
+                  isDefault: true,
+                  children: (
+                    <CustomersTable
+                      count={rows}
+                      items={customers}
+                      onDeselectAll={customersSelection.handleDeselectAll}
+                      onDeselectOne={customersSelection.handleDeselectOne}
+                      onPageChange={handlePageChange}
+                      onRowsPerPageChange={handleRowsPerPageChange}
+                      onSelectAll={customersSelection.handleSelectAll}
+                      onSelectOne={customersSelection.handleSelectOne}
+                      page={page}
+                      rowsPerPage={rowsPerPage}
+                      selected={customersSelection.selected}
+                      loading={loading}
+                    />
+                  ),
+                },
+                {
+                  key: "kick-off",
+                  label: "踢人下线",
+                  children: <KickOffline />,
+                },
+              ]}
             />
           </Stack>
         </Container>

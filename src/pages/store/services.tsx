@@ -12,9 +12,10 @@ import { StoreResourceContent } from "src/sections/store/store-resource/store-re
 
 function ServicesPage() {
   const [stores, setStores] = useState<StoreType[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    setLoading(true);
     get<{ data: StoreType[] }>("/api/store")
       .then((res) => {
         setStores(res.data || []);
