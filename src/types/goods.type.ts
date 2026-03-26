@@ -38,6 +38,7 @@ export const InitialGoodsVersion = (obj: Partial<GoodsVersionType>) => {
     count: 0,
     price: 0,
     unit_name: "",
+    image_url: undefined,
     supplier: null,
     status: 1,
     create_date: "",

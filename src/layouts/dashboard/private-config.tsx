@@ -6,15 +6,12 @@ import {
   HomeIcon,
   Bars2Icon,
   DocumentTextIcon,
-  DocumentPlusIcon,
   ShoppingCartIcon,
   UsersIcon,
   ServerStackIcon,
   BuildingStorefrontIcon,
   LockClosedIcon,
-  UserMinusIcon,
   PhotoIcon,
-  CircleStackIcon,
   CreditCardIcon,
 } from "@heroicons/react/24/solid";
 import { DashboardItemType } from "src/layouts/dashboard/public-config";
@@ -48,29 +45,11 @@ export const privateItems: (DashboardItemType & { group?: DashboardItemType[] })
         ),
       },
       {
-        title: "商品列表",
-        path: "/store/goods-list",
+        title: "商品管理",
+        path: "/store/goods",
         icon: (
           <SvgIcon fontSize="small">
             <ListBulletIcon />
-          </SvgIcon>
-        ),
-      },
-      {
-        title: "商品详情",
-        path: "/store/goods-detail",
-        icon: (
-          <SvgIcon fontSize="small">
-            <DocumentTextIcon />
-          </SvgIcon>
-        ),
-      },
-      {
-        title: "创建商品",
-        path: "/store/create-goods",
-        icon: (
-          <SvgIcon fontSize="small">
-            <DocumentPlusIcon />
           </SvgIcon>
         ),
       },
@@ -93,29 +72,20 @@ export const privateItems: (DashboardItemType & { group?: DashboardItemType[] })
         ),
       },
       {
-        title: "图片额度",
-        path: "/store/resource",
-        icon: (
-          <SvgIcon fontSize="small">
-            <CircleStackIcon />
-          </SvgIcon>
-        ),
-      },
-      {
-        title: "服务订阅",
-        path: "/store/subscription",
-        icon: (
-          <SvgIcon fontSize="small">
-            <CreditCardIcon />
-          </SvgIcon>
-        ),
-      },
-      {
-        title: "操作日志",
-        path: "/store/history",
+        title: "商家结算",
+        path: "/store/settlement",
         icon: (
           <SvgIcon fontSize="small">
             <DocumentTextIcon />
+          </SvgIcon>
+        ),
+      },
+      {
+        title: "服务管理",
+        path: "/store/services",
+        icon: (
+          <SvgIcon fontSize="small">
+            <CreditCardIcon />
           </SvgIcon>
         ),
       },
@@ -142,6 +112,15 @@ export const privateItems: (DashboardItemType & { group?: DashboardItemType[] })
       {
         title: "商铺服务管理",
         path: "/manage/companies",
+        icon: (
+          <SvgIcon fontSize="small">
+            <BuildingStorefrontIcon />
+          </SvgIcon>
+        ),
+      },
+      {
+        title: "平台结算",
+        path: "/manage/settlement",
         icon: (
           <SvgIcon fontSize="small">
             <BuildingStorefrontIcon />
@@ -181,15 +160,6 @@ export const privateItems: (DashboardItemType & { group?: DashboardItemType[] })
         icon: (
           <SvgIcon fontSize="small">
             <LockClosedIcon />
-          </SvgIcon>
-        ),
-      },
-      {
-        title: "踢人下线",
-        path: "/manage/kick-offline",
-        icon: (
-          <SvgIcon fontSize="small">
-            <UserMinusIcon />
           </SvgIcon>
         ),
       },

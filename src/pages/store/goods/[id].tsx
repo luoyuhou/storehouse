@@ -1,7 +1,7 @@
 import { Layout as DashboardLayout } from "src/layouts/dashboard/layout";
 import React from "react";
 import Head from "next/head";
-import { Box, Container, Stack, Typography, Unstable_Grid2 as Grid } from "@mui/material";
+import { Box, Container, Stack, Typography } from "@mui/material";
 import { useRouter } from "next/router";
 import { GoodsDetailEditing } from "src/sections/goods/goods-detail.editing";
 import { GoodsVersionsEditing } from "src/sections/goods/goods-versions.editing";

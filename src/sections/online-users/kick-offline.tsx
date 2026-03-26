@@ -1,14 +1,12 @@
 import React, { useCallback, useEffect, useState } from "react";
-import Head from "next/head";
 import { Box, Container, Stack, Typography } from "@mui/material";
-import { Layout as DashboardLayout } from "src/layouts/dashboard/layout";
 import { OnlineUsersTable } from "src/sections/online-users/online-users-table";
 import { OnlineUserType } from "src/types/users";
 import { post, deleteRequest } from "src/lib/http";
 import { toast } from "react-toastify";
 import { useAuth } from "src/hooks/use-auth";
 
-function Page() {
+function KickOffline() {
   const { user } = useAuth() as unknown as { user?: { id: string } };
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -44,7 +42,7 @@ function Page() {
   }, [fetchOnlineUsers]);
 
   const handlePageChange = useCallback(
-    (event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => {
+    (_event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => {
       setPage(newPage);
     },
     [],
@@ -76,45 +74,31 @@ function Page() {
   );
 
   return (
-    <>
-      <Head>
-        <title>踢人下线 | Storehouse</title>
-      </Head>
-      <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
-          py: 8,
-        }}
-      >
-        <Container maxWidth="xl">
-          <Stack spacing={3}>
-            <Stack direction="row" justifyContent="space-between" spacing={4}>
-              <Stack spacing={1}>
-                <Typography variant="h4">踢人下线</Typography>
-                <Typography variant="body2" color="text.secondary">
-                  管理当前在线用户，可强制让用户下线
-                </Typography>
-              </Stack>
+    <Box component="main">
+      <Container maxWidth="xl">
+        <Stack spacing={3}>
+          <Stack direction="row" justifyContent="space-between" spacing={4}>
+            <Stack spacing={1}>
+              <Typography variant="body2" color="text.secondary">
+                管理当前在线用户，可强制让用户下线
+              </Typography>
             </Stack>
-            <OnlineUsersTable
-              count={rows}
-              items={onlineUsers}
-              page={page}
-              rowsPerPage={rowsPerPage}
-              onPageChange={handlePageChange}
-              onRowsPerPageChange={handleRowsPerPageChange}
-              loading={loading}
-              currentUserId={user?.id}
-              onKickOffline={handleKickOffline}
-            />
           </Stack>
-        </Container>
-      </Box>
-    </>
+          <OnlineUsersTable
+            count={rows}
+            items={onlineUsers}
+            page={page}
+            rowsPerPage={rowsPerPage}
+            onPageChange={handlePageChange}
+            onRowsPerPageChange={handleRowsPerPageChange}
+            loading={loading}
+            currentUserId={user?.id}
+            onKickOffline={handleKickOffline}
+          />
+        </Stack>
+      </Container>
+    </Box>
   );
 }
 
-Page.getLayout = (page: React.ReactElement) => <DashboardLayout>{page}</DashboardLayout>;
-
-export default Page;
+export default KickOffline;

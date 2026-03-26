@@ -68,4 +68,6 @@ export interface StoreSubscriptionPlan {
   name: string;
   description: string;
   monthly_fee: number;
+  max_subscriptions?: number | null; // null 表示无限次，正整数表示最大订阅次数
+  current_subscriptions?: number; // 当前已订阅次数
 }

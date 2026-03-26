@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-export function middleware(request: { nextUrl: { pathname: string } }) {
+export function proxy(request: { nextUrl: { pathname: string } }) {
   // console.log("-----", request.nextUrl.pathname);
   const response = NextResponse.next();
   // 关键：允许WebSocket连接跨域

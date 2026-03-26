@@ -19,7 +19,8 @@ import {
   Typography,
   Chip,
 } from "@mui/material";
-import { get } from "src/lib/http";
+import { get, post } from "src/lib/http";
+import { toast } from "react-toastify";
 import { KeyboardArrowDown, KeyboardArrowUp } from "@mui/icons-material";
 import {
   StoreServicePlan,
@@ -63,9 +64,29 @@ interface SubscriptionWithDetails extends StoreServiceSubscription {
   contract?: Contract | null;
 }
 
-function SubscriptionRow({ sub }: { sub: SubscriptionWithDetails }) {
+function SubscriptionRow({
+  sub,
+  onApprove,
+}: {
+  sub: SubscriptionWithDetails;
+  onApprove: (id: number) => Promise<void>;
+}) {
   const [open, setOpen] = useState(false);
+  const [approving, setApproving] = useState(false);
   const latestInvoice = sub.invoice?.[0];
+
+  const handleApprove = async () => {
+    if (approving) return;
+    setApproving(true);
+    try {
+      await onApprove(sub.id);
+      toast.success("已通过审核");
+    } catch (err) {
+      toast.error((err as { message: string }).message);
+    } finally {
+      setApproving(false);
+    }
+  };
 
   return (
     <>
@@ -110,9 +131,22 @@ function SubscriptionRow({ sub }: { sub: SubscriptionWithDetails }) {
             </Typography>
           )}
         </TableCell>
+        <TableCell>
+          {sub.status === 0 && (
+            <Button
+              variant="contained"
+              size="small"
+              color="primary"
+              onClick={handleApprove}
+              disabled={approving}
+            >
+              {approving ? "处理中..." : "通过"}
+            </Button>
+          )}
+        </TableCell>
       </TableRow>
       <TableRow>
-        <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={9}>
+        <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={10}>
           <Collapse in={open} timeout="auto" unmountOnExit>
             <Box sx={{ margin: 1 }}>
               <Typography variant="h6" gutterBottom component="div">
@@ -261,6 +295,11 @@ export function StoreServiceSubscriptionsSection() {
     setTotal(subsRes.total || 0);
   };
 
+  const handleApprove = async (id: number) => {
+    await post({ url: `/api/store/service/subscriptions/${id}/approve`, payload: {} });
+    await fetchData();
+  };
+
   useEffect(() => {
     fetchData().catch(() => undefined);
   }, [filterStoreId, filterStatus, page, pageSize]);
@@ -323,15 +362,16 @@ export function StoreServiceSubscriptionsSection() {
               <TableCell>状态</TableCell>
               <TableCell>最新账单</TableCell>
               <TableCell>合同</TableCell>
+              <TableCell>操作</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {subscriptions.map((sub) => (
-              <SubscriptionRow key={sub.id} sub={sub} />
+              <SubscriptionRow key={sub.id} sub={sub} onApprove={handleApprove} />
             ))}
             {subscriptions.length === 0 && (
               <TableRow>
-                <TableCell colSpan={9} align="center">
+                <TableCell colSpan={10} align="center">
                   <Typography color="text.secondary" sx={{ py: 4 }}>
                     暂无数据
                   </Typography>

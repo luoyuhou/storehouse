@@ -30,6 +30,7 @@ interface QuotaOrder {
   order_id: string;
   quota_amount: number;
   price: number;
+  type: number;
   status: number;
   create_date: string;
 }
@@ -205,6 +206,7 @@ export function StoreResourceContent({ storeId }: { storeId: string }) {
             <TableHead>
               <TableRow>
                 <TableCell>订单号</TableCell>
+                <TableCell>类型</TableCell>
                 <TableCell>扩容大小</TableCell>
                 <TableCell>价格</TableCell>
                 <TableCell>状态</TableCell>
@@ -215,6 +217,7 @@ export function StoreResourceContent({ storeId }: { storeId: string }) {
               {orders.map((order) => (
                 <TableRow key={order.id} hover>
                   <TableCell>{order.order_id}</TableCell>
+                  <TableCell>{order.type === 1 ? "免费" : "购买"}</TableCell>
                   <TableCell>{Number(order.quota_amount) / (1024 * 1024)} MB</TableCell>
                   <TableCell>¥{order.price}</TableCell>
                   <TableCell>

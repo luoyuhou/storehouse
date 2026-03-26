@@ -1,13 +1,11 @@
 import { KeyboardArrowDown, KeyboardArrowUp } from "@mui/icons-material";
 import {
-  AppBar,
   Box,
   Chip,
   Collapse,
   IconButton,
   Paper,
   Stack,
-  Tab,
   Table,
   TableBody,
   TableCell,
@@ -16,7 +14,6 @@ import {
   TableHead,
   TablePagination,
   TableRow,
-  Tabs,
   Typography,
 } from "@mui/material";
 import React, { useCallback, useEffect } from "react";
@@ -24,7 +21,6 @@ import { TablePaginationActions } from "src/components/table";
 import { GoodsType, GoodsVersionType } from "src/types/goods.type";
 import { toast } from "react-toastify";
 import { get, post } from "src/lib/http";
-import { StoreType } from "src/types/store.type";
 import dayjs from "dayjs";
 import CircularPercentageLoading from "src/components/loading/circular-percentage.loading";
 import Dialog from "@mui/material/Dialog";
@@ -63,7 +59,12 @@ function Row(props: { row: GoodsType & { versions?: number } }) {
         </TableCell>
         <TableCell align="right">{row.category_name ?? row.category_id}</TableCell>
         <TableCell align="right">
-          <a href={`/store/goods-detail?id=${row.goods_id}`} target="_blank" rel="noreferrer">
+          <a
+            href={`/store/goods/${row.goods_id}`}
+            target="_blank"
+            rel="noreferrer"
+            className="text-blue-500 underline"
+          >
             {row.name}
           </a>
         </TableCell>
@@ -142,34 +143,16 @@ function Row(props: { row: GoodsType & { versions?: number } }) {
   );
 }
 
-function a11yProps(index: number) {
-  return {
-    id: `store-tab-${index}`,
-    "aria-controls": `store-tabPanel-${index}`,
-  };
-}
+type GoodsListProps = {
+  storeId: string;
+};
 
-export default function GoodsList() {
-  const [storeLoading, setStoreLoading] = React.useState(false);
-  const [stores, setStores] = React.useState<StoreType[]>([]);
+export default function GoodsList({ storeId }: GoodsListProps) {
   const [page, setPage] = React.useState(0);
   const [pageSize, setPageSize] = React.useState(5);
   const [rows, setRows] = React.useState(0);
   const [data, setData] = React.useState<GoodsType[]>([]);
-  const [filtered, setFiltered] = React.useState<{ id: string; value: unknown }[]>([]);
-  const [index, setIndex] = React.useState<number>(0);
-
-  useEffect(() => {
-    setStoreLoading(true);
-    get<{ data: StoreType[] }>("/api/store")
-      .then((res) => {
-        setStores(res.data);
-        const curId = res.data?.[0]?.store_id;
-        setFiltered([{ id: "store_id", value: curId }]);
-      })
-      .catch((err) => toast.error(err.message))
-      .finally(() => setStoreLoading(false));
-  }, []);
+  const [loading, setLoading] = React.useState(false);
 
   const handleRowsPerPageChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     setPageSize(parseInt(event.target.value, 10));
@@ -177,51 +160,28 @@ export default function GoodsList() {
   }, []);
 
   useEffect(() => {
+    if (!storeId) return;
+    setLoading(true);
     post<{ pages: number; rows: number; data: GoodsType[] }>({
       url: "/api/store/goods/pagination",
-      payload: { pageNum: page, pageSize, filtered, sorted: [] },
+      payload: {
+        pageNum: page,
+        pageSize,
+        filtered: [{ id: "store_id", value: storeId }],
+        sorted: [],
+      },
     })
       .then((res) => {
         setRows(res.rows);
         setData(res.data);
       })
-      .catch((err) => toast.error(JSON.stringify(err.message)));
-  }, [page, pageSize, filtered]);
+      .catch((err) => toast.error(JSON.stringify(err.message)))
+      .finally(() => setLoading(false));
+  }, [page, pageSize, storeId]);
 
   return (
-    <CircularPercentageLoading loading={storeLoading}>
+    <CircularPercentageLoading loading={loading}>
       <Stack>
-        <AppBar position="static" color="default">
-          <Tabs
-            value={index}
-            onChange={(_e, v) => {
-              setIndex(v);
-              const curStoreId = stores[v]?.store_id;
-              const newFiltered = filtered.map(({ id, value }) => {
-                if (id !== "store_id") return { id, value };
-
-                return { id, value: curStoreId };
-              });
-              setFiltered(newFiltered);
-            }}
-            indicatorColor="primary"
-            textColor="primary"
-            variant="scrollable"
-            scrollButtons="auto"
-            aria-label="store tabs"
-          >
-            {stores.map((s, i) => (
-              <Tab
-                style={{ padding: "0 1rem" }}
-                key={s.store_id}
-                label={s.store_name}
-                {...a11yProps(i)}
-              />
-            ))}
-          </Tabs>
-        </AppBar>
-        <Typography sx={{ background: "white", height: "8px" }} />
-
         <TableContainer component={Paper}>
           <Table stickyHeader aria-label="collapsible table">
             <TableHead>

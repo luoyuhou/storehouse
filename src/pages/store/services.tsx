@@ -7,13 +7,15 @@ import { toast } from "react-toastify";
 import CustomerTabs from "src/components/tabs/customer-tabs";
 import CircularPercentageLoading from "src/components/loading/circular-percentage.loading";
 import { StoreType } from "src/types/store.type";
+import { StoreSubscriptionContent } from "src/sections/store/store-subscription/store-subscription-content";
 import { StoreResourceContent } from "src/sections/store/store-resource/store-resource-content";
 
-function Page() {
+function ServicesPage() {
   const [stores, setStores] = useState<StoreType[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    setLoading(true);
     get<{ data: StoreType[] }>("/api/store")
       .then((res) => {
         setStores(res.data || []);
@@ -29,12 +31,18 @@ function Page() {
   return (
     <>
       <Head>
-        <title>图片资源额度 | 商店管理</title>
+        <title>服务管理 | 商店管理</title>
       </Head>
       <Box component="main" sx={{ flexGrow: 1, py: 2 }}>
         <Container maxWidth="xl">
           <Stack spacing={4}>
-            <Typography variant="h4">图片资源管理</Typography>
+            <Box>
+              <Typography variant="h4">服务管理</Typography>
+              <Typography variant="subtitle2" color="textSecondary" sx={{ mt: 1 }}>
+                管理商铺的服务订阅和图片资源额度
+              </Typography>
+            </Box>
+
             <CircularPercentageLoading loading={loading}>
               {stores.length > 0 ? (
                 <CustomerTabs
@@ -42,7 +50,23 @@ function Page() {
                     key: index,
                     label: store.store_name,
                     isDefault: index === 0,
-                    children: <StoreResourceContent storeId={store.store_id} />,
+                    children: (
+                      <CustomerTabs
+                        tabs={[
+                          {
+                            key: "subscription",
+                            label: "服务订阅",
+                            isDefault: true,
+                            children: <StoreSubscriptionContent storeId={store.store_id} />,
+                          },
+                          {
+                            key: "resource",
+                            label: "图片资源",
+                            children: <StoreResourceContent storeId={store.store_id} />,
+                          },
+                        ]}
+                      />
+                    ),
                   }))}
                 />
               ) : (
@@ -60,6 +84,6 @@ function Page() {
   );
 }
 
-Page.getLayout = (page: React.ReactNode) => <DashboardLayout>{page}</DashboardLayout>;
+ServicesPage.getLayout = (page: React.ReactNode) => <DashboardLayout>{page}</DashboardLayout>;
 
-export default Page;
+export default ServicesPage;
