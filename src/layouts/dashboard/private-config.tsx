@@ -13,6 +13,7 @@ import {
   LockClosedIcon,
   PhotoIcon,
   CreditCardIcon,
+  FolderIcon,
 } from "@heroicons/react/24/solid";
 import { DashboardItemType } from "src/layouts/dashboard/public-config";
 
@@ -160,6 +161,15 @@ export const privateItems: (DashboardItemType & { group?: DashboardItemType[] })
         icon: (
           <SvgIcon fontSize="small">
             <LockClosedIcon />
+          </SvgIcon>
+        ),
+      },
+      {
+        title: "文件资源",
+        path: "/manage/files",
+        icon: (
+          <SvgIcon fontSize="small">
+            <FolderIcon />
           </SvgIcon>
         ),
       },
