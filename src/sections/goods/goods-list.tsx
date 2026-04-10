@@ -1,4 +1,4 @@
-import { KeyboardArrowDown, KeyboardArrowUp } from "@mui/icons-material";
+import { KeyboardArrowDown, KeyboardArrowUp, Warning } from "@mui/icons-material";
 import {
   Box,
   Chip,
@@ -15,6 +15,7 @@ import {
   TablePagination,
   TableRow,
   Typography,
+  Tooltip,
 } from "@mui/material";
 import React, { useCallback, useEffect } from "react";
 import { TablePaginationActions } from "src/components/table";
@@ -24,6 +25,16 @@ import { get, post } from "src/lib/http";
 import dayjs from "dayjs";
 import CircularPercentageLoading from "src/components/loading/circular-percentage.loading";
 import Dialog from "@mui/material/Dialog";
+
+function getStackColor(v: Pick<GoodsVersionType, "count" | "stock_warning">): {
+  isLowStock: boolean;
+  stockColor: "error" | "warning" | "success";
+} {
+  const isLowStock = v.count <= (v.stock_warning || 10);
+  if (v.count === 0) return { isLowStock, stockColor: "error" };
+  if (isLowStock) return { isLowStock, stockColor: "warning" };
+  return { isLowStock, stockColor: "success" };
+}
 
 function Row(props: { row: GoodsType & { versions?: number } }) {
   const { row } = props;
@@ -86,7 +97,8 @@ function Row(props: { row: GoodsType & { versions?: number } }) {
                     <TableCell>单位</TableCell>
                     <TableCell>价格/元</TableCell>
                     <TableCell align="left">图片</TableCell>
-                    <TableCell align="right">数量</TableCell>
+                    <TableCell align="right">库存</TableCell>
+                    <TableCell align="right">预警阈值</TableCell>
                     <TableCell align="right">状态</TableCell>
                     <TableCell align="right">生成批次</TableCell>
                     <TableCell align="right">条形码</TableCell>
@@ -96,39 +108,59 @@ function Row(props: { row: GoodsType & { versions?: number } }) {
                 </TableHead>
                 <TableBody>
                   <CircularPercentageLoading loading={loading}>
-                    {versionInfos.map((v) => (
-                      <TableRow key={v.version_id}>
-                        <TableCell component="th" scope="row">
-                          {v.unit_name}
-                        </TableCell>
-                        <TableCell>{v.price.toFixed(2)}</TableCell>
-                        <TableCell align="left">
-                          {/* eslint-disable-next-line no-script-url,react/jsx-no-script-url,jsx-a11y/anchor-is-valid,jsx-a11y/control-has-associated-label */}
-                          <a href="javascript:void(0)" onClick={() => setShowImgUrl(v.image_url)}>
-                            <img
-                              style={{ whiteSpace: "nowrap" }}
-                              width="20px"
-                              src={v.image_url ? `http://${v.image_url}` : ""}
-                              alt=" "
-                            />
-                          </a>
-                        </TableCell>
-                        <TableCell align="right">{v.count}</TableCell>
-                        <TableCell align="right">{v.status}</TableCell>
-                        <TableCell align="right">
-                          {v.version_number ? (
-                            <Chip color="primary" label={v.version_number} />
-                          ) : null}
-                        </TableCell>
-                        <TableCell align="right">
-                          {v.bar_code ? <Chip label={v.bar_code} /> : null}
-                        </TableCell>
-                        <TableCell align="right">{v.supplier}</TableCell>
-                        <TableCell align="right">
-                          {dayjs(v.create_date).format("YYYY-mm-DD HH:mm")}
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    {versionInfos.map((v) => {
+                      const { isLowStock, stockColor } = getStackColor(v);
+                      return (
+                        <TableRow key={v.version_id}>
+                          <TableCell component="th" scope="row">
+                            {v.unit_name}
+                          </TableCell>
+                          <TableCell>{v.price.toFixed(2)}</TableCell>
+                          <TableCell align="left">
+                            {/* eslint-disable-next-line no-script-url,react/jsx-no-script-url,jsx-a11y/anchor-is-valid,jsx-a11y/control-has-associated-label */}
+                            <a href="javascript:void(0)" onClick={() => setShowImgUrl(v.image_url)}>
+                              <img
+                                style={{ whiteSpace: "nowrap" }}
+                                width="20px"
+                                src={v.image_url ? `http://${v.image_url}` : ""}
+                                alt=" "
+                              />
+                            </a>
+                          </TableCell>
+                          <TableCell align="right">
+                            <Stack
+                              direction="row"
+                              spacing={0.5}
+                              alignItems="center"
+                              justifyContent="flex-end"
+                            >
+                              {isLowStock && (
+                                <Tooltip title={v.count === 0 ? "已缺货" : "库存不足"}>
+                                  <Warning color={stockColor} fontSize="small" />
+                                </Tooltip>
+                              )}
+                              <Typography color={isLowStock ? `${stockColor}.main` : "inherit"}>
+                                {v.count}
+                              </Typography>
+                            </Stack>
+                          </TableCell>
+                          <TableCell align="right">{v.stock_warning || 10}</TableCell>
+                          <TableCell align="right">{v.status}</TableCell>
+                          <TableCell align="right">
+                            {v.version_number ? (
+                              <Chip color="primary" label={v.version_number} />
+                            ) : null}
+                          </TableCell>
+                          <TableCell align="right">
+                            {v.bar_code ? <Chip label={v.bar_code} /> : null}
+                          </TableCell>
+                          <TableCell align="right">{v.supplier}</TableCell>
+                          <TableCell align="right">
+                            {dayjs(v.create_date).format("YYYY-mm-DD HH:mm")}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                   </CircularPercentageLoading>
                 </TableBody>
               </Table>

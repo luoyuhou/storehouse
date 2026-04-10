@@ -117,7 +117,7 @@ export function RoleForRoleManagement() {
   ];
 
   return (
-    <Box sx={{ flexGrow: 1 }} mt={2}>
+    <Box sx={{ flexGrow: 1 }}>
       <EditableTable
         pagination={pagination}
         initialEmptyData={{}}

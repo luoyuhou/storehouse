@@ -19,6 +19,7 @@ export type GoodsVersionType = {
   version_number: string | null;
   bar_code: string | null;
   count: number;
+  stock_warning?: number;
   price: number;
   unit_name: string;
   image_url?: string;
@@ -36,6 +37,7 @@ export const InitialGoodsVersion = (obj: Partial<GoodsVersionType>) => {
     version_number: null,
     bar_code: null,
     count: 0,
+    stock_warning: 10,
     price: 0,
     unit_name: "",
     image_url: undefined,

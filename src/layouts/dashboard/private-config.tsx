@@ -14,6 +14,7 @@ import {
   PhotoIcon,
   CreditCardIcon,
   FolderIcon,
+  ArrowUturnLeftIcon,
 } from "@heroicons/react/24/solid";
 import { DashboardItemType } from "src/layouts/dashboard/public-config";
 
@@ -87,6 +88,15 @@ export const privateItems: (DashboardItemType & { group?: DashboardItemType[] })
         icon: (
           <SvgIcon fontSize="small">
             <CreditCardIcon />
+          </SvgIcon>
+        ),
+      },
+      {
+        title: "退款管理",
+        path: "/store/refund",
+        icon: (
+          <SvgIcon fontSize="small">
+            <ArrowUturnLeftIcon />
           </SvgIcon>
         ),
       },
