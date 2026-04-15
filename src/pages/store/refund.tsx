@@ -125,7 +125,7 @@ function RefundPage() {
           statusStats: StatusStats;
         };
       }>({
-        url: `/api/refund/store/${activeStoreId}`,
+        url: `/api/store/refund/store/${activeStoreId}`,
         payload: {
           pageNum: page,
           pageSize,
@@ -180,7 +180,7 @@ function RefundPage() {
 
     try {
       await post({
-        url: `/api/refund/${handleDialog.refund.refund_id}/handle`,
+        url: `/api/store/refund/${handleDialog.refund.refund_id}/handle`,
         payload: {
           action: handleDialog.action,
           rejectReason: handleDialog.rejectReason,

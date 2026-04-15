@@ -15,6 +15,7 @@ import {
   CreditCardIcon,
   FolderIcon,
   ArrowUturnLeftIcon,
+  StarIcon,
 } from "@heroicons/react/24/solid";
 import { DashboardItemType } from "src/layouts/dashboard/public-config";
 
@@ -180,6 +181,15 @@ export const privateItems: (DashboardItemType & { group?: DashboardItemType[] })
         icon: (
           <SvgIcon fontSize="small">
             <FolderIcon />
+          </SvgIcon>
+        ),
+      },
+      {
+        title: "店铺排名",
+        path: "/manage/store-ranking",
+        icon: (
+          <SvgIcon fontSize="small">
+            <StarIcon />
           </SvgIcon>
         ),
       },
