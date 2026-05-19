@@ -175,7 +175,7 @@ function Page() {
                         <TableCell>
                           <Box
                             component="img"
-                            src={`http://${file.url}`}
+                            src={file.url}
                             alt={file.file_name || file.hash}
                             sx={{
                               width: 60,
@@ -188,7 +188,7 @@ function Page() {
                                 opacity: 0.8,
                               },
                             }}
-                            onClick={() => window.open(`http://${file.url}`, "_blank")}
+                            onClick={() => window.open(file.url, "_blank")}
                           />
                         </TableCell>
                         <TableCell>
