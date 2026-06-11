@@ -4,7 +4,7 @@ const next = require("next");
 const { createProxyMiddleware } = require("http-proxy-middleware");
 
 const dev = process.env.NODE_ENV !== "production";
-const hostname = process.env.HOSTNAME || "0.0.0.0"; // 生产环境监听所有网络接口
+const hostname = "0.0.0.0"; // 生产环境监听所有网络接口
 const port = process.env.PORT || 3000;
 const backendUrl = process.env.BACKEND_URL || "http://localhost:3001";
 

@@ -54,6 +54,15 @@ export const privateItems: (DashboardItemType & { group?: DashboardItemType[] })
         ),
       },
       {
+        title: "收银员管理",
+        path: "/store/staff",
+        icon: (
+          <SvgIcon fontSize="small">
+            <UsersIcon />
+          </SvgIcon>
+        ),
+      },
+      {
         title: "订单",
         path: "/store/order",
         icon: (
