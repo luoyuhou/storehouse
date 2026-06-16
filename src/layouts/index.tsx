@@ -8,11 +8,11 @@ function Copyright() {
     <Typography variant="body2" color="text.secondary" align="center" mt="14px">
       {"Copyright © "}
       <Link color="inherit" href="/">
-        luoyuhou.com
+        luoyuhou.cn
       </Link>{" "}
       {new Date().getFullYear()} | {}
       <Link href="https://beian.miit.gov.cn/" color="inherit">
-        粤ICP备18154713号
+        鄂ICP备2026030385号
       </Link>
     </Typography>
   );
