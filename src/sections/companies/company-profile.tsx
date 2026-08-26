@@ -39,10 +39,7 @@ export function CompanyProfile({ company }: { company: StoreType }) {
           </Typography>
           <CompanyStatus status={company.status} />
           <Typography color="text.secondary" variant="body2">
-            商家: {company.id_name}
-          </Typography>
-          <Typography color="text.secondary" variant="body2">
-            身份证号码: {company.id_code}
+            联系人: {company.id_name}
           </Typography>
           <Typography color="text.secondary" variant="body2">
             电话: {company.phone}

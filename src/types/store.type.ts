@@ -17,7 +17,6 @@ export type StoreType = {
 
   status: number;
 
-  id_code: string;
   id_name: string;
 
   phone: string;

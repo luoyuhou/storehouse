@@ -27,7 +27,6 @@ function ApplyStore() {
       store_name: "",
       phone: "",
       id_name: "",
-      id_code: "",
       province: "",
       city: "",
       area: "",
@@ -38,8 +37,7 @@ function ApplyStore() {
     validationSchema: Yup.object({
       store_name: Yup.string().max(16).required("店铺名* 必填"),
       phone: Yup.string().min(11).max(11).required("联系电话* 必填"),
-      id_name: Yup.string().max(16).required("申请人姓名* 必填"),
-      id_code: Yup.string().min(18).max(18).required("申请人身份证号码* 必填"),
+      id_name: Yup.string().max(16).required("联系人* 必填"),
       province: Yup.string().min(3).max(8).required("省/直辖市* 必填"),
       city: Yup.string().min(2).max(8).required("市* 必填"),
       area: Yup.string().max(16).required("区* 必填"),
@@ -53,7 +51,6 @@ function ApplyStore() {
           store_name: values.store_name,
           phone: values.phone,
           id_name: values.id_name,
-          id_code: values.id_code,
           province: values.province,
           city: values.city,
           area: values.area,
@@ -166,31 +163,19 @@ function ApplyStore() {
                     value={formik.values.phone}
                   />
                   <Typography variant="h6" gutterBottom>
-                    申请人信息
+                    联系人信息
                   </Typography>
                   <TextField
                     error={!!(formik.touched.id_name && formik.errors.id_name)}
                     fullWidth
                     required
                     helperText={formik.touched.id_name && formik.errors.id_name}
-                    label="申请人姓名"
+                    label="联系人"
                     name="id_name"
                     onBlur={formik.handleBlur}
                     onChange={formik.handleChange}
                     type="text"
                     value={formik.values.id_name}
-                  />
-                  <TextField
-                    error={!!(formik.touched.id_code && formik.errors.id_code)}
-                    fullWidth
-                    required
-                    helperText={formik.touched.id_code && formik.errors.id_code}
-                    label="申请人身份证号码"
-                    name="id_code"
-                    onBlur={formik.handleBlur}
-                    onChange={formik.handleChange}
-                    type="text"
-                    value={formik.values.id_code}
                   />
                   <Typography variant="h6" gutterBottom>
                     店铺所在地址

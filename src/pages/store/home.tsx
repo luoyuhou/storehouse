@@ -214,10 +214,7 @@ function StoreHome() {
                             </Typography>
                             <CompanyStatus status={currentStore.status} />
                             <Typography color="text.secondary" variant="body2">
-                              商家: {currentStore.id_name}
-                            </Typography>
-                            <Typography color="text.secondary" variant="body2">
-                              身份证号码: {currentStore.id_code}
+                              联系人: {currentStore.id_name}
                             </Typography>
                             <Typography color="text.secondary" variant="body2">
                               电话: {currentStore.phone}
