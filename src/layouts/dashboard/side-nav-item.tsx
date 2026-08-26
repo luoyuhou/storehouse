@@ -14,7 +14,7 @@ import { DashboardItemType } from "src/layouts/dashboard/public-config";
 import ChevronDownIcon from "@heroicons/react/24/solid/ChevronDownIcon";
 
 function NavItem({ props }: { props: DashboardItemType & { pathname: string } }) {
-  const { disabled, external, icon, path, title, pathname } = props;
+  const { disabled, external, icon, path, title, pathname, badge } = props;
   const active = path ? path === pathname || pathname.indexOf(`${path}/`) === 0 : false;
 
   // eslint-disable-next-line no-nested-ternary
@@ -89,6 +89,26 @@ function NavItem({ props }: { props: DashboardItemType & { pathname: string } })
       >
         {title}
       </Box>
+      {badge != null && badge > 0 ? (
+        <Box
+          component="span"
+          sx={{
+            alignItems: "center",
+            backgroundColor: "error.main",
+            borderRadius: "10px",
+            color: "common.white",
+            display: "inline-flex",
+            fontSize: 11,
+            fontWeight: 700,
+            justifyContent: "center",
+            minWidth: 18,
+            px: 0.75,
+            py: 0.25,
+          }}
+        >
+          {badge > 99 ? "99+" : badge}
+        </Box>
+      ) : null}
     </ButtonBase>
   );
 }
@@ -96,7 +116,7 @@ function NavItem({ props }: { props: DashboardItemType & { pathname: string } })
 export function SideNavItem(
   props: DashboardItemType & { pathname: string; group?: DashboardItemType[] },
 ) {
-  const { pathname, group, title, icon, disabled } = props;
+  const { pathname, group, title, icon, disabled, badge } = props;
   const active = props.path ? props.path === pathname : false;
 
   if (group && group.length) {
@@ -166,6 +186,26 @@ export function SideNavItem(
               >
                 {title}
               </Box>
+              {badge != null && badge > 0 ? (
+                <Box
+                  component="span"
+                  sx={{
+                    alignItems: "center",
+                    backgroundColor: "error.main",
+                    borderRadius: "10px",
+                    color: "common.white",
+                    display: "inline-flex",
+                    fontSize: 11,
+                    fontWeight: 700,
+                    justifyContent: "center",
+                    minWidth: 18,
+                    px: 0.75,
+                    py: 0.25,
+                  }}
+                >
+                  {badge > 99 ? "99+" : badge}
+                </Box>
+              ) : null}
             </ButtonBase>
           </Typography>
         </AccordionSummary>

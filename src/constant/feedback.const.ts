@@ -1,4 +1,5 @@
 export const FEEDBACK_CATEGORY_OPTIONS: { value: string; label: string }[] = [
+  { value: "support", label: "联系管理员 / 留言" },
   { value: "feature", label: "功能建议" },
   { value: "bug", label: "问题 / Bug" },
   { value: "ui", label: "界面与体验" },

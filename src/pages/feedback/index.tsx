@@ -2,6 +2,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Head from "next/head";
 import {
+  Alert,
   Box,
   Button,
   Chip,
@@ -27,7 +28,7 @@ import {
 import PlusIcon from "@heroicons/react/24/solid/PlusIcon";
 import { toast } from "react-toastify";
 import { Layout as DashboardLayout } from "src/layouts/dashboard/layout";
-import { post, patch } from "src/lib/http";
+import { post, patch, get } from "src/lib/http";
 import { useAuth } from "src/hooks/use-auth";
 import { authPermission } from "src/utils/auth";
 import { FEEDBACK_CATEGORY_OPTIONS } from "src/constant/feedback.const";
@@ -95,6 +96,16 @@ function CommentOrFeaturePage() {
   const [commentDialogOpen, setCommentDialogOpen] = useState(false);
 
   const [commentTarget, setCommentTarget] = useState<FeedbackItem | null>(null);
+  const [supportPendingCount, setSupportPendingCount] = useState(0);
+
+  const fetchSupportPendingCount = useCallback(async () => {
+    try {
+      const res = await get<{ count: number }>("/api/feedback/support-pending-count");
+      setSupportPendingCount(res.count || 0);
+    } catch {
+      // ignore
+    }
+  }, []);
 
   const currentStatusLabel = useCallback((status: number) => {
     const found = STATUS_OPTIONS.find((s) => s.value === status);
@@ -143,6 +154,7 @@ function CommentOrFeaturePage() {
 
   useEffect(() => {
     fetchList(0, statusFilter);
+    fetchSupportPendingCount();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleStatusChange = async (item: FeedbackItem, status: number) => {
@@ -219,6 +231,13 @@ function CommentOrFeaturePage() {
                 </Button>
               </div>
             </Stack>
+
+            {supportPendingCount > 0 ? (
+              <Alert severity="warning">
+                有 {supportPendingCount} 条用户联系管理员的留言待处理，请筛选分类「联系管理员 /
+                留言」并尽快回复。
+              </Alert>
+            ) : null}
 
             <Stack direction="row" spacing={2} alignItems="center">
               <Typography variant="subtitle2">当前筛选：</Typography>

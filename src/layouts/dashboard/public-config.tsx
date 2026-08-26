@@ -15,6 +15,7 @@ export type DashboardItemType = {
   icon: JSX.Element;
   disabled?: boolean;
   external?: boolean;
+  badge?: number;
 };
 
 export const items: (DashboardItemType & { group?: DashboardItemType[] })[] = [
