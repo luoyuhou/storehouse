@@ -172,6 +172,24 @@ export const privateItems: (DashboardItemType & { group?: DashboardItemType[] })
           </SvgIcon>
         ),
       },
+      {
+        title: "配额订单",
+        path: "/manage/quota-orders",
+        icon: (
+          <SvgIcon fontSize="small">
+            <ShoppingCartIcon />
+          </SvgIcon>
+        ),
+      },
+      {
+        title: "平台设置",
+        path: "/manage/platform-settings",
+        icon: (
+          <SvgIcon fontSize="small">
+            <ServerStackIcon />
+          </SvgIcon>
+        ),
+      },
     ],
   },
 ];

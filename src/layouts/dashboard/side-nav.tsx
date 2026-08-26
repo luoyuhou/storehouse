@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import NextLink from "next/link";
 import { usePathname } from "next/navigation";
 import PropTypes from "prop-types";
@@ -20,14 +20,68 @@ import { Theme } from "@mui/material/styles/createTheme";
 import { privateItems } from "src/layouts/dashboard/private-config";
 import { useAuthContext } from "src/contexts/auth-context";
 import { authPermission } from "src/utils/auth";
+import { get } from "src/lib/http";
 import { SideNavItem } from "./side-nav-item";
-import { items } from "./public-config";
+import { items, DashboardItemType } from "./public-config";
+
+function withNavBadges(
+  navItems: (DashboardItemType & { group?: DashboardItemType[] })[],
+  badges: Record<string, number>,
+) {
+  return navItems.map((item) => {
+    const next: DashboardItemType & { group?: DashboardItemType[] } = {
+      ...item,
+      badge: badges[item.path] ?? item.badge,
+    };
+    if (item.group?.length) {
+      next.group = item.group.map((child) => ({
+        ...child,
+        badge: badges[child.path] ?? child.badge,
+      }));
+    }
+    return next;
+  });
+}
 
 export function SideNav(props: { open: boolean; onClose: () => void }) {
   const { open, onClose } = props;
   const pathname = usePathname();
   const lgUp = useMediaQuery<Theme>((theme) => theme.breakpoints.up("lg"));
   const { authPaths } = useAuthContext();
+  const [quotaPendingCount, setQuotaPendingCount] = useState(0);
+  const [supportPendingCount, setSupportPendingCount] = useState(0);
+
+  const fetchPendingCounts = useCallback(async () => {
+    try {
+      const requests: Promise<void>[] = [];
+      if (authPermission(authPaths, "/manage/quota-orders")) {
+        requests.push(
+          get<{ count: number }>("/api/platform/quota-orders/pending-count").then((res) => {
+            setQuotaPendingCount(res.count || 0);
+          }),
+        );
+      }
+      requests.push(
+        get<{ count: number }>("/api/feedback/support-pending-count").then((res) => {
+          setSupportPendingCount(res.count || 0);
+        }),
+      );
+      await Promise.all(requests);
+    } catch {
+      // ignore polling errors
+    }
+  }, [authPaths]);
+
+  useEffect(() => {
+    fetchPendingCounts();
+    const timer = window.setInterval(fetchPendingCounts, 60000);
+    return () => window.clearInterval(timer);
+  }, [fetchPendingCounts]);
+
+  const badgeMap: Record<string, number> = {
+    "/manage/quota-orders": quotaPendingCount,
+  };
+  const navPrivateItems = withNavBadges(privateItems, badgeMap);
 
   const content = (
     <Scrollbar
@@ -133,6 +187,7 @@ export function SideNav(props: { open: boolean; onClose: () => void }) {
           variant="contained"
         >
           期待功能 | 宝贵建议
+          {supportPendingCount > 0 ? ` (${supportPendingCount})` : ""}
         </Button>
         <Divider sx={{ borderColor: "neutral.700", marginTop: "10px" }} />
         <Box
@@ -159,7 +214,7 @@ export function SideNav(props: { open: boolean; onClose: () => void }) {
                 m: 0,
               }}
             >
-              {privateItems.map((item) => {
+              {navPrivateItems.map((item) => {
                 const pathVerified = authPermission(authPaths, item.path);
 
                 if (!pathVerified) {
