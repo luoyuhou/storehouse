@@ -211,7 +211,7 @@ function QuotaOrdersPage() {
                                 variant="contained"
                                 onClick={() => handleConfirm(item.order_id)}
                               >
-                                确认发码
+                                发码
                               </Button>
                               <Button
                                 size="small"
