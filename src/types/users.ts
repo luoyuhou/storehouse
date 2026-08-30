@@ -40,7 +40,8 @@ export type OnlineUserType = {
   last_name: string;
   phone: string;
   email: string | null;
-  login_time: Date;
-  last_activity: Date;
-  ip: string;
+  login_time?: Date | string | null;
+  last_activity?: Date | string | null;
+  ip?: string;
+  session_id?: string;
 };

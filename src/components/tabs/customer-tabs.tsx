@@ -26,14 +26,16 @@ function getDefaultKey(tabs: TabItem[]): number | string {
 }
 
 export default function CustomerTabs({ tabs }: CustomerTabsProps) {
-  // 使用 useMemo 避免每次渲染都重新计算默认索引
-  const initialKey = useMemo(() => getDefaultKey(tabs), [tabs]);
-  const [activeKey, setActiveKey] = useState<number | string>(initialKey);
+  const tabKeys = useMemo(() => tabs.map((t) => String(t.key)).join("|"), [tabs]);
+  const [activeKey, setActiveKey] = useState<number | string>(() => getDefaultKey(tabs));
 
-  // 当 tabs 变化时重置选中状态
+  // 仅当 tab 的 key 集合变化时重置；避免数据加载导致 children 更新时切回默认 tab
   useEffect(() => {
-    setActiveKey(getDefaultKey(tabs));
-  }, [tabs]);
+    const keys = tabKeys.split("|").filter(Boolean);
+    setActiveKey((prev) => (keys.includes(String(prev)) ? prev : getDefaultKey(tabs)));
+    // tabs 仅在 key 变化时用于取默认项；children 内容变化不应重置选中
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tabKeys]);
 
   // 只渲染当前选中的 tab 内容，避免未选中 tab 的组件挂载和 API 请求
   const currentTab = tabs.find((tab) => tab.key === activeKey);

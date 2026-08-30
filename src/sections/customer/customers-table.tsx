@@ -27,7 +27,7 @@ export function CustomersTable(props: {
   onDeselectAll: () => void;
   onDeselectOne: (id: number) => void;
   onPageChange: (event: React.MouseEvent<HTMLButtonElement> | null, page: number) => void;
-  onRowsPerPageChange: (event: { target: { value: React.SetStateAction<number> } }) => void;
+  onRowsPerPageChange: (event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => void;
   onSelectAll: () => void;
   onSelectOne: (id: number) => void;
   page: number;
@@ -85,7 +85,7 @@ export function CustomersTable(props: {
               {items.map((customer) => {
                 const isSelected = selected.includes(customer.id);
                 const createdAt = customer.create_date
-                  ? format(new Date(customer.create_date), "dd/MM/yyyy")
+                  ? format(new Date(customer.create_date), "yyyy-MM-dd")
                   : "N/A";
 
                 return (
@@ -128,10 +128,10 @@ export function CustomersTable(props: {
         component="div"
         count={count}
         onPageChange={onPageChange}
-        // onRowsPerPageChange={onRowsPerPageChange}
+        onRowsPerPageChange={onRowsPerPageChange}
         page={page}
         rowsPerPage={rowsPerPage}
-        rowsPerPageOptions={[5, 10, 25]}
+        rowsPerPageOptions={[5, 10, 20]}
       />
       {loading ? (
         <Box className="absolute top-0 left-0 bg-gray-200 opacity-80 w-full h-full">

@@ -71,7 +71,7 @@ export const OnlineUsersTable: React.FC<OnlineUsersTableProps> = (props) => {
               const isCurrentUser = user.user_id === currentUserId;
 
               return (
-                <TableRow hover key={user.id}>
+                <TableRow hover key={user.user_id || user.id}>
                   <TableCell>
                     <Stack alignItems="center" direction="row" spacing={2}>
                       <Avatar src={user.avatar || undefined}>
@@ -84,7 +84,7 @@ export const OnlineUsersTable: React.FC<OnlineUsersTableProps> = (props) => {
                   </TableCell>
                   <TableCell>{user.phone}</TableCell>
                   <TableCell>{user.email || "-"}</TableCell>
-                  <TableCell>{user.ip}</TableCell>
+                  <TableCell>{user.ip || "-"}</TableCell>
                   <TableCell>
                     {user.login_time
                       ? format(new Date(user.login_time), "yyyy-MM-dd HH:mm:ss")

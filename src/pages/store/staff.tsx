@@ -25,7 +25,7 @@ function Page() {
   return (
     <>
       <Head>
-        <title>收银员管理 | 商店管理</title>
+        <title>员工管理 | 商店管理</title>
       </Head>
       <Box
         component="main"
@@ -38,7 +38,7 @@ function Page() {
           <Stack spacing={3}>
             <div>
               <Typography variant="h4" mb={2}>
-                收银员管理
+                员工管理
               </Typography>
             </div>
             <Box sx={{ flexGrow: 1 }}>
