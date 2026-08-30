@@ -6,6 +6,7 @@ import { Box, Button, Container, Stack, SvgIcon, Typography } from "@mui/materia
 import { CustomersTable } from "src/sections/customer/customers-table";
 import { CustomersSearch } from "src/sections/customer/customers-search";
 import { RetentionRateChart } from "src/sections/customer/retention-rate-chart";
+import { OnlineCountChart, OnlineCountPoint } from "src/sections/customer/online-count-chart";
 import { useSelection } from "src/hooks/use-selection";
 import { get, post } from "src/lib/http";
 import { toast } from "react-toastify";
@@ -33,6 +34,14 @@ function Page() {
     { date: string; day1: number; day3: number; day7: number; newUsers: number }[]
   >([]);
   const [retentionLoading, setRetentionLoading] = useState(false);
+  const [onlineSeries, setOnlineSeries] = useState<OnlineCountPoint[]>([]);
+  const [onlineCurrent, setOnlineCurrent] = useState(0);
+  const [onlineLoading, setOnlineLoading] = useState(false);
+
+  const handleSearchChange = useCallback((v: string) => {
+    setPage(0);
+    setSearch(v);
+  }, []);
 
   useEffect(() => {
     setRetentionLoading(true);
@@ -52,6 +61,22 @@ function Page() {
       })
       .finally(() => {
         setRetentionLoading(false);
+      });
+  }, []);
+
+  useEffect(() => {
+    setOnlineLoading(true);
+    get<{ current: number; series: OnlineCountPoint[] }>("/api/users/stats/online-count")
+      .then((data) => {
+        setOnlineCurrent(typeof data?.current === "number" ? data.current : 0);
+        setOnlineSeries(Array.isArray(data?.series) ? data.series : []);
+      })
+      .catch((err) => {
+        console.error("Failed to fetch online count:", err);
+        setOnlineSeries([]);
+      })
+      .finally(() => {
+        setOnlineLoading(false);
       });
   }, []);
 
@@ -82,10 +107,30 @@ function Page() {
   );
 
   const handleRowsPerPageChange = useCallback(
-    (event: { target: { value: React.SetStateAction<number> } }) => {
-      setRowsPerPage(event.target.value);
+    (event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
+      setRowsPerPage(Number(event.target.value));
+      setPage(0);
     },
     [],
+  );
+
+  const statsTabs = useMemo(
+    () => [
+      {
+        key: "retention",
+        label: "用户留存率",
+        isDefault: true,
+        children: <RetentionRateChart data={retentionData} loading={retentionLoading} />,
+      },
+      {
+        key: "online-count",
+        label: "在线人数",
+        children: (
+          <OnlineCountChart data={onlineSeries} current={onlineCurrent} loading={onlineLoading} />
+        ),
+      },
+    ],
+    [retentionData, retentionLoading, onlineSeries, onlineCurrent, onlineLoading],
   );
 
   return (
@@ -103,8 +148,10 @@ function Page() {
         <Container maxWidth="xl">
           <Stack spacing={3}>
             <Typography variant="h4">Customers</Typography>
+            <CustomerTabs tabs={statsTabs} />
+
             <Stack direction="row" justifyContent="space-between" spacing={4}>
-              <CustomersSearch onChange={(v) => setSearch(v.trim())} />
+              <CustomersSearch onChange={handleSearchChange} />
               <Stack alignItems="center" direction="row" justifyContent="center" spacing={1}>
                 <Button
                   color="inherit"
@@ -128,9 +175,6 @@ function Page() {
                 </Button>
               </Stack>
             </Stack>
-            <RetentionRateChart data={retentionData} loading={retentionLoading} />
-
-            {/* 商品列表/创建商品 Tabs */}
             <CustomerTabs
               tabs={[
                 {

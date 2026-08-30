@@ -18,6 +18,8 @@ import {
   TextField,
   Tooltip,
   MenuItem,
+  FormControlLabel,
+  Switch,
 } from "@mui/material";
 import { TrashIcon, PencilSquareIcon, PlusIcon } from "@heroicons/react/24/solid";
 import { get, post, patch, del } from "src/lib/http";
@@ -59,12 +61,14 @@ export function StaffManagement({ storeId }: { storeId?: string }) {
       name: editingStaff?.name || "",
       phone: editingStaff?.phone || "",
       status: editingStaff?.status ?? 1,
+      can_cashier: editingStaff?.can_cashier ?? 0,
     },
     enableReinitialize: true,
     validationSchema: Yup.object({
       name: Yup.string().required("姓名必填"),
       phone: Yup.string().required("手机号必填"),
       status: Yup.number().required("状态必填"),
+      can_cashier: Yup.number().oneOf([0, 1]).required(),
     }),
     onSubmit: async (values) => {
       const payload = { ...values, store_id: storeId };
@@ -97,7 +101,7 @@ export function StaffManagement({ storeId }: { storeId?: string }) {
     <Card sx={{ minHeight: "500px" }}>
       <CardContent>
         <Stack direction="row" justifyContent="space-between" alignItems="center" mb={3}>
-          <Typography variant="h6">收银员列表</Typography>
+          <Typography variant="h6">员工列表</Typography>
           <Button
             startIcon={<PlusIcon style={{ width: 20 }} />}
             variant="contained"
@@ -106,7 +110,7 @@ export function StaffManagement({ storeId }: { storeId?: string }) {
               setOpenAdd(true);
             }}
           >
-            添加收银员
+            添加员工
           </Button>
         </Stack>
 
@@ -116,6 +120,7 @@ export function StaffManagement({ storeId }: { storeId?: string }) {
               <TableRow>
                 <TableCell>姓名</TableCell>
                 <TableCell>手机号</TableCell>
+                <TableCell>收银权限</TableCell>
                 <TableCell>状态</TableCell>
                 <TableCell align="right">操作</TableCell>
               </TableRow>
@@ -123,7 +128,7 @@ export function StaffManagement({ storeId }: { storeId?: string }) {
             <TableBody>
               {list.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} align="center">
+                  <TableCell colSpan={5} align="center">
                     暂无员工
                   </TableCell>
                 </TableRow>
@@ -132,6 +137,7 @@ export function StaffManagement({ storeId }: { storeId?: string }) {
                   <TableRow key={staff.staff_id}>
                     <TableCell>{staff.name}</TableCell>
                     <TableCell>{staff.phone}</TableCell>
+                    <TableCell>{(staff.can_cashier ?? 1) === 1 ? "是" : "否"}</TableCell>
                     <TableCell>{staff.status === 1 ? "启用" : "禁用"}</TableCell>
                     <TableCell
                       sx={{
@@ -160,8 +166,8 @@ export function StaffManagement({ storeId }: { storeId?: string }) {
                             </Tooltip>
                           }
                           confirmFunc={() => handleDelete(staff.staff_id)}
-                          title="删除收银员"
-                          content="确定删除该收银员吗？"
+                          title="删除员工"
+                          content="确定删除该员工吗？"
                         />
                       </Tooltip>
                     </TableCell>
@@ -175,7 +181,7 @@ export function StaffManagement({ storeId }: { storeId?: string }) {
 
       <Dialog open={openAdd} onClose={() => setOpenAdd(false)} fullWidth maxWidth="xs">
         <form onSubmit={formik.handleSubmit}>
-          <DialogTitle>{editingStaff ? "编辑收银员" : "添加收银员"}</DialogTitle>
+          <DialogTitle>{editingStaff ? "编辑员工" : "添加员工"}</DialogTitle>
           <DialogContent>
             <Stack spacing={3} sx={{ mt: 1 }}>
               <TextField
@@ -207,6 +213,19 @@ export function StaffManagement({ storeId }: { storeId?: string }) {
                 <MenuItem value={1}>启用</MenuItem>
                 <MenuItem value={0}>禁用</MenuItem>
               </TextField>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={formik.values.can_cashier === 1}
+                    onChange={(_, checked) => formik.setFieldValue("can_cashier", checked ? 1 : 0)}
+                    color="primary"
+                  />
+                }
+                label="开通收银权限"
+              />
+              <Typography variant="caption" color="text.secondary">
+                无收银权限仅可登录打卡；开通后可进入收银台
+              </Typography>
             </Stack>
           </DialogContent>
           <DialogActions>

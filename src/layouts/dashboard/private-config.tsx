@@ -13,6 +13,7 @@ import {
   LockClosedIcon,
   PhotoIcon,
   CreditCardIcon,
+  ClockIcon,
 } from "@heroicons/react/24/solid";
 import { DashboardItemType } from "src/layouts/dashboard/public-config";
 
@@ -54,7 +55,7 @@ export const privateItems: (DashboardItemType & { group?: DashboardItemType[] })
         ),
       },
       {
-        title: "收银员管理",
+        title: "员工管理",
         path: "/store/staff",
         icon: (
           <SvgIcon fontSize="small">
@@ -187,6 +188,15 @@ export const privateItems: (DashboardItemType & { group?: DashboardItemType[] })
         icon: (
           <SvgIcon fontSize="small">
             <ServerStackIcon />
+          </SvgIcon>
+        ),
+      },
+      {
+        title: "调度任务",
+        path: "/manage/schedulers",
+        icon: (
+          <SvgIcon fontSize="small">
+            <ClockIcon />
           </SvgIcon>
         ),
       },

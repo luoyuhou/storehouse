@@ -188,6 +188,7 @@ export function GoodsVersionsEditing({ id: goodsId }: { id: string }) {
     {
       field: "count",
       headerName: "数量",
+      type: "number",
       editable: true,
       cellClassName: "basis-1/8",
       flex: 1,

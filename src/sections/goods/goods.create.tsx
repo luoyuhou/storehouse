@@ -279,8 +279,17 @@ export function GoodsCreateForm({ stores, storeId }: { stores: StoreType[]; stor
                         helperText={formik.touched.price && formik.errors.price}
                         label="价格"
                         name="price"
-                        type="number"
-                        onChange={formik.handleChange}
+                        type="text"
+                        inputMode="decimal"
+                        onChange={(e) => {
+                          const val = e.target.value
+                            .replace(/[^\d.]/g, "")
+                            .replace(/(\..*)\./g, "$1");
+                          const parts = val.split(".");
+                          const next =
+                            parts.length === 2 ? `${parts[0]}.${parts[1].slice(0, 2)}` : val;
+                          formik.setFieldValue("price", next.startsWith(".") ? `0${next}` : next);
+                        }}
                         value={formik.values.price}
                       />
                     </Grid>
@@ -292,8 +301,11 @@ export function GoodsCreateForm({ stores, storeId }: { stores: StoreType[]; stor
                         helperText={formik.touched.count && formik.errors.count}
                         label="商品数量"
                         name="count"
-                        type="number"
-                        onChange={formik.handleChange}
+                        type="text"
+                        inputMode="numeric"
+                        onChange={(e) => {
+                          formik.setFieldValue("count", e.target.value.replace(/\D/g, ""));
+                        }}
                         value={formik.values.count}
                       />
                     </Grid>
