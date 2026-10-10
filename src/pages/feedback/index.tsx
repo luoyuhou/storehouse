@@ -31,7 +31,11 @@ import { Layout as DashboardLayout } from "src/layouts/dashboard/layout";
 import { post, patch, get } from "src/lib/http";
 import { useAuth } from "src/hooks/use-auth";
 import { authPermission } from "src/utils/auth";
-import { FEEDBACK_CATEGORY_OPTIONS } from "src/constant/feedback.const";
+import {
+  FEEDBACK_APP_TYPE_OPTIONS,
+  FEEDBACK_CATEGORY_OPTIONS,
+  feedbackAppTypeLabel,
+} from "src/constant/feedback.const";
 import { FeedbackCreate } from "src/sections/feedback/feedback-create";
 import { FeedbackComment } from "src/sections/feedback/feedback-comment";
 import { FeedbackItem, FeedbackUserInfo } from "src/types/feedback.type";
@@ -89,6 +93,7 @@ function CommentOrFeaturePage() {
   const [pages, setPages] = useState(0);
   const [statusFilter, setStatusFilter] = useState<number | "all">("all");
   const [categoryFilter, setCategoryFilter] = useState<string | "all">("all");
+  const [appTypeFilter, setAppTypeFilter] = useState<string | "all">("all");
   const [onlyMine, setOnlyMine] = useState<boolean>(false);
 
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -118,6 +123,7 @@ function CommentOrFeaturePage() {
       currentStatus: typeof statusFilter = statusFilter,
       currentCategory: typeof categoryFilter = categoryFilter,
       currentOnlyMine: boolean = onlyMine,
+      currentAppType: typeof appTypeFilter = appTypeFilter,
     ) => {
       setLoading(true);
       try {
@@ -127,6 +133,9 @@ function CommentOrFeaturePage() {
         }
         if (currentCategory !== "all") {
           filtered.push({ id: "category", value: currentCategory });
+        }
+        if (currentAppType !== "all") {
+          filtered.push({ id: "app_type", value: currentAppType });
         }
         if (currentOnlyMine && user?.id) {
           filtered.push({ id: "user_id", value: user.id });
@@ -149,7 +158,7 @@ function CommentOrFeaturePage() {
         setLoading(false);
       }
     },
-    [statusFilter, categoryFilter, onlyMine, user],
+    [statusFilter, categoryFilter, appTypeFilter, onlyMine, user],
   );
 
   useEffect(() => {
@@ -178,22 +187,27 @@ function CommentOrFeaturePage() {
 
   const handleStatusFilterChange = (value: number | "all") => {
     setStatusFilter(value);
-    fetchList(0, value, categoryFilter, onlyMine);
+    fetchList(0, value, categoryFilter, onlyMine, appTypeFilter);
   };
 
   const handleCategoryFilterChange = (value: string | "all") => {
     setCategoryFilter(value);
-    fetchList(0, statusFilter, value, onlyMine);
+    fetchList(0, statusFilter, value, onlyMine, appTypeFilter);
+  };
+
+  const handleAppTypeFilterChange = (value: string | "all") => {
+    setAppTypeFilter(value);
+    fetchList(0, statusFilter, categoryFilter, onlyMine, value);
   };
 
   const handleOnlyMineChange = (checked: boolean) => {
     setOnlyMine(checked);
-    fetchList(0, statusFilter, categoryFilter, checked);
+    fetchList(0, statusFilter, categoryFilter, checked, appTypeFilter);
   };
 
   const handlePageChange = (_: React.ChangeEvent<unknown>, page: number) => {
     const nextPageNum = page - 1;
-    fetchList(nextPageNum, statusFilter, categoryFilter, onlyMine);
+    fetchList(nextPageNum, statusFilter, categoryFilter, onlyMine, appTypeFilter);
   };
 
   return (
@@ -267,6 +281,23 @@ function CommentOrFeaturePage() {
               </Stack>
 
               <FormControl size="small" sx={{ minWidth: 160 }}>
+                <InputLabel id="feedback-app-type-filter-label">来源应用</InputLabel>
+                <Select
+                  labelId="feedback-app-type-filter-label"
+                  label="来源应用"
+                  value={appTypeFilter}
+                  onChange={(e) => handleAppTypeFilterChange(e.target.value as string | "all")}
+                >
+                  <MenuItem value="all">全部应用</MenuItem>
+                  {FEEDBACK_APP_TYPE_OPTIONS.map((opt) => (
+                    <MenuItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
+              <FormControl size="small" sx={{ minWidth: 160 }}>
                 <InputLabel id="feedback-category-filter-label">分类</InputLabel>
                 <Select
                   labelId="feedback-category-filter-label"
@@ -331,7 +362,18 @@ function CommentOrFeaturePage() {
                           <TableCell width="22%">
                             <Stack spacing={0.5}>
                               <Typography variant="subtitle2">{item.title}</Typography>
-                              <Stack direction="row" spacing={1} alignItems="center">
+                              <Stack
+                                direction="row"
+                                spacing={1}
+                                alignItems="center"
+                                flexWrap="wrap"
+                              >
+                                <Chip
+                                  size="small"
+                                  color="primary"
+                                  variant="outlined"
+                                  label={feedbackAppTypeLabel(item.app_type)}
+                                />
                                 {item.category ? (
                                   <Chip
                                     size="small"
@@ -489,7 +531,7 @@ function CommentOrFeaturePage() {
         <FeedbackCreate
           dialogOpen={dialogOpen}
           handleCloseDialog={setDialogOpen}
-          reload={() => fetchList(0, statusFilter)}
+          reload={() => fetchList(0, statusFilter, categoryFilter, onlyMine, appTypeFilter)}
         />
 
         <FeedbackComment

@@ -192,6 +192,15 @@ export const privateItems: (DashboardItemType & { group?: DashboardItemType[] })
         ),
       },
       {
+        title: "发文平台",
+        path: "/manage/publisher-platforms",
+        icon: (
+          <SvgIcon fontSize="small">
+            <DocumentTextIcon />
+          </SvgIcon>
+        ),
+      },
+      {
         title: "调度任务",
         path: "/manage/schedulers",
         icon: (

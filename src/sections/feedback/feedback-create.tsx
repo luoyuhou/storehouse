@@ -20,7 +20,7 @@ import { post } from "src/lib/http";
 import { toast } from "react-toastify";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { FEEDBACK_CATEGORY_OPTIONS } from "src/constant/feedback.const";
+import { FEEDBACK_APP_TYPE_OPTIONS, FEEDBACK_CATEGORY_OPTIONS } from "src/constant/feedback.const";
 
 export function FeedbackCreate({
   dialogOpen,
@@ -33,6 +33,7 @@ export function FeedbackCreate({
 }) {
   const [title, setTitle] = useState<string>("");
   const [category, setCategory] = useState<string>("feature");
+  const [appType, setAppType] = useState<string>("user");
   const [content, setContent] = useState("");
   const [uploading, setUploading] = useState(false);
 
@@ -104,6 +105,7 @@ export function FeedbackCreate({
       formData.append("title", title.trim());
       formData.append("content", content.trim());
       if (category) formData.append("category", category);
+      if (appType) formData.append("appType", appType);
 
       // 处理视频链接（通过 JSON 字符串传递）
       if (videoUrls.length > 0) {
@@ -127,6 +129,7 @@ export function FeedbackCreate({
       handleCloseDialog(false);
       setTitle("");
       setCategory("feature");
+      setAppType("user");
       setContent("");
       setSelectedFiles([]);
       setPreviewUrls([]);
@@ -152,21 +155,38 @@ export function FeedbackCreate({
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
-          <FormControl fullWidth>
-            <InputLabel id="feedback-category-label">分类</InputLabel>
-            <Select
-              labelId="feedback-category-label"
-              label="分类"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-            >
-              {FEEDBACK_CATEGORY_OPTIONS.map((opt) => (
-                <MenuItem key={opt.value} value={opt.value}>
-                  {opt.label}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+            <FormControl fullWidth>
+              <InputLabel id="feedback-app-type-label">来源应用</InputLabel>
+              <Select
+                labelId="feedback-app-type-label"
+                label="来源应用"
+                value={appType}
+                onChange={(e) => setAppType(e.target.value)}
+              >
+                {FEEDBACK_APP_TYPE_OPTIONS.map((opt) => (
+                  <MenuItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <FormControl fullWidth>
+              <InputLabel id="feedback-category-label">分类</InputLabel>
+              <Select
+                labelId="feedback-category-label"
+                label="分类"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+              >
+                {FEEDBACK_CATEGORY_OPTIONS.map((opt) => (
+                  <MenuItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Stack>
           <TextField
             label="详细描述"
             fullWidth

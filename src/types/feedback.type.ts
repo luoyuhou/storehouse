@@ -22,6 +22,7 @@ export interface FeedbackItem {
   title: string;
   content: string;
   category?: string | null;
+  app_type?: string | null;
   status: number;
   create_date?: string | null;
   update_date?: string | null;
